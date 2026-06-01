@@ -50,22 +50,25 @@ export const en = {
     customSaved: "Saved Avatar",
     noCustomPresets: "You haven't saved any custom avatars yet. Change parameters and click 'Save Project'!"
   },
+  // Keyed by the built-in preset id (see src/presets.ts).
   presetStats: {
-    "cyber-shark_name": "Miya (Cyber Shark)",
-    "cyber-shark_char": "Miya",
-    "cyber-shark_lore": "A cybernetic outcast girl who escaped the virtual slums of Tokyo. She loves retro gaming, brewing energizing matcha streams, and laughing out loud at memes!",
-    
-    "miko_name": "Sakura (Shrine Priestess)",
-    "miko_char": "Sakura",
-    "miko_lore": "Guardian of the ancient Temple of Stars, who decided to become a virtual streamer to spread harmony, peace, and practice tarot fortune-telling with viewers.",
-    
-    "vampire-princess_name": "Mitsuki (Vampire Princess)",
-    "vampire-princess_char": "Mitsuki",
-    "vampire-princess_lore": "A true vampire princess who plays hardcore games instead of sleeping in a coffin. She adores gothic lolita dresses, has cute fangs, and wears a rose blush.",
-    
-    "elf-sage_name": "Eluel (Elf Sage)",
-    "elf-sage_char": "Eluel",
-    "elf-sage_lore": "A wise elven druid who has studied forest magic for 400 years. She streams ASMR nature sounds, speaks in gentle whispers, and grants blessings to her chat."
+    "cyber-neko_name": "Miya (Cyber Neko)",
+    "cyber-neko_lore": "A cybernetic cat-girl who streams from a virtual neon Tokyo. A little forgetful at times, but her cheerfulness and drive pull in thousands of viewers!",
+
+    "vampire-princess_name": "Mitsuki (Goth Vampire)",
+    "vampire-princess_lore": "A gothic vampire lolita who, instead of sleeping in her crypt until dawn, relentlessly solves puzzles and grinds through hardcore RPGs. She adores bats, cranberry tea, and a fanged blush.",
+
+    "astral-elf_name": "Luna (Astral Star Elf)",
+    "astral-elf_lore": "An elven keeper of the library of starlight. She loves the ASMR sounds of the night cosmos, hiding in a warm knitted sweater, and telling tales of distant nebulae.",
+
+    "anime-idol_name": "Kira (Crimson Star)",
+    "anime-idol_lore": "A crimson-haired anime cat-girl in High School DxD style. Her silky crimson-heart hair is topped with a playful ahoge, and her glowing aquamarine eyes win over hearts.",
+
+    "koneko-dxd_name": "Koneko (White Kitten)",
+    "koneko-dxd_lore": "A silver-haired cat-girl inspired by the legendary Koneko from High School DxD. Calm and unflappable on the outside, she appears in a charming gothic maid outfit with silky white ears and glowing golden eyes.",
+
+    "retro-pip_name": "Pip (1930s Rubber Hose)",
+    "retro-pip_lore": "A classic black-and-white cartoon hero of the 1930s. He constantly bounces and sways to imaginary jazz syncopations, wears a dapper round tailcoat, and makes comically big eyes!"
   },
   rightSidebar: {
     params: "Parameters: ",
@@ -179,6 +182,22 @@ export const en = {
     aiBtnGenerating: "Drafting in Gemini API...",
     obsTitle: "Stream Output (OBS Studio/TikTok)",
     obsSub: "Configure your live stream avatar overlays cleanly inside streaming software:",
+    obsOverlay: {
+      title: "Live Browser Source (recommended)",
+      sub: "Add this URL as a Browser Source in OBS. The avatar mirrors this studio in real time over a transparent background — no chroma key needed.",
+      urlLabel: "Overlay URL",
+      copy: "Copy",
+      copied: "Copied ✓",
+      open: "Open overlay",
+      connected: "overlay(s) connected",
+      none: "No overlay connected yet",
+      steps: {
+        "1": { title: "Copy the URL", text: "Copy the overlay URL above." },
+        "2": { title: "Add Browser Source", text: "In OBS: Sources → + → Browser. Paste the URL and set the size (e.g. 800×800)." },
+        "3": { title: "Done — it's live", text: "The avatar appears with a transparent background and syncs with the studio automatically." }
+      }
+    },
+    obsAltTitle: "Alternative: Window Capture + Chroma Key",
     obsBtnChroma: "🟢 Enable Green Chroma Key Backdrop",
     obsAlert: "Backdrop changed to pure chroma key green! Now, add a New 'Window Capture' in OBS and apply a Chroma Key filter to make the background transparent.",
     obsSteps: {

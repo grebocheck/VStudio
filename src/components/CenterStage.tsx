@@ -1,16 +1,19 @@
 import React from 'react';
-import { AvatarConfig, RigParams } from '../types';
+import { AvatarConfig, RigParams, TrackingMode } from '../types';
 import { VTuberAvatar } from './VTuberAvatar';
 import { Shuffle, User } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
+import { localizePreset } from '../presets';
 
 interface CenterStageProps {
   config: AvatarConfig;
   setConfig: React.Dispatch<React.SetStateAction<AvatarConfig>>;
   rig: RigParams;
   onScreenBuster: boolean;
-  trackingMode: 'manual' | 'mouse' | 'mic' | 'auto';
+  trackingMode: TrackingMode;
+  /** Active built-in preset id, or null when the avatar is custom/AI/edited. */
+  activePresetKey: string | null;
 }
 
 export const CenterStage: React.FC<CenterStageProps> = ({
@@ -19,27 +22,16 @@ export const CenterStage: React.FC<CenterStageProps> = ({
   rig,
   onScreenBuster,
   trackingMode,
+  activePresetKey,
 }) => {
   const { t } = useI18n();
   const { theme } = useTheme();
 
-  const getTranslatedNameAndLore = (currentName: string) => {
-    if (currentName === 'Мія' || currentName === 'Miya') {
-      return { name: t.presetStats['cyber-shark_name'], lore: t.presetStats['cyber-shark_lore'] };
-    }
-    if (currentName === 'Сакура' || currentName === 'Sakura') {
-      return { name: t.presetStats['miko_name'], lore: t.presetStats['miko_lore'] };
-    }
-    if (currentName === 'Міцукі' || currentName === 'Mitsuki') {
-      return { name: t.presetStats['vampire-princess_name'], lore: t.presetStats['vampire-princess_lore'] };
-    }
-    if (currentName === 'Елуель' || currentName === 'Eluel') {
-      return { name: t.presetStats['elf-sage_name'], lore: t.presetStats['elf-sage_lore'] };
-    }
-    return { name: currentName || t.presets.customSaved, lore: config.lore || t.centerStage.defaultLore };
-  };
-
-  const { name, lore } = getTranslatedNameAndLore(config.name);
+  // Built-in presets are translated by their stable id; custom/AI/edited
+  // avatars carry their own name + lore inside the config.
+  const localized = localizePreset(activePresetKey, t);
+  const name = localized?.name || config.name || t.presets.customSaved;
+  const lore = localized?.lore || config.lore || t.centerStage.defaultLore;
 
   return (
     <main className={`flex-grow flex flex-col p-4 lg:p-6 space-y-6 overflow-y-auto ${
@@ -55,7 +47,7 @@ export const CenterStage: React.FC<CenterStageProps> = ({
         
         {/* Viewport bar of the monitor */}
         <div className={`w-full flex items-center justify-between mb-4 border-b pb-3 ${
-          theme === 'dark' ? 'border-white/5' : 'border-slate-150'
+          theme === 'dark' ? 'border-white/5' : 'border-slate-200'
         }`}>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />

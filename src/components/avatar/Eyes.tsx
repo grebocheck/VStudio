@@ -1,4 +1,5 @@
 import React from 'react';
+import { Emotion } from '../../types';
 
 export const EyebrowSVG: React.FC<{
   style: 'normal' | 'thick' | 'thin' | 'sad';
@@ -54,7 +55,7 @@ export const EyeSVG: React.FC<{
   pupilY: number;
   blink: number; // 0 (fully closed) to 1 (fully open)
   artStyle?: 'classic' | 'anime' | 'retro';
-  activeEmotion?: 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love' | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared' | 'sleepy' | 'shy';
+  activeEmotion?: Emotion;
 }> = ({
   eyeColor,
   pupilStyle,
@@ -496,19 +497,24 @@ export const EyeSVG: React.FC<{
         {/* Masked Iris */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
           <defs>
+            <linearGradient id={`love-iris-grad-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#9d174d" /> {/* Deep dark magenta */}
+              <stop offset="60%" stopColor="#f43f5e" /> {/* Sweet rose pink */}
+              <stop offset="100%" stopColor="#fda4af" /> {/* Light bright pink */}
+            </linearGradient>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
               <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} />
             </clipPath>
           </defs>
 
-          {/* Saturated hot pink/rose iris backing */}
-          <ellipse cx={cx + px} cy={cy + py} rx="17.5" ry="20" fill="#f43f5e" />
+          {/* Saturated hot pink/rose iris backing with a rich depth gradient */}
+          <ellipse cx={cx + px} cy={cy + py} rx="17.5" ry="20" fill={`url(#love-iris-grad-${isLeft ? 'l' : 'r'})`} />
           
-          {/* Heart shaped pupil */}
+          {/* Heart shaped pupil - Symmetrical vector fix */}
           <path
             d={`M ${cx + px} ${cy + py + 8}
                C ${cx + px - 11} ${cy + py}, ${cx + px - 12} ${cy + py - 9.5}, ${cx + px} ${cy + py - 6.5}
-               C ${cx + px + 12} ${cy + py - 9.5}, ${cx + px} ${cy + py + 8} Z`}
+               C ${cx + px + 12} ${cy + py - 9.5}, ${cx + px + 11} ${cy + py}, ${cx + px} ${cy + py + 8} Z`}
             fill="#ffffff"
             opacity="0.95"
           />
@@ -516,7 +522,7 @@ export const EyeSVG: React.FC<{
           <path
             d={`M ${cx + px} ${cy + py + 5}
                C ${cx + px - 7} ${cy + py}, ${cx + px - 8} ${cy + py - 6.5}, ${cx + px} ${cy + py - 4.5}
-               C ${cx + px + 7} ${cy + py - 6.5}, ${cx + px} ${cy + py + 5} Z`}
+               C ${cx + px + 8} ${cy + py - 6.5}, ${cx + px + 7} ${cy + py}, ${cx + px} ${cy + py + 5} Z`}
             fill="#ffe4e6"
           />
 

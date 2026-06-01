@@ -1,20 +1,77 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# V-Studio — VTuber Customizer & Live-Rigging Studio
 
-# Run and deploy your AI Studio app
+An interactive browser studio for building 2D VTuber avatars and driving them live.
+Design a character (hair, eyes, outfit, accessories, proportions), then animate it
+with **camera face-tracking**, **microphone mouth-sync**, **mouse tracking**, or an
+**idle auto-loop** — and pipe it into OBS as a stream overlay.
 
-This contains everything you need to run your app locally.
+> Status: actively being hardened from MVP toward a production tool. See [ROADMAP.md](ROADMAP.md).
 
-View your app in AI Studio: https://ai.studio/apps/b09d3170-e4c9-46a6-87b3-6c0145b947b8
+## Features
 
-## Run Locally
+- **Avatar builder** — hairstyles, eyes/pupils, eyebrows, outfits, accessories, blush, fangs, ears, body proportions, art styles (classic / anime / retro).
+- **Live rigging** — MediaPipe FaceLandmarker drives head yaw/pitch/roll, blinks, gaze, mouth, eyebrows, and a 16-state emotion classifier with hysteresis.
+- **Tracking modes** — `camera`, `mic` (amplitude → mouth flap), `mouse`, and `auto` (AFK idle motion). Procedural breathing + spring-mass hair physics run every frame.
+- **AI styling** — describe a character in natural language; a server-side Gemini call returns a full avatar config (validated + clamped before applying).
+- **Presets & persistence** — built-in characters, plus save/export/import your own avatars (`localStorage` + `.vstudio.json`).
+- **OBS overlay** — one-click chroma-key background with setup instructions.
+- **i18n + theming** — Ukrainian / English, dark / light.
 
-**Prerequisites:**  Node.js
+## Architecture
 
+```
+src/
+  App.tsx                  thin orchestrator (state + composition)
+  presets.ts               built-in characters, INITIAL_RIG, localizePreset()
+  types.ts                 shared unions (AvatarConfig, RigParams, Emotion, TrackingMode…)
+  hooks/
+    useAvatarStore.ts      config + custom presets + persistence + import/export
+    useMicrophone.ts       mic capture graph → analyser refs
+    useFaceTracking.ts     webcam + MediaPipe FaceLandmarker lifecycle
+    useAnimationEngine.ts  the per-frame rAF loop (blink, mic, auto, camera, emotions, hair)
+  lib/
+    sanitizeConfig.ts      defensive merge/clamp for untrusted configs (AI / import)
+    storage.ts             safe localStorage helpers
+  components/              UI (sidebars, stage) + components/avatar (SVG parts)
+  i18n/                    en / uk dictionaries
+  server.ts                Express: Gemini proxy, rate-limit, health, static serve
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Run locally
+
+**Prerequisites:** Node.js 20+
+
+```bash
+npm install
+cp .env.example .env      # set GEMINI_API_KEY for AI styling (optional)
+npm run dev               # http://localhost:3000
+```
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Dev server (Express + Vite middleware, HMR) |
+| `npm run build` | Build client (Vite) + server (esbuild → `dist/server.cjs`) |
+| `npm run start` | Serve the production build |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier write |
+
+## Environment
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `GEMINI_API_KEY` | Enables AI style generation (omit to disable the AI endpoint) | — |
+| `GEMINI_MODEL` | Model used for generation | `gemini-3.5-flash` |
+| `PORT` | Server port | `3000` |
+
+## Docker
+
+```bash
+docker compose up --build    # serves on :3000
+```
+
+## Health check
+
+`GET /healthz` → `{ "status": "ok", "ai": <bool> }`

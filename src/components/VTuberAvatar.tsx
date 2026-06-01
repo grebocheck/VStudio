@@ -10,9 +10,12 @@ interface VTuberAvatarProps {
   config: AvatarConfig;
   rig: RigParams;
   onScreenBuster?: boolean; // Toggles visual grids showing the rigging polygons (very aesthetic!)
+  /** Overlay mode: no frame/background/HUD badges so the avatar can render on a
+   *  transparent OBS Browser Source (green-screen background is still honored). */
+  transparent?: boolean;
 }
 
-export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScreenBuster = false }) => {
+export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScreenBuster = false, transparent = false }) => {
   const {
     skinColor,
     eyeColor,
@@ -134,6 +137,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
 
   // Background configurations
   const getBackgroundContent = () => {
+    // In overlay mode keep the canvas transparent (unless the user explicitly
+    // wants a chroma-key fill) so OBS Browser Source compositing works.
+    if (transparent && backgroundStyle !== 'green-screen') return null;
     switch (backgroundStyle) {
       case 'green-screen':
         return <rect width="400" height="400" fill="#00ff00" />;
@@ -190,7 +196,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
   };
 
   return (
-    <div className="relative overflow-hidden w-full max-w-[400px] aspect-square rounded border border-white/10 shadow-2xl bg-[#0a0a0c] group">
+    <div className={`relative overflow-hidden w-full max-w-[400px] aspect-square group ${
+      transparent ? '' : 'rounded border border-white/10 shadow-2xl bg-[#0a0a0c]'
+    }`}>
       <svg
         viewBox="0 0 400 400"
         className="w-full h-full select-none"
@@ -259,6 +267,23 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
                earStyle={earStyle}
                artStyle={artStyle}
             />
+            {/* Love pink face flush & deep cute cheek blushes */}
+            {effectiveEmotion === 'love' && (
+              <g>
+                <defs>
+                  <radialGradient id="love-flush-grad" cx="50%" cy="45%" r="55%">
+                    <stop offset="0%" stopColor="#ec4899" stopOpacity="0.28" />
+                    <stop offset="55%" stopColor="#f43f5e" stopOpacity="0.14" />
+                    <stop offset="100%" stopColor="#fda4af" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                {/* Soft warm pink face flush */}
+                <ellipse cx="200" cy="175" rx="70" ry="80" fill="url(#love-flush-grad)" className="animate-[pulse_3s_infinite]" />
+                {/* Saturated cheek blush with a soft blurring glow */}
+                <ellipse cx="152" cy="195" rx="20" ry="10" fill="#ec4899" opacity="0.32" style={{ filter: 'blur(2.5px)' }} className="animate-[pulse_2s_infinite]" />
+                <ellipse cx="248" cy="195" rx="20" ry="10" fill="#ec4899" opacity="0.32" style={{ filter: 'blur(2.5px)' }} className="animate-[pulse_2s_infinite_0.5s]" />
+              </g>
+            )}
             {/* Angry red skin flush — full face tinted red with pulsing overlay */}
             {effectiveEmotion === 'angry' && (
               <g>
@@ -470,10 +495,25 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
 
           {effectiveEmotion === 'love' && (
             <g opacity="0.95">
-              {/* Pulsing Love Hearts around cheeks and top of head */}
-              <path d="M110 130 C106 124, 98 124, 94 130 C90 124, 82 124, 78 130 L94 150 Z" fill="#ec4899" className="animate-[bounce_2s_infinite]" />
-              <path d="M290 130 C286 124, 278 124, 274 130 C270 124, 262 124, 258 130 L274 150 Z" fill="#ec4899" className="animate-[bounce_2s_infinite_0.4s]" />
-              <path d="M200 60 C196 54, 188 54, 184 60 C180 54, 172 54, 168 60 L184 80 Z" fill="#f43f5e" className="animate-[pulse_1.5s_infinite]" />
+              {/* Pulsing Love Hearts around cheeks and top of head with gorgeous premium glow filters */}
+              <path
+                d="M110 130 C106 124, 98 124, 94 130 C90 124, 82 124, 78 130 L94 150 Z"
+                fill="#ec4899"
+                className="animate-[bounce_2s_infinite]"
+                style={{ filter: 'drop-shadow(0 0 5px rgba(236, 72, 153, 0.7))' }}
+              />
+              <path
+                d="M290 130 C286 124, 278 124, 274 130 C270 124, 262 124, 258 130 L274 150 Z"
+                fill="#ec4899"
+                className="animate-[bounce_2s_infinite_0.4s]"
+                style={{ filter: 'drop-shadow(0 0 5px rgba(236, 72, 153, 0.7))' }}
+              />
+              <path
+                d="M200 60 C196 54, 188 54, 184 60 C180 54, 172 54, 168 60 L184 80 Z"
+                fill="#f43f5e"
+                className="animate-[pulse_1.5s_infinite]"
+                style={{ filter: 'drop-shadow(0 0 5px rgba(244, 63, 94, 0.7))' }}
+              />
             </g>
           )}
 
@@ -604,14 +644,18 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
       </svg>
 
       {/* Decorative avatar watermark HUD mimicking professional rigging software */}
-      <div className="absolute top-3 left-3 flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-950/70 border border-slate-700/50 backdrop-blur-sm pointer-events-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span className="text-[10px] font-mono text-slate-300 tracking-wider">LIVE GRAPHICS</span>
-      </div>
+      {!transparent && (
+        <>
+          <div className="absolute top-3 left-3 flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-950/70 border border-slate-700/50 backdrop-blur-sm pointer-events-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[10px] font-mono text-slate-300 tracking-wider">LIVE GRAPHICS</span>
+          </div>
 
-      <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-slate-950/70 border border-slate-700/50 backdrop-blur-sm pointer-events-none">
-        <span className="text-[10px] font-mono text-teal-400">FPS: 60 / SVG DEFORM</span>
-      </div>
+          <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-slate-950/70 border border-slate-700/50 backdrop-blur-sm pointer-events-none">
+            <span className="text-[10px] font-mono text-teal-400">FPS: 60 / SVG DEFORM</span>
+          </div>
+        </>
+      )}
     </div>
   );
 };

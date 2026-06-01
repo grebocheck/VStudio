@@ -1,3 +1,14 @@
+// Shared union types reused across the app (avatar, rig, tracking, UI).
+export type Emotion =
+  | 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love'
+  | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared'
+  | 'sleepy' | 'shy' | 'relaxed';
+
+export type TrackingMode = 'manual' | 'mouse' | 'mic' | 'auto' | 'camera';
+
+export type SidebarTab =
+  | 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
+
 export interface AvatarConfig {
   skinColor: string;
   eyeColor: string;
@@ -31,7 +42,7 @@ export interface AvatarConfig {
   neckHeight?: number; // 0.6 to 1.4
   shoulderWidth?: number; // 0.7 to 1.3
   clothingPrint?: 'none' | 'cat' | 'star' | 'heart' | 'cyber' | 'cross';
-  activeEmotion?: 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love' | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared' | 'sleepy' | 'shy' | 'relaxed';
+  activeEmotion?: Emotion;
   artStyle?: 'classic' | 'anime' | 'retro';
 }
 
@@ -50,12 +61,13 @@ export interface RigParams {
   bodyX: number; // -15 to 15 px
   hairSwayX?: number; // Physics secondary sway
   hairSwayY?: number; // Physics vertical bounce
-  activeEmotion?: 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love' | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared' | 'sleepy' | 'shy' | 'relaxed';
+  activeEmotion?: Emotion;
   tongueOut?: number; // 0 to 1
 }
 
 export interface PresetAvatar {
   id: string;
+  /** Display name (fallback when no i18n translation exists for `id`). */
   name: string;
   config: AvatarConfig;
 }

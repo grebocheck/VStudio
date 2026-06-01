@@ -148,7 +148,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
               trackingMode === 'manual'
                 ? theme === 'dark'
                   ? 'bg-indigo-600/20 border-indigo-500 text-white font-bold'
-                  : 'bg-indigo-50 border-indigo-350 text-indigo-700 font-bold'
+                  : 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold'
                 : theme === 'dark'
                   ? 'bg-white/5 border-white/5 text-white/70 hover:bg-white/10'
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -163,7 +163,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
               trackingMode === 'mouse'
                 ? theme === 'dark'
                   ? 'bg-indigo-600/20 border-indigo-500 text-white font-bold'
-                  : 'bg-indigo-50 border-indigo-350 text-indigo-700 font-bold'
+                  : 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold'
                 : theme === 'dark'
                   ? 'bg-white/5 border-white/5 text-white/70 hover:bg-white/10'
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -178,7 +178,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
               trackingMode === 'auto'
                 ? theme === 'dark'
                   ? 'bg-indigo-600/20 border-indigo-500 text-white font-bold'
-                  : 'bg-indigo-50 border-indigo-350 text-indigo-700 font-bold'
+                  : 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold'
                 : theme === 'dark'
                   ? 'bg-white/5 border-white/5 text-white/70 hover:bg-white/10'
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -193,7 +193,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
               micActive
                 ? theme === 'dark'
                   ? 'bg-emerald-600/20 border-emerald-500/65 text-white font-bold'
-                  : 'bg-emerald-50 border-emerald-350 text-emerald-850 font-bold'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-850 font-bold'
                 : theme === 'dark'
                   ? 'bg-white/5 border-white/5 text-white/70 hover:bg-white/10'
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -236,7 +236,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
         {/* Head rotations */}
         <div className={`space-y-3 p-3 rounded border ${
-          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-150'
+          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
         }`}>
           <h5 className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest font-mono">{isEn ? "HEAD ORIENTATION & SWAY" : "ОРІЄНТАЦІЯ ГОЛОВИ"}</h5>
           
@@ -291,7 +291,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
         {/* Eyes controls */}
         <div className={`space-y-3 p-3 rounded border ${
-          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-150'
+          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
         }`}>
           <h5 className="text-[10px] text-pink-500 font-bold uppercase tracking-widest font-mono">{isEn ? "EYES & PUPILS DEVIATION" : "ОЧІ & ЗІНИЦІ"}</h5>
 
@@ -366,7 +366,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
         {/* Mouth controls */}
         <div className={`space-y-3 p-3 rounded border ${
-          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-150'
+          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
         }`}>
           <h5 className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest font-mono">{isEn ? "MOUTH RIG & ARTICULATION" : "РОТ & ВИРАЗ"}</h5>
 
@@ -408,7 +408,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
       {/* ScreenBuster toggle */}
       <div className={`p-3.5 rounded border flex items-center justify-between ${
-        theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-150 shadow-inner'
+        theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200 shadow-inner'
       }`}>
         <div className="flex items-center space-x-2">
           <HelpCircle className="w-4.5 h-4.5 text-slate-400 dark:text-white/40 shrink-0" />

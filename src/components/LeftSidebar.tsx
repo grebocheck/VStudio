@@ -1,22 +1,14 @@
 import React from 'react';
-import { 
-  Sparkles, 
-  Settings2, 
-  Palette, 
-  Layers, 
-  Tv, 
-  User, 
-  Info, 
-  Check 
-} from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
+import { TrackingMode, SidebarTab } from '../types';
 
 interface LeftSidebarProps {
-  activeSidebarTab: 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
-  setActiveSidebarTab: (tab: 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs') => void;
-  trackingMode: 'manual' | 'mouse' | 'mic' | 'auto' | 'camera';
-  setTrackingMode: (mode: 'manual' | 'mouse' | 'mic' | 'auto' | 'camera') => void;
+  activeSidebarTab: SidebarTab;
+  setActiveSidebarTab: (tab: SidebarTab) => void;
+  trackingMode: TrackingMode;
+  setTrackingMode: (mode: TrackingMode) => void;
   micActive: boolean;
   setMicActive: (active: boolean) => void;
   onScreenBuster: boolean;

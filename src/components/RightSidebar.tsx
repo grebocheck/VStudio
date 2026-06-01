@@ -1,14 +1,7 @@
 import React from 'react';
-import { AvatarConfig, RigParams, PresetAvatar } from '../types';
+import { AvatarConfig, RigParams, PresetAvatar, TrackingMode, SidebarTab } from '../types';
 import { RiggingSliderPanel } from './RiggingSliderPanel';
-import { 
-  Palette, 
-  Sparkles, 
-  Check, 
-  Tv, 
-  Loader2, 
-  Info 
-} from 'lucide-react';
+import { Palette, Sparkles, Tv, Loader2, Info } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -18,14 +11,14 @@ const HAIR_SWATCHES = [
 ];
 
 interface RightSidebarProps {
-  activeSidebarTab: 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
+  activeSidebarTab: SidebarTab;
   config: AvatarConfig;
   setConfig: React.Dispatch<React.SetStateAction<AvatarConfig>>;
   rig: RigParams;
   handleRigChange: (updates: Partial<RigParams>) => void;
   handleResetRig: () => void;
-  trackingMode: 'manual' | 'mouse' | 'mic' | 'auto';
-  setTrackingMode: (mode: 'manual' | 'mouse' | 'mic' | 'auto') => void;
+  trackingMode: TrackingMode;
+  setTrackingMode: (mode: TrackingMode) => void;
   micActive: boolean;
   setMicActive: (active: boolean) => void;
   onScreenBuster: boolean;
@@ -37,6 +30,10 @@ interface RightSidebarProps {
   handleAiGenerate: () => void;
   customPresets: PresetAvatar[];
   PRESETS: PresetAvatar[];
+  activePresetKey: string | null;
+  onApplyPreset: (preset: PresetAvatar) => void;
+  onDeleteCustomPreset: (id: string) => void;
+  overlayCount: number;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -59,10 +56,26 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   handleAiGenerate,
   customPresets,
   PRESETS,
+  activePresetKey,
+  onApplyPreset,
+  onDeleteCustomPreset,
+  overlayCount,
 }) => {
   const { t, language } = useI18n();
   const { theme } = useTheme();
   const isEn = language === 'en';
+
+  const [copied, setCopied] = React.useState(false);
+  const overlayUrl = typeof window !== 'undefined' ? `${window.location.origin}/overlay` : '/overlay';
+  const copyOverlayUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(overlayUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard blocked — ignore */
+    }
+  };
 
   const getPresetName = (presetId: string, defaultName: string) => {
     const key = `${presetId}_name`;
@@ -117,16 +130,16 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             
             <div className="grid grid-cols-1 gap-2.5">
               {PRESETS.map((p) => {
-                const isActive = config.name === p.config.name;
+                const isActive = activePresetKey === p.id;
                 return (
                   <button
                     key={p.id}
-                    onClick={() => setConfig(p.config)}
+                    onClick={() => onApplyPreset(p)}
                     className={`p-3 text-left rounded-sm border transition-all cursor-pointer block w-full ${
                       isActive
                         ? theme === 'dark'
                           ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                          : 'bg-indigo-50 border-indigo-300 text-indigo-850 font-semibold'
+                          : 'bg-indigo-50 border-indigo-300 text-indigo-800 font-semibold'
                         : theme === 'dark'
                           ? 'bg-[#0a0a0c] border-white/10 text-white/65 hover:bg-white/5 hover:text-white hover:border-white/20'
                           : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -143,28 +156,37 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               })}
 
               {customPresets.map((p) => {
-                const isActive = config.name === p.config.name && config.lore === p.config.lore;
+                const isActive = activePresetKey === p.id;
                 return (
-                  <button
+                  <div
                     key={p.id}
-                    onClick={() => setConfig(p.config)}
-                    className={`p-3 text-left rounded-sm border transition-all cursor-pointer block w-full ${
+                    className={`p-3 text-left rounded-sm border transition-all flex items-center gap-2 w-full ${
                       isActive
                         ? theme === 'dark'
                           ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                          : 'bg-indigo-50 border-indigo-300 text-indigo-850 font-semibold'
+                          : 'bg-indigo-50 border-indigo-300 text-indigo-800 font-semibold'
                         : theme === 'dark'
                           ? 'bg-[#0a0a0c] border-white/10 text-white/65 hover:bg-white/5 hover:text-white hover:border-white/20'
-                          : 'bg-white border-slate-205 text-slate-600 hover:bg-slate-50'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <span className={`font-bold text-xs block truncate ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800'}`}>
-                      🌟 {p.name}
-                    </span>
-                    <span className="text-[9px] font-mono opacity-60 block truncate mt-1">
-                      {t.presets.customSaved}
-                    </span>
-                  </button>
+                    <button onClick={() => onApplyPreset(p)} className="flex-1 text-left cursor-pointer min-w-0">
+                      <span className={`font-bold text-xs block truncate ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}>
+                        🌟 {p.name}
+                      </span>
+                      <span className="text-[9px] font-mono opacity-60 block truncate mt-1">
+                        {t.presets.customSaved}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => onDeleteCustomPreset(p.id)}
+                      className="shrink-0 text-rose-500 hover:text-rose-400 text-sm px-1 cursor-pointer"
+                      title={isEn ? 'Delete' : 'Видалити'}
+                      aria-label={isEn ? 'Delete preset' : 'Видалити пресет'}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 );
               })}
 
@@ -833,7 +855,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 id="generate-ai-btn"
                 onClick={handleAiGenerate}
                 disabled={aiGenerating || !aiPrompt.trim()}
-                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-505 hover:scale-[1.01] text-white disabled:opacity-40 font-bold text-xs rounded-sm flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:pointer-events-none uppercase tracking-wider"
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 hover:scale-[1.01] text-white disabled:opacity-40 font-bold text-xs rounded-sm flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:pointer-events-none uppercase tracking-wider"
               >
                 {aiGenerating ? (
                   <>
@@ -866,7 +888,78 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </p>
             </div>
 
-            <div className="space-y-2 font-sans">
+            {/* Live Browser Source (recommended) */}
+            <div className="space-y-3 font-sans">
+              <div>
+                <h5 className={`text-[11px] font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                  {t.rightSidebar.obsOverlay.title}
+                </h5>
+                <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1 leading-relaxed">
+                  {t.rightSidebar.obsOverlay.sub}
+                </p>
+              </div>
+
+              <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 dark:text-white/40 block">
+                {t.rightSidebar.obsOverlay.urlLabel}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={overlayUrl}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className={`flex-1 min-w-0 text-[10px] font-mono p-2 rounded-sm border focus:outline-none focus:border-cyan-500 ${
+                    theme === 'dark' ? 'bg-[#0a0a0c] text-cyan-300 border-white/10' : 'bg-slate-50 text-cyan-700 border-slate-200'
+                  }`}
+                />
+                <button
+                  onClick={copyOverlayUrl}
+                  className="shrink-0 px-2.5 py-2 text-[10px] font-bold rounded-sm bg-cyan-600 hover:bg-cyan-500 text-white transition-all cursor-pointer"
+                >
+                  {copied ? t.rightSidebar.obsOverlay.copied : t.rightSidebar.obsOverlay.copy}
+                </button>
+              </div>
+
+              <a
+                href={overlayUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`w-full block text-center py-2 text-[10px] font-bold uppercase tracking-wider rounded-sm border transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                ↗ {t.rightSidebar.obsOverlay.open}
+              </a>
+
+              {/* Live connection status */}
+              <div className={`flex items-center gap-2 text-[10px] font-mono px-3 py-2 rounded-sm border ${
+                overlayCount > 0
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : theme === 'dark' ? 'border-white/10 bg-white/5 text-white/40' : 'border-slate-200 bg-slate-50 text-slate-500'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${overlayCount > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                {overlayCount > 0 ? `${overlayCount} ${t.rightSidebar.obsOverlay.connected}` : t.rightSidebar.obsOverlay.none}
+              </div>
+
+              <div className={`space-y-2 pt-1 divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-slate-100'}`}>
+                {(['1', '2', '3'] as const).map((step) => (
+                  <div key={step} className="flex gap-2.5 text-[10px] pt-3 text-left">
+                    <span className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">{step}</span>
+                    <div>
+                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>{t.rightSidebar.obsOverlay.steps[step].title}</p>
+                      <p className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}>{t.rightSidebar.obsOverlay.steps[step].text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Alternative: Window Capture + Chroma Key */}
+            <div className={`space-y-2 font-sans pt-4 mt-2 border-t ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}>
+              <h5 className={`text-[11px] font-bold ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}>
+                {t.rightSidebar.obsAltTitle}
+              </h5>
               <button
                 id="obs-chromakey-shortcut"
                 onClick={() => {
@@ -879,16 +972,12 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </button>
 
               <div className={`space-y-2 pt-2 divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-slate-100'}`}>
-                {[
-                  { step: "1", title: t.rightSidebar.obsSteps["1"].title, text: t.rightSidebar.obsSteps["1"].text },
-                  { step: "2", title: t.rightSidebar.obsSteps["2"].title, text: t.rightSidebar.obsSteps["2"].text },
-                  { step: "3", title: t.rightSidebar.obsSteps["3"].title, text: t.rightSidebar.obsSteps["3"].text }
-                ].map((item) => (
-                  <div key={item.step} className="flex gap-2.5 text-[10px] pt-3 text-left">
-                    <span className="w-5 h-5 rounded-full bg-cyan-55/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">{item.step}</span>
+                {(['1', '2', '3'] as const).map((step) => (
+                  <div key={step} className="flex gap-2.5 text-[10px] pt-3 text-left">
+                    <span className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">{step}</span>
                     <div>
-                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>{item.title}</p>
-                      <p className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}>{item.text}</p>
+                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>{t.rightSidebar.obsSteps[step].title}</p>
+                      <p className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}>{t.rightSidebar.obsSteps[step].text}</p>
                     </div>
                   </div>
                 ))}
@@ -901,7 +990,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
       {/* Sidebar Footer detailing the calibration ratio values in real-time */}
       <div className={`p-4 border-t font-mono text-[10px] flex items-center justify-between shrink-0 ${
-        theme === 'dark' ? 'border-white/10 bg-[#0c0c10] text-[#d1d1d1]/40' : 'border-slate-150 bg-slate-50 text-slate-500'
+        theme === 'dark' ? 'border-white/10 bg-[#0c0c10] text-[#d1d1d1]/40' : 'border-slate-200 bg-slate-50 text-slate-500'
       }`}>
         <span>{t.rightSidebar.footerLabel}: {config.name || (isEn ? 'Personal' : 'Особистий')}</span>
         <span>{t.rightSidebar.footerTotal}</span>
