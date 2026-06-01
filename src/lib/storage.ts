@@ -23,4 +23,5 @@ export const STORAGE_KEYS = {
   config: 'vstudio_config',
   customPresets: 'vstudio_custom_presets',
   activePresetKey: 'vstudio_active_preset',
+  cameraCalibration: 'vstudio_camera_calibration',
 } as const;

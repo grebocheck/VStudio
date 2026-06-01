@@ -1,6 +1,8 @@
 import React from 'react';
-import { AvatarConfig, RigParams, PresetAvatar, TrackingMode, SidebarTab } from '../types';
+import { AvatarConfig, CameraCalibrationProfile, RigParams, PresetAvatar, TrackingMode, SidebarTab } from '../types';
 import { RiggingSliderPanel } from './RiggingSliderPanel';
+import { AvatarExportPanel } from './AvatarExportPanel';
+import { AvatarRecorderPanel } from './AvatarRecorderPanel';
 import { Palette, Sparkles, Tv, Loader2, Info } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
@@ -23,6 +25,13 @@ interface RightSidebarProps {
   setMicActive: (active: boolean) => void;
   onScreenBuster: boolean;
   setScreenBuster: (val: boolean) => void;
+  cameraDevices: MediaDeviceInfo[];
+  cameraCalibration: CameraCalibrationProfile;
+  setCameraCalibration: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
+  refreshCameraDevices: () => void | Promise<void>;
+  onCalibrateCameraNeutral: () => void;
+  onResetCameraCalibration: () => void;
+  avatarSvgRef: React.RefObject<SVGSVGElement | null>;
   aiPrompt: string;
   setAiPrompt: (v: string) => void;
   aiGenerating: boolean;
@@ -49,6 +58,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   setMicActive,
   onScreenBuster,
   setScreenBuster,
+  cameraDevices,
+  cameraCalibration,
+  setCameraCalibration,
+  refreshCameraDevices,
+  onCalibrateCameraNeutral,
+  onResetCameraCalibration,
+  avatarSvgRef,
   aiPrompt,
   setAiPrompt,
   aiGenerating,
@@ -813,6 +829,12 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               toggleMic={() => setMicActive(!micActive)}
               onScreenBuster={onScreenBuster}
               setScreenBuster={setScreenBuster}
+              cameraDevices={cameraDevices}
+              cameraCalibration={cameraCalibration}
+              setCameraCalibration={setCameraCalibration}
+              refreshCameraDevices={refreshCameraDevices}
+              onCalibrateCameraNeutral={onCalibrateCameraNeutral}
+              onResetCameraCalibration={onResetCameraCalibration}
             />
           </div>
         )}
@@ -954,6 +976,16 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 ))}
               </div>
             </div>
+
+            <AvatarExportPanel
+              sourceRef={avatarSvgRef}
+              fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')}
+            />
+
+            <AvatarRecorderPanel
+              sourceRef={avatarSvgRef}
+              fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')}
+            />
 
             {/* Alternative: Window Capture + Chroma Key */}
             <div className={`space-y-2 font-sans pt-4 mt-2 border-t ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}>

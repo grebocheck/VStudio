@@ -1,19 +1,27 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { Emotion, RigParams, TrackingMode } from '../types';
+import { CameraCalibrationProfile, Emotion, RigParams, TrackingMode } from '../types';
 import { MicRefs } from './useMicrophone';
 import { FaceTracking } from './useFaceTracking';
+import { ActiveEmote } from './useEmotes';
+import { classifyEmotion } from '../lib/emotionClassifier';
+import { cameraResponseFromSmoothing, expressionResponseFromSmoothing } from '../lib/cameraCalibration';
 
 const ALL_EMOTIONS: Emotion[] = [
   'none', 'happy', 'angry', 'cry', 'shocked', 'smug', 'love', 'starry',
   'squint', 'depressed', 'dizzy', 'cool', 'scared', 'sleepy', 'shy', 'relaxed',
 ];
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 interface EngineDeps {
   trackingMode: TrackingMode;
   micActive: boolean;
   mic: MicRefs;
   face: Pick<FaceTracking, 'videoRef' | 'faceLandmarkerRef'>;
+  cameraCalibration: CameraCalibrationProfile;
+  /** Manual emote override (streamer hotkeys/panel); wins over tracking while active. */
+  emoteRef: React.MutableRefObject<ActiveEmote | null>;
   setRig: React.Dispatch<React.SetStateAction<RigParams>>;
 }
 
@@ -23,9 +31,19 @@ interface EngineDeps {
  * emotion classifier, and spring-mass hair physics. All transient state lives
  * in refs so the loop never re-subscribes mid-animation.
  */
-export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig }: EngineDeps): void {
+export function useAnimationEngine({
+  trackingMode,
+  micActive,
+  mic,
+  face,
+  cameraCalibration,
+  emoteRef,
+  setRig,
+}: EngineDeps): void {
   const animationFrameId = useRef<number | null>(null);
   const lastTime = useRef<number>(0);
+  const { analyserRef, dataArrayRef } = mic;
+  const { videoRef, faceLandmarkerRef } = face;
 
   // Blink state machine
   const blinkTimer = useRef(0);
@@ -51,6 +69,11 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
   const drowsinessAccumulatorRef = useRef(0);
 
   useEffect(() => {
+    const cameraResponse = cameraResponseFromSmoothing(cameraCalibration.smoothing);
+    const expressionResponse = expressionResponseFromSmoothing(cameraCalibration.smoothing);
+    const headSensitivity = cameraCalibration.headSensitivity;
+    const expressionSensitivity = cameraCalibration.expressionSensitivity;
+
     lastTime.current = Date.now();
     const loop = () => {
       const now = Date.now();
@@ -92,11 +115,11 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
         }
 
         // 3. Microphone mouth-flap sync
-        if (micActive && mic.analyserRef.current && mic.dataArrayRef.current) {
-          mic.analyserRef.current.getByteFrequencyData(mic.dataArrayRef.current);
+        if (micActive && analyserRef.current && dataArrayRef.current) {
+          analyserRef.current.getByteFrequencyData(dataArrayRef.current);
           let sum = 0;
-          for (let i = 0; i < mic.dataArrayRef.current.length; i++) sum += mic.dataArrayRef.current[i];
-          const average = sum / mic.dataArrayRef.current.length;
+          for (let i = 0; i < dataArrayRef.current.length; i++) sum += dataArrayRef.current[i];
+          const average = sum / dataArrayRef.current.length;
           const volumeOpenVal = Math.min(1, average / 45);
           updated.mouthOpen = volumeOpenVal;
           updated.mouthForm = 0.5 + volumeOpenVal * 0.4;
@@ -114,8 +137,8 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
         }
 
         // 5. MediaPipe camera tracking + emotion classifier
-        const video = face.videoRef.current;
-        const landmarker = face.faceLandmarkerRef.current;
+        const video = videoRef.current;
+        const landmarker = faceLandmarkerRef.current;
         if (trackingMode === 'camera' && video && video.readyState >= 2 && video.videoWidth > 0 && landmarker) {
           try {
             const results = landmarker.detectForVideo(video, performance.now());
@@ -140,13 +163,13 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
                 const verticalHeight = Math.abs(pChin.y - pForehead.y);
                 const currentPitch = -((pNose.y - faceMidY) / (verticalHeight || 1) - 0.05) * 90;
 
-                const targetYaw = Math.max(-30, Math.min(30, currentYaw));
-                const targetPitch = Math.max(-20, Math.min(20, currentPitch));
-                const targetRoll = Math.max(-15, Math.min(15, currentRoll));
+                const targetYaw = clamp(currentYaw * headSensitivity - cameraCalibration.yawOffset, -30, 30);
+                const targetPitch = clamp(currentPitch * headSensitivity - cameraCalibration.pitchOffset, -20, 20);
+                const targetRoll = clamp(currentRoll * headSensitivity - cameraCalibration.rollOffset, -15, 15);
 
-                updated.angleX += (targetYaw - updated.angleX) * 0.2;
-                updated.angleY += (targetPitch - updated.angleY) * 0.2;
-                updated.angleZ += (targetRoll - updated.angleZ) * 0.2;
+                updated.angleX += (targetYaw - updated.angleX) * cameraResponse;
+                updated.angleY += (targetPitch - updated.angleY) * cameraResponse;
+                updated.angleZ += (targetRoll - updated.angleZ) * cameraResponse;
 
                 updated.pupilX = (updated.angleX / 30) * 0.75;
                 updated.pupilY = (updated.angleY / 20) * 0.55;
@@ -171,26 +194,27 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
                 const browDownRight = findScore('browDownRight');
                 const tongueOut = findScore('tongueOut');
 
-                updated.tongueOut = (updated.tongueOut ?? 0) + (tongueOut - (updated.tongueOut ?? 0)) * 0.24;
+                const targetTongueOut = clamp(tongueOut * expressionSensitivity, 0, 1);
+                updated.tongueOut = (updated.tongueOut ?? 0) + (targetTongueOut - (updated.tongueOut ?? 0)) * expressionResponse;
 
-                const targetEyeLOpen = Math.max(0, Math.min(1.0, 1.0 - eyeBlinkLeft * 1.15));
-                const targetEyeROpen = Math.max(0, Math.min(1.0, 1.0 - eyeBlinkRight * 1.15));
-                updated.eyeLOpen += (targetEyeLOpen - updated.eyeLOpen) * 0.24;
-                updated.eyeROpen += (targetEyeROpen - updated.eyeROpen) * 0.24;
+                const targetEyeLOpen = clamp(1.0 - eyeBlinkLeft * 1.15 * expressionSensitivity, 0, 1);
+                const targetEyeROpen = clamp(1.0 - eyeBlinkRight * 1.15 * expressionSensitivity, 0, 1);
+                updated.eyeLOpen += (targetEyeLOpen - updated.eyeLOpen) * expressionResponse;
+                updated.eyeROpen += (targetEyeROpen - updated.eyeROpen) * expressionResponse;
 
                 const smileAvg = (mouthSmileLeft + mouthSmileRight) / 2;
                 if (!micActive) {
-                  const targetMouthOpen = Math.max(0, Math.min(1.0, jawOpen * 1.3));
-                  updated.mouthOpen += (targetMouthOpen - updated.mouthOpen) * 0.35;
-                  const targetMouthForm = smileAvg * 1.5 - mouthPucker * 0.8;
-                  const finalMouthForm = Math.max(-1.0, Math.min(1.0, targetMouthForm));
-                  updated.mouthForm += (finalMouthForm - updated.mouthForm) * 0.35;
+                  const targetMouthOpen = clamp(jawOpen * 1.3 * expressionSensitivity, 0, 1);
+                  updated.mouthOpen += (targetMouthOpen - updated.mouthOpen) * expressionResponse;
+                  const targetMouthForm = (smileAvg * 1.5 - mouthPucker * 0.8) * expressionSensitivity;
+                  const finalMouthForm = clamp(targetMouthForm, -1, 1);
+                  updated.mouthForm += (finalMouthForm - updated.mouthForm) * expressionResponse;
                 }
 
-                const browUpFactor = browInnerUp * 4.0;
-                const browDownFactor = ((browDownLeft + browDownRight) / 2) * -4.0;
-                const targetEyebrowRange = Math.max(-5, Math.min(5, browUpFactor + browDownFactor));
-                updated.eyebrowY += (targetEyebrowRange - updated.eyebrowY) * 0.3;
+                const browUpFactor = browInnerUp * 4.0 * expressionSensitivity;
+                const browDownFactor = ((browDownLeft + browDownRight) / 2) * -4.0 * expressionSensitivity;
+                const targetEyebrowRange = clamp(browUpFactor + browDownFactor, -5, 5);
+                updated.eyebrowY += (targetEyebrowRange - updated.eyebrowY) * expressionResponse;
 
                 const cheekSquintAvg = (findScore('cheekSquintLeft') + findScore('cheekSquintRight')) / 2;
                 const blinkAvg = (eyeBlinkLeft + eyeBlinkRight) / 2;
@@ -203,8 +227,6 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
                 const browOuterUpRight = findScore('browOuterUpRight');
                 const browOuterUpAvg = (browOuterUpLeft + browOuterUpRight) / 2;
                 const browOuterUpDiff = Math.abs(browOuterUpLeft - browOuterUpRight);
-
-                let detected: Emotion = 'none';
 
                 // Dizziness: only fast deliberate head shaking accumulates
                 const headVelocity =
@@ -226,20 +248,11 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
                 }
                 const isTrulySleepy = drowsinessAccumulatorRef.current > 80 && eyeLookDownAvg > 0.4;
 
-                if (isDizzy) detected = 'dizzy';
-                else if (isTrulySleepy) detected = 'sleepy';
-                else if (jawOpen > 0.15 && (browInnerUp > 0.3 || eyeWideAvg > 0.3)) detected = 'shocked';
-                else if (eyeWideAvg > 0.5 && jawOpen > 0.25) detected = 'scared';
-                else if (browOuterUpDiff > 0.45 || browOuterUpAvg > 0.5) detected = 'cool';
-                else if (cheekSquintAvg > 0.45 && smileAvg > 0.15 && smileAvg < 0.4 && jawOpen < 0.1) detected = 'shy';
-                else if (smileAvg > 0.12 && smileAvg < 0.35 && eyeLookDownAvg > 0.35 && browInnerUp < 0.15 && angryAvg < 0.15) detected = 'relaxed';
-                else if (blinkAvg > 0.65 && (cheekSquintAvg > 0.3 || smileAvg > 0.3)) detected = 'squint';
-                else if (adjustedAngryAvg > 0.45 && updated.mouthForm < 0.05) detected = 'angry';
-                else if (smileAvg > 0.42 && blinkAvg > 0.35) detected = 'smug';
-                else if (smileAvg > 0.45) detected = browInnerUp > 0.4 ? 'starry' : 'happy';
-                else if (puckerAvg > 0.45) detected = 'love';
-                else if (browInnerUp > 0.4 && updated.mouthForm < -0.15) detected = 'depressed';
-                else if (updated.mouthForm < -0.3) detected = 'cry';
+                const detected: Emotion = classifyEmotion({
+                  jawOpen, browInnerUp, eyeWideAvg, browOuterUpAvg, browOuterUpDiff,
+                  cheekSquintAvg, smileAvg, eyeLookDownAvg, angryAvg, adjustedAngryAvg,
+                  blinkAvg, puckerAvg, mouthForm: updated.mouthForm, isDizzy, isTrulySleepy,
+                });
 
                 // Debounce / hysteresis via per-emotion frame counters
                 const counters = emotionFrameCountersRef.current;
@@ -311,6 +324,12 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
         hairSwayYRef.current += hairSwayVelYRef.current;
         updated.hairSwayY = hairSwayYRef.current;
 
+        // 7. Manual emote override (streamer hotkeys / panel) wins while active.
+        const emote = emoteRef.current;
+        if (emote && now < emote.until) {
+          updated.activeEmotion = emote.emotion;
+        }
+
         return updated;
       });
 
@@ -321,7 +340,17 @@ export function useAnimationEngine({ trackingMode, micActive, mic, face, setRig 
     return () => {
       if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
     };
-  }, [trackingMode, micActive, mic, face, setRig]);
+  }, [
+    trackingMode,
+    micActive,
+    analyserRef,
+    dataArrayRef,
+    videoRef,
+    faceLandmarkerRef,
+    cameraCalibration,
+    emoteRef,
+    setRig,
+  ]);
 
   // Mouse-driven head tracking
   useEffect(() => {

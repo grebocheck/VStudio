@@ -9,6 +9,21 @@ export type TrackingMode = 'manual' | 'mouse' | 'mic' | 'auto' | 'camera';
 export type SidebarTab =
   | 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
 
+export interface CameraCalibrationProfile {
+  /** Empty string means browser/default camera. */
+  deviceId: string;
+  /** Multiplier for yaw/pitch/roll detected from face landmarks. */
+  headSensitivity: number;
+  /** Multiplier for blendshape-driven eyes/mouth/brows. */
+  expressionSensitivity: number;
+  /** 0 = snappy, 100 = heavily smoothed. */
+  smoothing: number;
+  /** Captured neutral offsets in rendered degrees. */
+  yawOffset: number;
+  pitchOffset: number;
+  rollOffset: number;
+}
+
 export interface AvatarConfig {
   skinColor: string;
   eyeColor: string;

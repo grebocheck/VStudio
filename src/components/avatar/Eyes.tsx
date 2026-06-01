@@ -775,9 +775,6 @@ export const EyeSVG: React.FC<{
 
   // Active Open Eyes
   if (isAnime) {
-    const rx = 24; // Expressive anime width
-    const ry = 22; // Soulful vertical depth
-
     return (
       <g transform={transformEye}>
         <defs>

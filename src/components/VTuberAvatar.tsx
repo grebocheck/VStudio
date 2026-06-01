@@ -10,12 +10,19 @@ interface VTuberAvatarProps {
   config: AvatarConfig;
   rig: RigParams;
   onScreenBuster?: boolean; // Toggles visual grids showing the rigging polygons (very aesthetic!)
+  svgRef?: React.Ref<SVGSVGElement>;
   /** Overlay mode: no frame/background/HUD badges so the avatar can render on a
    *  transparent OBS Browser Source (green-screen background is still honored). */
   transparent?: boolean;
 }
 
-export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScreenBuster = false, transparent = false }) => {
+export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
+  config,
+  rig,
+  onScreenBuster = false,
+  svgRef,
+  transparent = false,
+}) => {
   const {
     skinColor,
     eyeColor,
@@ -120,8 +127,6 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
   const retroBounceX = isRetro ? -Math.cos(breath * Math.PI * 2) * 0.03 : 0;
 
   const chestBreathingScale = 1.0 + (isRetro ? Math.sin(breath * Math.PI * 2) * 0.03 : Math.sin(breath * Math.PI * 2) * 0.012);
-  // Set hair breathing scale to totally static 1.0 to eliminate auto-bumping/pulsating
-  const hairBreathingScaleY = 1.0;
 
   // Squash & Stretch Kinematics:
   // When looking far, the head vertically elongates and narrows slightly to preserve volume.
@@ -200,6 +205,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
       transparent ? '' : 'rounded border border-white/10 shadow-2xl bg-[#0a0a0c]'
     }`}>
       <svg
+        ref={svgRef}
         viewBox="0 0 400 400"
         className="w-full h-full select-none"
         xmlns="http://www.w3.org/2000/svg"
@@ -213,7 +219,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
         </defs>
 
         {/* Step 1: Backdrop */}
-        {getBackgroundContent()}
+        <g data-avatar-background="true">
+          {getBackgroundContent()}
+        </g>
 
         {/* --- Back Hair Layer (Placed behind Torso/Neck in absolute SVG layers) --- */}
         <g style={{

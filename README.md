@@ -11,10 +11,10 @@ with **camera face-tracking**, **microphone mouth-sync**, **mouse tracking**, or
 
 - **Avatar builder** — hairstyles, eyes/pupils, eyebrows, outfits, accessories, blush, fangs, ears, body proportions, art styles (classic / anime / retro).
 - **Live rigging** — MediaPipe FaceLandmarker drives head yaw/pitch/roll, blinks, gaze, mouth, eyebrows, and a 16-state emotion classifier with hysteresis.
-- **Tracking modes** — `camera`, `mic` (amplitude → mouth flap), `mouse`, and `auto` (AFK idle motion). Procedural breathing + spring-mass hair physics run every frame.
+- **Tracking modes** — `camera`, `mic` (amplitude → mouth flap), `mouse`, and `auto` (AFK idle motion). Camera device selection, neutral-pose calibration, sensitivity, and smoothing are saved locally.
 - **AI styling** — describe a character in natural language; a server-side Gemini call returns a full avatar config (validated + clamped before applying).
 - **Presets & persistence** — built-in characters, plus save/export/import your own avatars (`localStorage` + `.vstudio.json`).
-- **OBS overlay** — one-click chroma-key background with setup instructions.
+- **Exports, OBS & clips** — transparent PNG/SVG avatar exports, transparent Browser Source overlay, chroma-key fallback, and short WebM avatar clip recording.
 - **i18n + theming** — Ukrainian / English, dark / light.
 
 ## Architecture
@@ -28,8 +28,11 @@ src/
     useAvatarStore.ts      config + custom presets + persistence + import/export
     useMicrophone.ts       mic capture graph → analyser refs
     useFaceTracking.ts     webcam + MediaPipe FaceLandmarker lifecycle
+    useCameraCalibration.ts persisted camera tracking profile
+    useAvatarRecorder.ts   SVG → canvas → MediaRecorder WebM clips
     useAnimationEngine.ts  the per-frame rAF loop (blink, mic, auto, camera, emotions, hair)
   lib/
+    avatarExport.ts        SVG serialization + transparent PNG export
     sanitizeConfig.ts      defensive merge/clamp for untrusted configs (AI / import)
     storage.ts             safe localStorage helpers
   components/              UI (sidebars, stage) + components/avatar (SVG parts)
@@ -56,6 +59,7 @@ npm run dev               # http://localhost:3000
 | `npm run start` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm test` | Run unit tests (Vitest) |
 | `npm run format` | Prettier write |
 
 ## Environment

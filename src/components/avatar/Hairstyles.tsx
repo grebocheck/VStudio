@@ -10,7 +10,7 @@ export const HairComponent: React.FC<{
   hairSwayX?: number;
   hairSwayY?: number;
   artStyle?: 'classic' | 'anime' | 'retro';
-}> = ({ bangStyle, backStyle, color, highlightColor, angleY, breath, hairSwayX = 0, hairSwayY = 0, artStyle = 'classic' }) => {
+}> = ({ backStyle, color, highlightColor, hairSwayX = 0, hairSwayY = 0, artStyle = 'classic' }) => {
   const bounce = 0;
   const tailSway = 0;
   const isAnime = artStyle === 'anime';

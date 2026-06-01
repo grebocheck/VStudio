@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { RigParams, TrackingMode, SidebarTab, AvatarConfig } from './types';
 import { INITIAL_RIG, PRESETS } from './presets';
 import { LeftSidebar } from './components/LeftSidebar';
@@ -11,6 +11,8 @@ import { useMicrophone } from './hooks/useMicrophone';
 import { useFaceTracking } from './hooks/useFaceTracking';
 import { useAnimationEngine } from './hooks/useAnimationEngine';
 import { useOverlayBroadcast } from './hooks/useOverlaySync';
+import { useEmotes } from './hooks/useEmotes';
+import { useCameraCalibration } from './hooks/useCameraCalibration';
 
 export default function App() {
   const { t, language, setLanguage } = useI18n();
@@ -26,10 +28,12 @@ export default function App() {
   const [onScreenBuster, setScreenBuster] = useState(false);
   const [micActive, setMicActive] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const avatarSvgRef = useRef<SVGSVGElement | null>(null);
 
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const cameraCalibration = useCameraCalibration();
 
   // Capture devices + per-frame animation engine.
   const mic = useMicrophone(micActive, () => {
@@ -38,13 +42,22 @@ export default function App() {
       ? 'Failed to access microphone. Please verify sound input permissions in your browser.'
       : 'Не вдалося отримати доступ до мікрофону. Перевірте дозволи вашого браузера.');
   });
-  const face = useFaceTracking(trackingMode === 'camera', () => {
+  const face = useFaceTracking(trackingMode === 'camera', cameraCalibration.profile.deviceId, () => {
     setTrackingMode('auto');
     alert(isEn
       ? 'Failed to open camera. Please make sure camera permissions are enabled.'
       : 'Не вдалося увімкнути камеру. Будь ласка, переконайтеся в наданні дозволу на камеру.');
   });
-  useAnimationEngine({ trackingMode, micActive, mic, face, setRig });
+  const emotes = useEmotes();
+  useAnimationEngine({
+    trackingMode,
+    micActive,
+    mic,
+    face,
+    cameraCalibration: cameraCalibration.profile,
+    emoteRef: emotes.emoteRef,
+    setRig,
+  });
 
   // Stream live state to any connected OBS overlay (see /overlay).
   const overlayCount = useOverlayBroadcast(config, rig);
@@ -193,6 +206,9 @@ export default function App() {
           onScreenBuster={onScreenBuster}
           trackingMode={trackingMode}
           activePresetKey={store.activePresetKey}
+          activeEmote={emotes.activeEmote}
+          onEmote={emotes.triggerEmote}
+          avatarSvgRef={avatarSvgRef}
         />
 
         <RightSidebar
@@ -208,6 +224,13 @@ export default function App() {
           setMicActive={setMicActive}
           onScreenBuster={onScreenBuster}
           setScreenBuster={setScreenBuster}
+          cameraDevices={face.devices}
+          cameraCalibration={cameraCalibration.profile}
+          setCameraCalibration={cameraCalibration.setProfile}
+          refreshCameraDevices={face.refreshDevices}
+          onCalibrateCameraNeutral={() => cameraCalibration.calibrateNeutral(rig)}
+          onResetCameraCalibration={cameraCalibration.resetProfile}
+          avatarSvgRef={avatarSvgRef}
           aiPrompt={aiPrompt}
           setAiPrompt={setAiPrompt}
           aiGenerating={aiGenerating}

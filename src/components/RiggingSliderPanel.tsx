@@ -1,20 +1,27 @@
 import React from 'react';
-import { RigParams } from '../types';
-import { Play, RotateCcw, AlertCircle, Smile, HelpCircle, Eye } from 'lucide-react';
+import { CameraCalibrationProfile, RigParams, TrackingMode } from '../types';
+import { Camera, RotateCcw, Smile, HelpCircle, Eye } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
+import { CameraCalibrationPanel } from './CameraCalibrationPanel';
 
 interface RiggingSliderPanelProps {
   rig: RigParams;
   onChange: (updates: Partial<RigParams>) => void;
   onReset: () => void;
-  trackingMode: 'manual' | 'mouse' | 'mic' | 'auto';
-  setTrackingMode: (mode: 'manual' | 'mouse' | 'mic' | 'auto') => void;
+  trackingMode: TrackingMode;
+  setTrackingMode: (mode: TrackingMode) => void;
   micSupported: boolean;
   micActive: boolean;
   toggleMic: () => void;
   onScreenBuster: boolean;
   setScreenBuster: (val: boolean) => void;
+  cameraDevices: MediaDeviceInfo[];
+  cameraCalibration: CameraCalibrationProfile;
+  setCameraCalibration: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
+  refreshCameraDevices: () => void | Promise<void>;
+  onCalibrateCameraNeutral: () => void;
+  onResetCameraCalibration: () => void;
 }
 
 export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
@@ -28,6 +35,12 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
   toggleMic,
   onScreenBuster,
   setScreenBuster,
+  cameraDevices,
+  cameraCalibration,
+  setCameraCalibration,
+  refreshCameraDevices,
+  onCalibrateCameraNeutral,
+  onResetCameraCalibration,
 }) => {
   const { t, language } = useI18n();
   const { theme } = useTheme();
@@ -189,6 +202,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
           
           <button
             onClick={toggleMic}
+            disabled={!micSupported}
             className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               micActive
                 ? theme === 'dark'
@@ -200,6 +214,22 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             }`}
           >
             <span>{micActive ? (isEn ? '🎤 Voice Active' : '🎤 Голос Активний') : (isEn ? '🎤 Voice Sync' : '🎤 Синхр. з голосом')}</span>
+          </button>
+
+          <button
+            onClick={() => setTrackingMode(trackingMode === 'camera' ? 'auto' : 'camera')}
+            className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+              trackingMode === 'camera'
+                ? theme === 'dark'
+                  ? 'bg-rose-600/20 border-rose-500/65 text-white font-bold'
+                  : 'bg-rose-50 border-rose-300 text-rose-800 font-bold'
+                : theme === 'dark'
+                  ? 'bg-white/5 border-white/5 text-white/70 hover:bg-white/10'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <Camera className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.riggingPanel.cameraMode}</span>
           </button>
         </div>
 
@@ -217,6 +247,17 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
           </p>
         )}
       </div>
+
+      <CameraCalibrationPanel
+        trackingMode={trackingMode}
+        setTrackingMode={setTrackingMode}
+        devices={cameraDevices}
+        profile={cameraCalibration}
+        setProfile={setCameraCalibration}
+        onRefreshDevices={refreshCameraDevices}
+        onCalibrateNeutral={onCalibrateCameraNeutral}
+        onResetProfile={onResetCameraCalibration}
+      />
 
       {/* Manual Rigging Sliders */}
       <div className={`space-y-4 ${trackingMode !== 'manual' ? 'opacity-40 pointer-events-none' : ''}`}>

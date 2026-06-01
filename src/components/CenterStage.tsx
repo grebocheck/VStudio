@@ -1,10 +1,11 @@
 import React from 'react';
-import { AvatarConfig, RigParams, TrackingMode } from '../types';
+import { AvatarConfig, RigParams, TrackingMode, Emotion } from '../types';
 import { VTuberAvatar } from './VTuberAvatar';
 import { Shuffle, User } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
 import { localizePreset } from '../presets';
+import { EMOTES } from '../hooks/useEmotes';
 
 interface CenterStageProps {
   config: AvatarConfig;
@@ -14,6 +15,9 @@ interface CenterStageProps {
   trackingMode: TrackingMode;
   /** Active built-in preset id, or null when the avatar is custom/AI/edited. */
   activePresetKey: string | null;
+  activeEmote: Emotion | null;
+  onEmote: (emotion: Emotion) => void;
+  avatarSvgRef?: React.Ref<SVGSVGElement>;
 }
 
 export const CenterStage: React.FC<CenterStageProps> = ({
@@ -23,6 +27,9 @@ export const CenterStage: React.FC<CenterStageProps> = ({
   onScreenBuster,
   trackingMode,
   activePresetKey,
+  activeEmote,
+  onEmote,
+  avatarSvgRef,
 }) => {
   const { t } = useI18n();
   const { theme } = useTheme();
@@ -121,7 +128,7 @@ export const CenterStage: React.FC<CenterStageProps> = ({
           
           {/* Massive scale rendering for outstanding visual impact */}
           <div className="relative z-10 w-full h-full flex items-center justify-center transform scale-110">
-            <VTuberAvatar config={config} rig={rig} onScreenBuster={onScreenBuster} />
+            <VTuberAvatar config={config} rig={rig} onScreenBuster={onScreenBuster} svgRef={avatarSvgRef} />
           </div>
 
           {/* Status and coordination log overlaid on the stage border */}
@@ -144,6 +151,42 @@ export const CenterStage: React.FC<CenterStageProps> = ({
           <span className="text-emerald-500 dark:text-emerald-400">
             {trackingMode === 'auto' ? t.centerStage.autopilotActive : t.centerStage.cursorTrackingActive}
           </span>
+        </div>
+      </div>
+
+      {/* Emote trigger bar — manual expression control for streamers */}
+      <div className={`p-3 rounded-lg border shadow-xl ${
+        theme === 'dark' ? 'bg-[#0f0f12] border-white/10' : 'bg-white border-slate-200'
+      }`} id="emote-trigger-bar">
+        <div className="flex items-center space-x-2 text-slate-400 dark:text-white/40 text-[10px] uppercase font-bold tracking-widest mb-2.5">
+          <span className="text-indigo-500 dark:text-indigo-400">⚡</span>
+          <span>{t.centerStage.emotesTitle}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {EMOTES.map((emote) => {
+            const isActive = activeEmote === emote.emotion;
+            return (
+              <button
+                key={emote.emotion}
+                onClick={() => onEmote(emote.emotion)}
+                title={`${(t.centerStage.emotes as Record<string, string>)[emote.emotion]} (${emote.key})`}
+                aria-label={(t.centerStage.emotes as Record<string, string>)[emote.emotion]}
+                aria-pressed={isActive}
+                className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-md border transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-indigo-600/20 border-indigo-500 scale-105 shadow-inner'
+                    : theme === 'dark'
+                      ? 'bg-[#07070a] border-white/10 hover:bg-white/5 hover:border-white/20'
+                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                }`}
+              >
+                <span className="text-xl leading-none">{emote.icon}</span>
+                <span className={`text-[8px] font-mono mt-1 ${isActive ? 'text-indigo-500 dark:text-indigo-300 font-bold' : 'text-slate-400 dark:text-white/40'}`}>
+                  {emote.key}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -177,4 +220,3 @@ export const CenterStage: React.FC<CenterStageProps> = ({
     </main>
   );
 };
-
