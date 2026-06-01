@@ -60,9 +60,13 @@
 - **Рядки помилок:** [server.ts](src/server.ts) повертає стабільні `code` (`rate_limited`, `prompt_empty`, `prompt_too_long`, `ai_unavailable`, `gemini_timeout`, `gemini_error`) з англійським developer-fallback; локалізацію взято на клієнт через секцію `errors` у [en.ts](src/i18n/en.ts)/[uk.ts](src/i18n/uk.ts), а [useAiGenerate.ts](src/hooks/useAiGenerate.ts) резолвить код у повідомлення мовою UI (з інтерполяцією `{max}`).
 - **Коментарі:** зведено до англійської; єдиний навмисний україномовний текст у коді — generation-prompt до Gemini (вимагає українського лору) та самі рядки перекладу в `uk.ts`.
 
-### 3.4. Частково розділені компоненти
+### 3.4. 🟡 Декомпозиція компонентів триває
 
-[App.tsx](src/App.tsx) вже став тоншим оркестратором завдяки хукам `useFaceTracking`, `useMicrophone`, `useAvatarStore`, `useCameraCalibration`, компоненту [LiveRigWorkspace.tsx](src/components/LiveRigWorkspace.tsx) і memo-блокам [CenterStageStatic.tsx](src/components/CenterStageStatic.tsx). Наступні кандидати на декомпозицію — [RightSidebar.tsx](src/components/RightSidebar.tsx) і [VTuberAvatar.tsx](src/components/VTuberAvatar.tsx).
+[App.tsx](src/App.tsx) вже став тоншим оркестратором завдяки хукам `useFaceTracking`, `useMicrophone`, `useAvatarStore`, `useCameraCalibration`, компоненту [LiveRigWorkspace.tsx](src/components/LiveRigWorkspace.tsx) і memo-блокам [CenterStageStatic.tsx](src/components/CenterStageStatic.tsx).
+
+[RightSidebar.tsx](src/components/RightSidebar.tsx) (~1250 рядків) розбито на тонкий shell + по одному компоненту на вкладку в [src/components/sidebar/](src/components/sidebar/): `PresetsTab`, `HairTab`, `FaceTab`, `ClothesTab`, `MetadataTab`, `RiggingTab`, `AiTab`, `ObsTab`. Вкладки беруть `useI18n`/`useTheme` напряму замість prop-drilling; shell лишився ~170 рядків і зберіг memo-контракт (`areRightSidebarPropsEqual`, юніт-тести зелені).
+
+- **Лишилося:** декомпозиція [VTuberAvatar.tsx](src/components/VTuberAvatar.tsx) (~1020 рядків SVG-шарів — волосся/одяг/обличчя/аксесуари).
 
 ### 3.5. Частково посилений сервер
 
