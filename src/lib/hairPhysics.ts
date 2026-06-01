@@ -1,3 +1,5 @@
+import { HAIR_PHYSICS } from '../engine/constants';
+
 export interface HairPhysicsState {
   swayX: number;
   velocityX: number;
@@ -30,17 +32,17 @@ export function advanceHairPhysics(state: HairPhysicsState, input: HairPhysicsIn
   const deltaX = input.angleX - state.previousAngleX;
   const deltaY = input.angleY - state.previousAngleY;
 
-  let velocityX = state.velocityX - deltaX * 0.38;
-  let velocityY = state.velocityY + Math.abs(deltaY) * 0.25;
+  let velocityX = state.velocityX - deltaX * HAIR_PHYSICS.IMPULSE_X;
+  let velocityY = state.velocityY + Math.abs(deltaY) * HAIR_PHYSICS.IMPULSE_Y;
 
-  const targetSwayX = -input.angleX * 0.7 - input.angleZ * 0.6;
-  const forceX = (targetSwayX - state.swayX) * 0.16;
-  velocityX = (velocityX + forceX) * 0.82;
+  const targetSwayX = -input.angleX * HAIR_PHYSICS.TARGET_X_FROM_YAW - input.angleZ * HAIR_PHYSICS.TARGET_X_FROM_ROLL;
+  const forceX = (targetSwayX - state.swayX) * HAIR_PHYSICS.STIFFNESS_X;
+  velocityX = (velocityX + forceX) * HAIR_PHYSICS.DAMPING_X;
   const swayX = state.swayX + velocityX;
 
-  const targetSwayY = Math.abs(input.angleY) * 0.35;
-  const forceY = (targetSwayY - state.swayY) * 0.2;
-  velocityY = (velocityY + forceY) * 0.79;
+  const targetSwayY = Math.abs(input.angleY) * HAIR_PHYSICS.TARGET_Y_FROM_PITCH;
+  const forceY = (targetSwayY - state.swayY) * HAIR_PHYSICS.STIFFNESS_Y;
+  velocityY = (velocityY + forceY) * HAIR_PHYSICS.DAMPING_Y;
   const swayY = state.swayY + velocityY;
 
   return {

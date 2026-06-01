@@ -104,7 +104,7 @@ export const uk = {
     noCustomPresets:
       "Ви ще не зберегли жодного власного аватара. Змініть параметри аватара та натисніть кнопку 'Зберегти проект'!",
   },
-  // Ключі збігаються з id вбудованих пресетів (див. src/presets.ts).
+  // Keyed by the built-in preset id (see src/presets.ts).
   presetStats: {
     'cyber-neko_name': 'Мія (Cyber Neko)',
     'cyber-neko_lore':
@@ -361,5 +361,18 @@ export const uk = {
     help: 'Довідка користувача',
     apache: 'Дозвіл Apache 2.0',
     obs: 'Сумісно з OBS Studio',
+  },
+  // Keyed by the stable `code` returned from the AI endpoint (see src/server.ts).
+  errors: {
+    rate_limited: 'Забагато запитів. Будь ласка, зачекайте трохи.',
+    prompt_empty: 'Промпт порожній або некоректний.',
+    prompt_too_long: 'Промпт задовгий (макс. {max} символів).',
+    ai_unavailable: 'ШІ недоступний. На сервері не налаштовано GEMINI_API_KEY.',
+    gemini_timeout: 'Gemini не відповів вчасно. Спробуйте ще раз.',
+    gemini_error: 'Сталася помилка під час генерації ШІ. Спробуйте ще раз.',
+    // Client-side fallbacks (no server code available).
+    generate_failed: 'Не вдалося згенерувати аватар з ШІ.',
+    invalid_config: 'ШІ повернув некоректну конфігурацію аватара.',
+    network: 'Сталася мережева помилка. Перевірте з’єднання.',
   },
 };

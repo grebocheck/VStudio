@@ -1,4 +1,5 @@
 import { Emotion } from '../types';
+import { EMOTION_THRESHOLDS as T } from '../engine/constants';
 
 /**
  * Scalar features derived from MediaPipe blendshapes + head pose for a single
@@ -31,18 +32,32 @@ export interface EmotionFeatures {
 export function classifyEmotion(f: EmotionFeatures): Emotion {
   if (f.isDizzy) return 'dizzy';
   if (f.isTrulySleepy) return 'sleepy';
-  if (f.jawOpen > 0.15 && (f.browInnerUp > 0.3 || f.eyeWideAvg > 0.3)) return 'shocked';
-  if (f.eyeWideAvg > 0.5 && f.jawOpen > 0.25) return 'scared';
-  if (f.browOuterUpDiff > 0.45 || f.browOuterUpAvg > 0.5) return 'cool';
-  if (f.cheekSquintAvg > 0.45 && f.smileAvg > 0.15 && f.smileAvg < 0.4 && f.jawOpen < 0.1) return 'shy';
-  if (f.smileAvg > 0.12 && f.smileAvg < 0.35 && f.eyeLookDownAvg > 0.35 && f.browInnerUp < 0.15 && f.angryAvg < 0.15)
+  if (f.jawOpen > T.shocked.jawOpen && (f.browInnerUp > T.shocked.browInnerUp || f.eyeWideAvg > T.shocked.eyeWideAvg))
+    return 'shocked';
+  if (f.eyeWideAvg > T.scared.eyeWideAvg && f.jawOpen > T.scared.jawOpen) return 'scared';
+  if (f.browOuterUpDiff > T.cool.browOuterUpDiff || f.browOuterUpAvg > T.cool.browOuterUpAvg) return 'cool';
+  if (
+    f.cheekSquintAvg > T.shy.cheekSquintAvg &&
+    f.smileAvg > T.shy.smileMin &&
+    f.smileAvg < T.shy.smileMax &&
+    f.jawOpen < T.shy.jawOpen
+  )
+    return 'shy';
+  if (
+    f.smileAvg > T.relaxed.smileMin &&
+    f.smileAvg < T.relaxed.smileMax &&
+    f.eyeLookDownAvg > T.relaxed.eyeLookDownAvg &&
+    f.browInnerUp < T.relaxed.browInnerUp &&
+    f.angryAvg < T.relaxed.angryAvg
+  )
     return 'relaxed';
-  if (f.blinkAvg > 0.65 && (f.cheekSquintAvg > 0.3 || f.smileAvg > 0.3)) return 'squint';
-  if (f.adjustedAngryAvg > 0.45 && f.mouthForm < 0.05) return 'angry';
-  if (f.smileAvg > 0.42 && f.blinkAvg > 0.35) return 'smug';
-  if (f.smileAvg > 0.45) return f.browInnerUp > 0.4 ? 'starry' : 'happy';
-  if (f.puckerAvg > 0.45) return 'love';
-  if (f.browInnerUp > 0.4 && f.mouthForm < -0.15) return 'depressed';
-  if (f.mouthForm < -0.3) return 'cry';
+  if (f.blinkAvg > T.squint.blinkAvg && (f.cheekSquintAvg > T.squint.cheekSquintAvg || f.smileAvg > T.squint.smileAvg))
+    return 'squint';
+  if (f.adjustedAngryAvg > T.angry.adjustedAngryAvg && f.mouthForm < T.angry.mouthForm) return 'angry';
+  if (f.smileAvg > T.smug.smileAvg && f.blinkAvg > T.smug.blinkAvg) return 'smug';
+  if (f.smileAvg > T.happy.smileAvg) return f.browInnerUp > T.happy.starryBrowInnerUp ? 'starry' : 'happy';
+  if (f.puckerAvg > T.love.puckerAvg) return 'love';
+  if (f.browInnerUp > T.depressed.browInnerUp && f.mouthForm < T.depressed.mouthForm) return 'depressed';
+  if (f.mouthForm < T.cry.mouthForm) return 'cry';
   return 'none';
 }

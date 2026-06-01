@@ -54,11 +54,11 @@
 
 Спільні union-типи винесено в [types.ts](src/types.ts) та використано в компонентах і хуках.
 
-### 3.3. Магічні числа і змішування мов у коді
+### 3.3. ✅ Магічні числа, рядки помилок і мова коментарів упорядковані
 
-Фізика, пороги емоцій, коефіцієнти згладжування — все хардкод по тілу loop-а. Повідомлення про помилки місцями захардкоджені українською в [server.ts](src/server.ts) і змішані uk/en в коментарях.
-
-- **Напрям:** винести константи рушія в окремий модуль `engine/constants.ts`; усі рядки — через i18n; коментарі привести до однієї мови (англійська).
+- **Константи рушія:** усі тюнінг-числа — фізика волосся, пороги емоцій, коефіцієнти згладжування, мапінг MediaPipe-blendshape-ів, transform-множники аватара — винесено в [engine/constants.ts](src/engine/constants.ts), згруповано за призначенням і задокументовано англійською. [useAnimationEngine.ts](src/hooks/useAnimationEngine.ts), [hairPhysics.ts](src/lib/hairPhysics.ts), [avatarFrame.ts](src/lib/avatarFrame.ts) і [emotionClassifier.ts](src/lib/emotionClassifier.ts) тепер читаються як намір, а не як арифметика; значення тюняться в одному місці.
+- **Рядки помилок:** [server.ts](src/server.ts) повертає стабільні `code` (`rate_limited`, `prompt_empty`, `prompt_too_long`, `ai_unavailable`, `gemini_timeout`, `gemini_error`) з англійським developer-fallback; локалізацію взято на клієнт через секцію `errors` у [en.ts](src/i18n/en.ts)/[uk.ts](src/i18n/uk.ts), а [useAiGenerate.ts](src/hooks/useAiGenerate.ts) резолвить код у повідомлення мовою UI (з інтерполяцією `{max}`).
+- **Коментарі:** зведено до англійської; єдиний навмисний україномовний текст у коді — generation-prompt до Gemini (вимагає українського лору) та самі рядки перекладу в `uk.ts`.
 
 ### 3.4. Частково розділені компоненти
 

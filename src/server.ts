@@ -72,7 +72,7 @@ function createRateLimiter(windowMs: number, max: number) {
       return next();
     }
     if (entry.count >= max) {
-      return res.status(429).json({ error: 'Забагато запитів. Будь ласка, зачекайте трохи.' });
+      return res.status(429).json({ code: 'rate_limited', error: 'Too many requests. Please wait a moment.' });
     }
     entry.count++;
     next();
@@ -109,16 +109,21 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
   const requestId = randomUUID();
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
-    return res.status(400).json({ error: 'Промпт порожній або некоректний.' });
+    return res.status(400).json({ code: 'prompt_empty', error: 'The prompt is empty or invalid.' });
   }
   if (prompt.length > MAX_PROMPT_LENGTH) {
-    return res.status(413).json({ error: `Промпт задовгий (макс. ${MAX_PROMPT_LENGTH} символів).` });
+    return res.status(413).json({
+      code: 'prompt_too_long',
+      max: MAX_PROMPT_LENGTH,
+      error: `The prompt is too long (max ${MAX_PROMPT_LENGTH} characters).`,
+    });
   }
 
   const ai = getGeminiClient();
   if (!ai) {
     return res.status(503).json({
-      error: 'Конфігурація ШІ недоступна. Перевірте наявність GEMINI_API_KEY в налаштуваннях.',
+      code: 'ai_unavailable',
+      error: 'AI configuration is unavailable. Check that GEMINI_API_KEY is set.',
     });
   }
 
@@ -223,7 +228,7 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
     });
 
     const text = response.text;
-    if (!text) throw new Error('Отримано порожню відповідь від моделі.');
+    if (!text) throw new Error('Received an empty response from the model.');
 
     log('info', 'gemini.generate.completed', {
       requestId,
@@ -240,7 +245,10 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
       error: getErrorMessage(error),
     });
     res.status(timedOut ? 504 : 502).json({
-      error: timedOut ? 'Gemini не відповів вчасно. Спробуйте ще раз.' : 'Помилка під час генерації у Gemini.',
+      code: timedOut ? 'gemini_timeout' : 'gemini_error',
+      error: timedOut
+        ? 'Gemini did not respond in time. Please try again.'
+        : 'Something went wrong during Gemini generation.',
     });
   }
 });

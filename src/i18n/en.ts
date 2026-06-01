@@ -361,4 +361,17 @@ export const en = {
     apache: 'Apache-2.0 License',
     obs: 'OBS Stream Ready',
   },
+  // Keyed by the stable `code` returned from the AI endpoint (see src/server.ts).
+  errors: {
+    rate_limited: 'Too many requests. Please wait a moment.',
+    prompt_empty: 'The prompt is empty or invalid.',
+    prompt_too_long: 'The prompt is too long (max {max} characters).',
+    ai_unavailable: 'AI is unavailable. The server is missing its GEMINI_API_KEY.',
+    gemini_timeout: 'Gemini did not respond in time. Please try again.',
+    gemini_error: 'Something went wrong during AI generation. Please try again.',
+    // Client-side fallbacks (no server code available).
+    generate_failed: 'Could not generate an avatar with AI.',
+    invalid_config: 'The AI returned an invalid avatar configuration.',
+    network: 'A network error occurred. Please check your connection.',
+  },
 };
