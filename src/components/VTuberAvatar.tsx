@@ -259,6 +259,25 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
                earStyle={earStyle}
                artStyle={artStyle}
             />
+            {/* Angry red skin flush — full face tinted red with pulsing overlay */}
+            {effectiveEmotion === 'angry' && (
+              <g>
+                <defs>
+                  <radialGradient id="angry-flush-grad" cx="50%" cy="45%" r="55%">
+                    <stop offset="0%" stopColor="#ff2020" stopOpacity="0.38" />
+                    <stop offset="55%" stopColor="#ff4040" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="#ff6060" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                {/* Full face flush */}
+                <ellipse cx="200" cy="175" rx="70" ry="80" fill="url(#angry-flush-grad)" className="animate-pulse" />
+                {/* Extra intense cheek burn areas */}
+                <ellipse cx="155" cy="195" rx="22" ry="12" fill="#ff3030" opacity="0.25" style={{ filter: 'blur(3px)' }} />
+                <ellipse cx="245" cy="195" rx="22" ry="12" fill="#ff3030" opacity="0.25" style={{ filter: 'blur(3px)' }} />
+                {/* Forehead heat */}
+                <ellipse cx="200" cy="130" rx="40" ry="12" fill="#ff4040" opacity="0.15" style={{ filter: 'blur(5px)' }} />
+              </g>
+            )}
           </g>
 
           {/* Shadow from Front Hair / Fringe on the Forehead (for advanced anime depth) */}
@@ -357,19 +376,25 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({ config, rig, onScree
           {/* Animated/Creative Active Emotion Overlays (Tears, Anger Pops, Exclamations, Smug Twinkles) */}
           {effectiveEmotion === 'angry' && (
             <g opacity="0.95">
-              {/* Angry cross vein 1 */}
-              <g transform="translate(265, 110) scale(0.9)">
+              {/* Large throbbing forehead cross vein (signature anime rage symbol) */}
+              <g transform="translate(235, 100) scale(1.15)">
+                <path d="M-12 -12 Q6 -18 24 -12 M-12 12 Q6 18 24 12 M-12 -12 Q-18 6 -12 24 M12 -12 Q18 6 12 24" stroke="#dc2626" strokeWidth="5" strokeLinecap="round" fill="none" className="animate-pulse" />
+              </g>
+              {/* Secondary cross vein (left temple) */}
+              <g transform="translate(140, 108) scale(0.85)">
                 <path d="M-10 -10 Q5 -15 20 -10 M-10 10 Q5 15 20 10 M-10 -10 Q-15 5 -10 20 M10 -10 Q15 5 10 20" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" fill="none" className="animate-pulse" />
               </g>
-              {/* Angry cross vein 2 (left side) */}
-              <g transform="translate(135, 105) scale(0.75)">
-                <path d="M-10 -10 Q5 -15 20 -10 M-10 10 Q5 15 20 10 M-10 -10 Q-15 5 -10 20 M10 -10 Q15 5 10 20" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" fill="none" className="animate-pulse" />
+              {/* Small accent vein (right cheek) */}
+              <g transform="translate(268, 155) scale(0.55)">
+                <path d="M-10 -10 Q5 -15 20 -10 M-10 10 Q5 15 20 10 M-10 -10 Q-15 5 -10 20 M10 -10 Q15 5 10 20" stroke="#ef4444" strokeWidth="4" strokeLinecap="round" fill="none" className="animate-pulse" />
               </g>
-              {/* Fire/Steam rising elements */}
-              <path d="M185 70 Q180 50 188 40 T192 15" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" className="animate-bounce" />
-              <path d="M215 70 Q210 52 218 42 T222 18" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" className="animate-bounce" />
-              {/* Soft red forehead angry shading */}
-              <ellipse cx="200" cy="115" rx="55" ry="14" fill="#ef4444" opacity="0.18" filter="blur(4px)" />
+              {/* Multiple fire/steam wisps rising from head */}
+              <path d="M175 72 Q168 48 178 35 T182 8" fill="none" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" className="animate-bounce" />
+              <path d="M195 65 Q190 42 198 28 T202 2" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" className="animate-bounce" />
+              <path d="M215 68 Q210 45 218 32 T222 5" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" className="animate-bounce" />
+              <path d="M230 74 Q226 54 232 42 T236 18" fill="none" stroke="#ef4444" strokeWidth="1.8" strokeLinecap="round" className="animate-bounce" />
+              {/* Intense red aura glow around the head */}
+              <ellipse cx="200" cy="110" rx="65" ry="20" fill="#ef4444" opacity="0.25" style={{ filter: 'blur(6px)' }} />
             </g>
           )}
 

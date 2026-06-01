@@ -316,6 +316,11 @@ export default function App() {
   const lastStabilizedEmotionRef = useRef<'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love' | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared' | 'sleepy' | 'shy' | 'relaxed'>('none');
   const emotionLockTimeRef = useRef<number>(0);
   const dizzinessAccumulatorRef = useRef<number>(0);
+  // Dizziness minimum hold: once triggered, stays active for at least this many ms
+  const dizzinessLockedUntilRef = useRef<number>(0);
+  // Sustained drowsiness accumulator: slowly builds up when eyes are half-closed,
+  // rapidly resets when eyes are open. Normal blinks (< 200ms) never accumulate enough.
+  const drowsinessAccumulatorRef = useRef<number>(0);
 
   // Handle manual rigging updates
   const handleRigChange = (updates: Partial<RigParams>) => {
@@ -470,8 +475,10 @@ export default function App() {
 
       const timeSec = now / 1000;
 
-      // Smoothly decay dizziness accumulator pool frame by frame (time-delta independent)
-      dizzinessAccumulatorRef.current = Math.max(0, dizzinessAccumulatorRef.current - (elapsed / 45));
+      // Smoothly decay dizziness accumulator — medium speed so it lingers after shaking stops
+      dizzinessAccumulatorRef.current = Math.max(0, dizzinessAccumulatorRef.current - (elapsed / 30));
+      // Decay drowsiness accumulator quickly so normal blinks (< 300ms) never accumulate enough
+      drowsinessAccumulatorRef.current = Math.max(0, drowsinessAccumulatorRef.current - (elapsed / 12));
 
       setRig(prev => {
         let updated = { ...prev };
@@ -571,10 +578,10 @@ export default function App() {
                   targetPitch = Math.max(-20, Math.min(20, currentPitch));
                   const targetRoll = Math.max(-15, Math.min(15, currentRoll));
 
-                  // Smoothly update head look orientation angles
-                  updated.angleX += (targetYaw - updated.angleX) * 0.28;
-                  updated.angleY += (targetPitch - updated.angleY) * 0.28;
-                  updated.angleZ += (targetRoll - updated.angleZ) * 0.28;
+                  // Smoothly update head look orientation angles - slightly slower coefficient (0.20) for more elegant fluid motion
+                  updated.angleX += (targetYaw - updated.angleX) * 0.20;
+                  updated.angleY += (targetPitch - updated.angleY) * 0.20;
+                  updated.angleZ += (targetRoll - updated.angleZ) * 0.20;
                   
                   // Map head rotation to pupil and body movement
                   updated.pupilX = (updated.angleX / 30) * 0.75;
@@ -601,11 +608,14 @@ export default function App() {
                   const browDownRight = findScore("browDownRight");
                   const tongueOut = findScore("tongueOut");
 
-                  updated.tongueOut = tongueOut;
+                  // Exponential smoothing (damping) for tongueOut to remove instant jitter
+                  updated.tongueOut += (tongueOut - updated.tongueOut) * 0.24;
 
-                  // Left & Right Eyes (1.0 is wide open, 0.0 is closed / blink)
-                  updated.eyeLOpen = Math.max(0, Math.min(1.0, 1.0 - eyeBlinkLeft * 1.15));
-                  updated.eyeROpen = Math.max(0, Math.min(1.0, 1.0 - eyeBlinkRight * 1.15));
+                  // Left & Right Eyes (1.0 is wide open, 0.0 is closed / blink) - exponentially smoothed for buttery eye tracks
+                  const targetEyeLOpen = Math.max(0, Math.min(1.0, 1.0 - eyeBlinkLeft * 1.15));
+                  const targetEyeROpen = Math.max(0, Math.min(1.0, 1.0 - eyeBlinkRight * 1.15));
+                  updated.eyeLOpen += (targetEyeLOpen - updated.eyeLOpen) * 0.24;
+                  updated.eyeROpen += (targetEyeROpen - updated.eyeROpen) * 0.24;
 
                   // Mouth Open Analysis (0 to 1)
                   const smileAvg = (mouthSmileLeft + mouthSmileRight) / 2;
@@ -650,63 +660,75 @@ export default function App() {
                   const browOuterUpLeft = findScore("browOuterUpLeft");
                   const browOuterUpRight = findScore("browOuterUpRight");
                   const browOuterUpAvg = (browOuterUpLeft + browOuterUpRight) / 2;
-                  const browOuterUpDiff = Math.abs(browOuterUpLeft - browOuterUpRight); // checked diff
+                  const browOuterUpDiff = Math.abs(browOuterUpLeft - browOuterUpRight);
 
-                   let detected: 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love' | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared' | 'sleepy' | 'shy' | 'relaxed' = 'none';
+                  let detected: 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love' | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared' | 'sleepy' | 'shy' | 'relaxed' = 'none';
 
-                  // Measure rapid, sudden head rotation velocities to accumulate dizziness (interactive shaking trigger)
-                  const currentYawV = Math.abs(targetYaw - (prevAngleXRef.current || 0));
-                  const currentPitchV = Math.abs(targetPitch - (prevAngleYRef.current || 0));
+                  // ─── DIZZINESS ENGINE ───
+                  // Only VERY rapid deliberate head shaking accumulates dizziness
+                  const currentYawV = Math.abs(updated.angleX - (prevAngleXRef.current || 0));
+                  const currentPitchV = Math.abs(updated.angleY - (prevAngleYRef.current || 0));
                   const headVelocity = currentYawV + currentPitchV;
-                  if (headVelocity > 2.8) {
-                    dizzinessAccumulatorRef.current = Math.min(65, dizzinessAccumulatorRef.current + headVelocity * 1.5);
+                  // High velocity gate: > 4.0 deg/frame means genuinely fast shaking
+                  if (headVelocity > 4.0) {
+                    dizzinessAccumulatorRef.current = Math.min(100, dizzinessAccumulatorRef.current + headVelocity * 2.5);
                   }
+                  // Once dizziness triggers, lock it for at least 2.5 seconds so it's visible
+                  const now = Date.now();
+                  if (dizzinessAccumulatorRef.current > 60) {
+                    dizzinessLockedUntilRef.current = Math.max(dizzinessLockedUntilRef.current, now + 2500);
+                  }
+                  const isDizzy = now < dizzinessLockedUntilRef.current || eyeLookInAvg > 0.6;
 
-                  if (dizzinessAccumulatorRef.current > 32 || eyeLookInAvg > 0.42) {
-                    // Crossed eyes or rapid head shaking = dizzy!
+                  // ─── PITCH COMPENSATION (prevents false anger when head tilts down) ───
+                  const pitchCompensation = updated.angleY < 0 ? Math.min(0.35, -updated.angleY / 35) : 0;
+                  const adjustedAngryAvg = angryAvg - pitchCompensation;
+
+                  // ─── DROWSINESS ACCUMULATOR (time-based, ignores brief blinks) ───
+                  // Normal blinks last ~150-300ms = ~9-18 frames at 60fps
+                  // A blink adds ~9-18 × 1.0 = 9-18 points, but decay removes elapsed/12 ≈ 1.4/frame
+                  // So a blink adds net ~0 points (accumulates briefly, decays right away)
+                  // SUSTAINED half-closed eyes (blinkAvg 0.3-0.8 for > 1 second) accumulate 60+ frames × 1.0 = 60+ points
+                  if (blinkAvg > 0.35 && blinkAvg < 0.9) {
+                    drowsinessAccumulatorRef.current = Math.min(120, drowsinessAccumulatorRef.current + 1.0);
+                  }
+                  const isTrulySleepy = drowsinessAccumulatorRef.current > 80 && eyeLookDownAvg > 0.4;
+
+                  // ─── EMOTION CLASSIFIER (priority-ordered) ───
+                  if (isDizzy) {
                     detected = 'dizzy';
-                  } else if (eyeWideAvg > 0.35 && jawOpen > 0.2) {
-                    // Wide panicked eye-tracking + dropped jaw = scared!
-                    detected = 'scared';
-                  } else if (eyeLookDownAvg > 0.52 && blinkAvg > 0.25 && blinkAvg < 0.75) {
-                    // Downward look + drooping half-lids = sleepy!
+                  } else if (isTrulySleepy) {
+                    // Only when eyes have been genuinely half-closed for a sustained period
                     detected = 'sleepy';
-                  } else if (browOuterUpDiff > 0.35 || browOuterUpAvg > 0.4) {
-                    // Sassy eyebrow raises / cocked brow = cool!
-                    detected = 'cool';
-                  } else if (cheekSquintAvg > 0.35 && smileAvg > 0.1 && smileAvg < 0.35 && jawOpen < 0.1) {
-                    // Mild smile + high blushing cheek raise = shy!
-                    detected = 'shy';
-                  } else if (smileAvg > 0.08 && smileAvg < 0.35 && eyeLookDownAvg > 0.25 && browInnerUp < 0.2 && angryAvg < 0.2) {
-                    // Soft relaxed smile + looking down slightly + peaceful eyebrows = relaxed/chill!
-                    detected = 'relaxed';
-                  } else if (blinkAvg > 0.55 && (cheekSquintAvg > 0.25 || smileAvg > 0.25)) {
-                    // Closed-eye smile / squeeze shut
-                    detected = 'squint';
-                  } else if (browInnerUp > 0.38 && jawOpen > 0.3) {
-                    // Raised brows + dropped jaw = shocked!
+                  } else if (jawOpen > 0.15 && (browInnerUp > 0.3 || eyeWideAvg > 0.3)) {
+                    // Mouth open + raised brows or wide eyes = shocked/surprised!
                     detected = 'shocked';
-                  } else if (angryAvg > 0.35 && updated.mouthForm < 0.1) {
-                    // Angled/furrowed brows + flat/sad mouth = angry!
+                  } else if (eyeWideAvg > 0.5 && jawOpen > 0.25) {
+                    // Very wide eyes + dropped jaw = scared!
+                    detected = 'scared';
+                  } else if (browOuterUpDiff > 0.45 || browOuterUpAvg > 0.5) {
+                    detected = 'cool';
+                  } else if (cheekSquintAvg > 0.45 && smileAvg > 0.15 && smileAvg < 0.4 && jawOpen < 0.1) {
+                    detected = 'shy';
+                  } else if (smileAvg > 0.12 && smileAvg < 0.35 && eyeLookDownAvg > 0.35 && browInnerUp < 0.15 && angryAvg < 0.15) {
+                    detected = 'relaxed';
+                  } else if (blinkAvg > 0.65 && (cheekSquintAvg > 0.3 || smileAvg > 0.3)) {
+                    detected = 'squint';
+                  } else if (adjustedAngryAvg > 0.45 && updated.mouthForm < 0.05) {
                     detected = 'angry';
-                  } else if (smileAvg > 0.38 && blinkAvg > 0.3) {
-                    // Smile + partially closed eyes/wink = smug smirk!
+                  } else if (smileAvg > 0.42 && blinkAvg > 0.35) {
                     detected = 'smug';
-                  } else if (smileAvg > 0.4) {
-                     // Happy or starry depending on eyebrow height
-                    if (browInnerUp > 0.35) {
+                  } else if (smileAvg > 0.45) {
+                    if (browInnerUp > 0.4) {
                       detected = 'starry';
                     } else {
                       detected = 'happy';
                     }
-                  } else if (puckerAvg > 0.38) {
-                    // Puckered lips / kiss face = love!
+                  } else if (puckerAvg > 0.45) {
                     detected = 'love';
-                  } else if (browInnerUp > 0.35 && updated.mouthForm < -0.1) {
-                    // Anxious raised inner brows + frowning mouth = depressed!
+                  } else if (browInnerUp > 0.4 && updated.mouthForm < -0.15) {
                     detected = 'depressed';
-                  } else if (updated.mouthForm < -0.2) {
-                    // Hard sadness = cry cascading tears!
+                  } else if (updated.mouthForm < -0.3) {
                     detected = 'cry';
                   }
 
@@ -723,7 +745,7 @@ export default function App() {
                       counters[emo] = 0;
                     }
                     if (emo === detected) {
-                      counters[emo] = Math.min(8, counters[emo] + 1);
+                      counters[emo] = Math.min(14, counters[emo] + 1);
                     } else {
                       counters[emo] = Math.max(0, counters[emo] - 1);
                     }
@@ -733,21 +755,21 @@ export default function App() {
                   const currentStabilized = lastStabilizedEmotionRef.current;
                   let winner = currentStabilized;
 
-                  // Locate if there's any active high-confidence emotion (sustained for at least 4 contiguous frames)
+                  // Locate if there's any active high-confidence emotion (sustained for at least 7 contiguous frames)
                   let highConfidenceEmotion: typeof detected = 'none';
                   let maxCount = 0;
                   allEmotions.forEach(emo => {
-                    if (emo !== 'none' && counters[emo] >= 4 && counters[emo] > maxCount) {
+                    if (emo !== 'none' && counters[emo] >= 7 && counters[emo] > maxCount) {
                       maxCount = counters[emo];
                       highConfidenceEmotion = emo;
                     }
                   });
 
-                  // We tolerate switching if the lock duration of 650ms has expired, 
+                  // We tolerate switching if the lock duration of 1200ms has expired, 
                   // or if the winner is 'none' (instant response),
-                  // or if the incoming expression is extremely strong (>= 6 contiguous frames of detection)
+                  // or if the incoming expression is extremely strong (>= 10 contiguous frames of detection)
                   const timeSpentInExpression = currentTime - emotionLockTimeRef.current;
-                  const canTransition = currentStabilized === 'none' || timeSpentInExpression > 650 || (highConfidenceEmotion !== 'none' && counters[highConfidenceEmotion] >= 6);
+                  const canTransition = currentStabilized === 'none' || timeSpentInExpression > 1200 || (highConfidenceEmotion !== 'none' && counters[highConfidenceEmotion] >= 10);
 
                   if (canTransition) {
                     if (highConfidenceEmotion !== 'none') {
@@ -755,7 +777,7 @@ export default function App() {
                         winner = highConfidenceEmotion;
                         emotionLockTimeRef.current = currentTime;
                       }
-                    } else if (counters['none'] >= 5) {
+                    } else if (counters['none'] >= 8) {
                       // Return to calm only if no expressions were formed for 5 consecutive frames
                       if (currentStabilized !== 'none') {
                         winner = 'none';

@@ -178,34 +178,167 @@ export const EyeSVG: React.FC<{
     );
   }
 
-  if (activeEmotion === 'scared') {
-    // Wide panicked eyes, tiny blue dilated/shaking pupils
-    const shakeOffsetX = Math.sin(Date.now() * 0.15) * 1.5;
-    const shakeOffsetY = Math.cos(Date.now() * 0.15) * 1.5;
-    return (
-      <g transform={transformEye}>
-        {/* Shivering blue background hue */}
-        <ellipse cx={cx} cy={cy} rx="23" ry="19.5" fill="#f0f9ff" />
-        <ellipse cx={cx} cy={cy} rx="23" ry="19.5" stroke="#312e81" strokeWidth="3" fill="none" />
-        
-        {/* Multi-layered cold sweating shadow */}
-        <path
-          d={`M ${cx - 23} ${cy} A 23 19.5 0 0 1 ${cx + 23} ${cy} Z`}
-          fill="rgba(56, 189, 248, 0.25)"
-        />
+  if (activeEmotion === 'scared' || activeEmotion === 'shocked') {
+    const shakeOffsetX = Math.sin(Date.now() * 0.18) * 0.8;
+    const shakeOffsetY = Math.cos(Date.now() * 0.18) * 0.8;
 
-        {/* Dilated shivering tiny pupil */}
-        <circle cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} r="4.5" fill="#1e1b4b" />
-        <circle cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} r="2.5" fill="#0284c7" />
-        <circle cx={cx + px - 1.2 + shakeOffsetX} cy={cy + py - 1.2 + shakeOffsetY} r="0.8" fill="#ffffff" />
-        
-        {/* Panicked anime hatch/shadow lines directly on eye */}
-        <line x1={cx - 12} y1={cy - 18} x2={cx - 12} y2={cy - 6} stroke="#38bdf8" strokeWidth="1.2" />
-        <line x1={cx - 5} y1={cy - 19} x2={cx - 5} y2={cy - 5} stroke="#38bdf8" strokeWidth="1.2" />
-        <line x1={cx + 5} y1={cy - 19} x2={cx + 5} y2={cy - 5} stroke="#38bdf8" strokeWidth="1.2" />
-        <line x1={cx + 12} y1={cy - 18} x2={cx + 12} y2={cy - 6} stroke="#38bdf8" strokeWidth="1.2" />
-      </g>
-    );
+    if (artStyle === 'anime') {
+      // High-fidelity wide-open surprised anime eye with shrunken iris and shivering dilated pupils!
+      return (
+        <g transform={transformEye}>
+          <defs>
+            <linearGradient id={`anime-iris-overlay-shocked-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0f172a" stopOpacity="0.75" />
+              <stop offset="45%" stopColor="#0f172a" stopOpacity="0.05" />
+              <stop offset="75%" stopColor="#ffffff" stopOpacity="0.0" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.55" />
+            </linearGradient>
+          </defs>
+
+          {/* Double eyelid crease line */}
+          <path
+            d={`M ${cx - 20} ${cy - 19} Q ${cx - 2} ${cy - 23}, ${cx + 18} ${cy - 19}`}
+            stroke="rgba(30, 25, 22, 0.45)"
+            strokeWidth="1.5"
+            fill="none"
+            strokeLinecap="round"
+          />
+
+          {/* Eyelash drop shadow on sclera */}
+          <path
+            d={`M ${cx + 17} ${cy - 20} Q ${cx - 6} ${cy - 22}, ${cx - 21} ${cy - 14}`}
+            stroke="rgba(28,21,18,0.38)"
+            strokeWidth="1.2"
+            fill="none"
+            strokeLinecap="round"
+          />
+
+          {/* Sclera / Eyeball White: slightly larger/wider to represent wide-eyed shock */}
+          <ellipse cx={cx} cy={cy - 4} rx={23} ry={17.5} fill="#ffffff" />
+          
+          {/* Top ambient occlusion shadow on eyeball */}
+          <path
+            d={`M ${cx - 23} ${cy - 4} A 23 17.5 0 0 0 ${cx + 23} ${cy - 4} Z`}
+            fill="rgba(15, 23, 42, 0.08)"
+          />
+
+          {/* Masked Iris rendering with shivering translation */}
+          <g clipPath={`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`}>
+            <defs>
+              <clipPath id={`anime-eye-clip-shocked-${isLeft ? 'l' : 'r'}`}>
+                <ellipse cx={cx} cy={cy - 4} rx={23} ry={17.5} />
+              </clipPath>
+            </defs>
+
+            {/* Saturated Kyoto / DxD style base oval iris: significantly shrunken (12.5 x 15.5) to reveal more white sclera */}
+            <ellipse cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} rx="12.5" ry="15.5" fill={eyeColor} />
+
+            {/* Saturated 3D light-transmitting overlay gradient */}
+            <ellipse cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} rx="12.5" ry="15.5" fill={`url(#anime-iris-overlay-shocked-${isLeft ? 'l' : 'r'})`} />
+
+            {/* Dark lens shadow projection at the top half */}
+            <path
+              d={`M ${cx + px + shakeOffsetX - 12.5} ${cy + py + shakeOffsetY} A 12.5 15.5 0 0 1 ${cx + px + shakeOffsetX + 12.5} ${cy + py + shakeOffsetY} L ${cx + px + shakeOffsetX + 12.5} ${cy + py + shakeOffsetY - 18} L ${cx + px + shakeOffsetX - 12.5} ${cy + py + shakeOffsetY - 18} Z`}
+              fill="rgba(15, 23, 42, 0.22)"
+            />
+
+            {/* Core dark center ring */}
+            <ellipse cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} rx="9" ry="11" fill="rgba(0,0,0,0.15)" />
+
+            {/* Shrunken pupil configuration to show surprise / shock */}
+            <g transform={`translate(${cx + px + shakeOffsetX}, ${cy + py + shakeOffsetY}) scale(0.65) translate(${-cx}, ${-cy})`}>
+              {pupilStyle === 'slit' ? (
+                <path
+                  d={`M ${cx} ${cy - 13.5} 
+                     Q ${cx - 3} ${cy}, ${cx} ${cy + 13.5} 
+                     Q ${cx + 3} ${cy}, ${cx} ${cy - 13.5}`}
+                  fill={pupilColor}
+                />
+              ) : pupilStyle === 'round' ? (
+                <ellipse cx={cx} cy={cy} rx="5.5" ry="11" fill={pupilColor} />
+              ) : pupilStyle === 'star' ? (
+                <path
+                  d={`M ${cx} ${cy - 9.5} 
+                     L ${cx + 3} ${cy - 3} 
+                     L ${cx + 9.5} ${cy} 
+                     L ${cx + 3} ${cy + 3} 
+                     L ${cx} ${cy + 9.5} 
+                     L ${cx - 3} ${cy + 3} 
+                     L ${cx - 9.5} ${cy} 
+                     L ${cx - 3} ${cy - 3} Z`}
+                  fill={pupilColor}
+                />
+              ) : (
+                <path
+                  d={`M ${cx} ${cy + 6}
+                     C ${cx - 7.5} ${cy}, ${cx - 8.5} ${cy - 6.5}, ${cx} ${cy - 4.5}
+                     C ${cx + 8.5} ${cy - 6.5}, ${cx} ${cy + 6} Z`}
+                  fill={pupilColor}
+                />
+              )}
+            </g>
+
+            {/* Glowing bottom crescent highlight (glass reflections) */}
+            <path
+              d={`M ${cx + px + shakeOffsetX - 10} ${cy + py + shakeOffsetY + 2} 
+                 Q ${cx + px + shakeOffsetX} ${cy + py + shakeOffsetY + 13}, ${cx + px + shakeOffsetX + 10} ${cy + py + shakeOffsetY + 2} 
+                 Q ${cx + px + shakeOffsetX} ${cy + py + shakeOffsetY + 4}, ${cx + px + shakeOffsetX - 10} ${cy + py + shakeOffsetY + 2} Z`}
+              fill="rgba(255, 255, 255, 0.42)"
+            />
+
+            {/* Specifications glints & specular sparkles - slightly smaller but still vibrant */}
+            <circle cx={cx + px + shakeOffsetX - 4} cy={cy + py + shakeOffsetY - 5} r="3.8" fill="#ffffff" opacity="0.96" />
+            <circle cx={cx + px + shakeOffsetX + 4} cy={cy + py + shakeOffsetY + 3} r="2.2" fill="#ffffff" opacity="0.88" />
+          </g>
+
+          {/* Bold upper feline eyelash wing sweep */}
+          <path
+            d={`M ${cx + 23} ${cy - 5} 
+               C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7}
+               Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6}
+               Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8}
+               C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`}
+            fill="#1c1917"
+            stroke="#1c1917"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
+          />
+
+          {/* Lower eyelid line sweep */}
+          <path
+            d={`M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`}
+            stroke="#1c1917"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </g>
+      );
+    } else {
+      // Classic/retro style surprised eyes (simple dilated pupils)
+      return (
+        <g transform={transformEye}>
+          <ellipse cx={cx} cy={cy} rx="20" ry="14" fill="#ffffff" stroke="rgba(28, 25, 22, 0.2)" strokeWidth="1.2" />
+          <g clipPath={`url(#eye-clip-shocked-${isLeft ? 'l' : 'r'})`}>
+            <defs>
+              <clipPath id={`eye-clip-shocked-${isLeft ? 'l' : 'r'}`}>
+                <ellipse cx={cx} cy={cy} rx="19.5" ry="13.5" />
+              </clipPath>
+            </defs>
+            <circle cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} r={7.5} fill={eyeColor} />
+            <circle cx={cx + px + shakeOffsetX} cy={cy + py + shakeOffsetY} r={3.2} fill={pupilColor} />
+            <circle cx={cx + px + shakeOffsetX - 2} cy={cy + py + shakeOffsetY - 2} r="2" fill="#ffffff" />
+          </g>
+          <path
+            d={`M ${cx - 22} ${cy - 2} Q ${cx} ${cy - 16}, ${cx + 22} ${cy - 2}`}
+            stroke="#1c1917"
+            strokeWidth="3.2"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </g>
+      );
+    }
   }
 
   if (activeEmotion === 'sleepy') {
