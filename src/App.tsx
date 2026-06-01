@@ -13,6 +13,7 @@ import { useAnimationEngine } from './hooks/useAnimationEngine';
 import { useOverlayBroadcast } from './hooks/useOverlaySync';
 import { useEmotes } from './hooks/useEmotes';
 import { useCameraCalibration } from './hooks/useCameraCalibration';
+import { Download, Upload } from 'lucide-react';
 
 export default function App() {
   const { t, language, setLanguage } = useI18n();
@@ -28,7 +29,9 @@ export default function App() {
   const [onScreenBuster, setScreenBuster] = useState(false);
   const [micActive, setMicActive] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [importSuccess, setImportSuccess] = useState(false);
   const avatarSvgRef = useRef<SVGSVGElement | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
 
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -95,6 +98,22 @@ export default function App() {
     setTimeout(() => setSaveSuccess(false), 2500);
   };
 
+  const handleImportProject = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+
+    try {
+      await store.importProject(file);
+      setRig(INITIAL_RIG);
+      setImportSuccess(true);
+      setTimeout(() => setImportSuccess(false), 2500);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown import error.';
+      alert(isEn ? `Import failed: ${message}` : `Не вдалося імпортувати проект: ${message}`);
+    }
+  };
+
   return (
     <div className={`min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200 relative ${
       theme === 'dark' ? 'bg-[#07070a] text-[#d1d1d1]' : 'bg-slate-50 text-slate-800'
@@ -117,6 +136,14 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".vstudio.json,application/json"
+            onChange={handleImportProject}
+            className="hidden"
+          />
+
           {/* Theme Switcher Button */}
           <button
             onClick={toggleTheme}
@@ -161,14 +188,30 @@ export default function App() {
 
           <button
             onClick={store.exportProject}
-            className={`px-3 py-1.5 border rounded-sm text-[10px] font-bold tracking-wider transition-all uppercase cursor-pointer ${
+            className={`px-3 py-1.5 border rounded-sm text-[10px] font-bold tracking-wider transition-all uppercase cursor-pointer flex items-center gap-1.5 ${
               theme === 'dark'
                 ? 'border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-white'
                 : 'border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700'
             }`}
             title={isEn ? 'Export project as .json' : 'Експортувати проект у .json'}
           >
-            {isEn ? 'EXPORT' : 'ЕКСПОРТ'}
+            <Download className="w-3.5 h-3.5" />
+            <span>{t.header.exportProject}</span>
+          </button>
+
+          <button
+            onClick={() => importInputRef.current?.click()}
+            className={`px-3 py-1.5 border rounded-sm text-[10px] font-bold tracking-wider transition-all uppercase cursor-pointer flex items-center gap-1.5 ${
+              importSuccess
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+                : theme === 'dark'
+                  ? 'border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-white'
+                  : 'border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700'
+            }`}
+            title={isEn ? 'Import a .vstudio.json project' : 'Імпортувати проект .vstudio.json'}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>{importSuccess ? t.header.imported : t.header.importProject}</span>
           </button>
 
           <button

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatBytes, formatRecordingDuration } from './useAvatarRecorder';
+import { formatBytes, formatPercent, formatRecordingDuration } from './useAvatarRecorder';
 
 describe('avatar recorder formatting helpers', () => {
   it('formats elapsed recording time as m:ss', () => {
@@ -12,5 +12,11 @@ describe('avatar recorder formatting helpers', () => {
     expect(formatBytes(512)).toBe('512 B');
     expect(formatBytes(1536)).toBe('1.5 KB');
     expect(formatBytes(2 * 1024 * 1024)).toBe('2.0 MB');
+  });
+
+  it('formats and clamps progress percentages', () => {
+    expect(formatPercent(-1)).toBe('0%');
+    expect(formatPercent(0.424)).toBe('42%');
+    expect(formatPercent(2)).toBe('100%');
   });
 });

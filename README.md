@@ -14,7 +14,7 @@ with **camera face-tracking**, **microphone mouth-sync**, **mouse tracking**, or
 - **Tracking modes** — `camera`, `mic` (amplitude → mouth flap), `mouse`, and `auto` (AFK idle motion). Camera device selection, neutral-pose calibration, sensitivity, and smoothing are saved locally.
 - **AI styling** — describe a character in natural language; a server-side Gemini call returns a full avatar config (validated + clamped before applying).
 - **Presets & persistence** — built-in characters, plus save/export/import your own avatars (`localStorage` + `.vstudio.json`).
-- **Exports, OBS & clips** — transparent PNG/SVG avatar exports, transparent Browser Source overlay, chroma-key fallback, and short WebM avatar clip recording.
+- **Exports, OBS & clips** — transparent PNG/SVG avatar exports, transparent Browser Source overlay, chroma-key fallback, short WebM recording, and transparent GIF loops.
 - **i18n + theming** — Ukrainian / English, dark / light.
 
 ## Architecture

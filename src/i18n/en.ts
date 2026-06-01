@@ -3,6 +3,9 @@ export const en = {
     title: "V-Studio",
     tag: "LIVE RIG PRO v2.4",
     community: "VTuber Community",
+    exportProject: "EXPORT",
+    importProject: "IMPORT",
+    imported: "IMPORTED ✓",
     saveProject: "SAVE PROJECT",
     saved: "SAVED ✓"
   },
@@ -234,6 +237,10 @@ export const en = {
       stop: "Stop",
       saving: "Saving...",
       download: "Download",
+      gif: "Export GIF",
+      gifEncoding: "GIF",
+      downloadGif: "Download GIF",
+      gifNote: "GIF export captures a 2-second transparent 400×400 loop from the current avatar pose.",
       clear: "Clear",
       unsupported: "This browser does not support canvas capture with MediaRecorder. Try Chrome, Edge, or another Chromium browser."
     },

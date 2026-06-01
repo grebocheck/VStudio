@@ -6,6 +6,11 @@ const DEFAULT_WIDTH = 800;
 const DEFAULT_HEIGHT = 800;
 const DEFAULT_FPS = 30;
 const DEFAULT_VIDEO_BITRATE = 5_000_000;
+const GIF_WIDTH = 400;
+const GIF_HEIGHT = 400;
+const GIF_FPS = 12;
+const GIF_DURATION_MS = 2000;
+const GIF_FRAME_DELAY_MS = 1000 / GIF_FPS;
 
 export interface RecordedClip {
   url: string;
@@ -18,12 +23,17 @@ export interface AvatarRecorder {
   isSupported: boolean;
   isRecording: boolean;
   isSaving: boolean;
+  isGifEncoding: boolean;
+  gifProgress: number;
   elapsedMs: number;
   error: string | null;
   clip: RecordedClip | null;
+  gifClip: RecordedClip | null;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
+  exportGifClip: () => Promise<void>;
   clearClip: () => void;
+  clearGifClip: () => void;
 }
 
 function pickMimeType(): string {
@@ -51,12 +61,21 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+export function formatPercent(value: number): string {
+  return `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%`;
+}
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export function useAvatarRecorder(sourceRef: RefObject<SVGSVGElement | null>): AvatarRecorder {
   const [isRecording, setIsRecording] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGifEncoding, setIsGifEncoding] = useState(false);
+  const [gifProgress, setGifProgress] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [clip, setClip] = useState<RecordedClip | null>(null);
+  const [gifClip, setGifClip] = useState<RecordedClip | null>(null);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -66,6 +85,7 @@ export function useAvatarRecorder(sourceRef: RefObject<SVGSVGElement | null>): A
   const startTimeRef = useRef(0);
   const drawingRef = useRef(false);
   const clipUrlRef = useRef<string | null>(null);
+  const gifUrlRef = useRef<string | null>(null);
 
   const isSupported = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -92,6 +112,13 @@ export function useAvatarRecorder(sourceRef: RefObject<SVGSVGElement | null>): A
     if (clipUrlRef.current) URL.revokeObjectURL(clipUrlRef.current);
     clipUrlRef.current = null;
     setClip(null);
+  }, []);
+
+  const clearGifClip = useCallback(() => {
+    if (gifUrlRef.current) URL.revokeObjectURL(gifUrlRef.current);
+    gifUrlRef.current = null;
+    setGifClip(null);
+    setGifProgress(0);
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -213,6 +240,87 @@ export function useAvatarRecorder(sourceRef: RefObject<SVGSVGElement | null>): A
     frameIdRef.current = requestAnimationFrame(drawLoop);
   }, [clearClip, clearElapsedTimer, isSupported, sourceRef, stopFrameLoop]);
 
+  const exportGifClip = useCallback(async () => {
+    const sourceSvg = sourceRef.current;
+    if (!sourceSvg) {
+      setError('Avatar SVG is not mounted yet.');
+      return;
+    }
+
+    clearGifClip();
+    setError(null);
+    setIsGifEncoding(true);
+    setGifProgress(0);
+
+    const startedAt = performance.now();
+    const canvas = document.createElement('canvas');
+    canvas.width = GIF_WIDTH;
+    canvas.height = GIF_HEIGHT;
+    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
+    if (!ctx) {
+      setError('Could not create GIF canvas.');
+      setIsGifEncoding(false);
+      return;
+    }
+
+    try {
+      const { GIFEncoder, quantize, applyPalette } = await import('gifenc');
+      const gif = GIFEncoder();
+      const frameCount = Math.max(1, Math.round(GIF_DURATION_MS / GIF_FRAME_DELAY_MS));
+
+      for (let frame = 0; frame < frameCount; frame++) {
+        const frameStart = performance.now();
+        await drawAvatarSvgToCanvas(sourceSvg, canvas, ctx, { transparent: true });
+
+        const imageData = ctx.getImageData(0, 0, GIF_WIDTH, GIF_HEIGHT);
+        const palette = quantize(imageData.data, 256, {
+          format: 'rgba4444',
+          oneBitAlpha: 127,
+          clearAlpha: true,
+          clearAlphaThreshold: 1,
+        });
+        const index = applyPalette(imageData.data, palette, 'rgba4444');
+        const transparentIndex = palette.findIndex((color) => (color[3] ?? 255) === 0);
+
+        gif.writeFrame(index, GIF_WIDTH, GIF_HEIGHT, {
+          palette,
+          delay: GIF_FRAME_DELAY_MS,
+          repeat: 0,
+          transparent: transparentIndex >= 0,
+          transparentIndex: transparentIndex >= 0 ? transparentIndex : 0,
+          dispose: transparentIndex >= 0 ? 2 : -1,
+        });
+
+        setGifProgress((frame + 1) / frameCount);
+
+        const renderTime = performance.now() - frameStart;
+        if (frame < frameCount - 1) {
+          await wait(Math.max(0, GIF_FRAME_DELAY_MS - renderTime));
+        }
+      }
+
+      gif.finish();
+      const bytes = gif.bytes();
+      const blob = new Blob([bytes], { type: 'image/gif' });
+      if (!blob.size) throw new Error('No GIF data was encoded.');
+
+      if (gifUrlRef.current) URL.revokeObjectURL(gifUrlRef.current);
+      const url = URL.createObjectURL(blob);
+      gifUrlRef.current = url;
+      setGifClip({
+        url,
+        sizeBytes: blob.size,
+        durationMs: performance.now() - startedAt,
+        mimeType: 'image/gif',
+      });
+      setGifProgress(1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'GIF export failed.');
+    } finally {
+      setIsGifEncoding(false);
+    }
+  }, [clearGifClip, sourceRef]);
+
   useEffect(() => {
     return () => {
       stopFrameLoop();
@@ -222,6 +330,7 @@ export function useAvatarRecorder(sourceRef: RefObject<SVGSVGElement | null>): A
         recorderRef.current.stop();
       }
       if (clipUrlRef.current) URL.revokeObjectURL(clipUrlRef.current);
+      if (gifUrlRef.current) URL.revokeObjectURL(gifUrlRef.current);
     };
   }, [clearElapsedTimer, stopFrameLoop]);
 
@@ -229,11 +338,16 @@ export function useAvatarRecorder(sourceRef: RefObject<SVGSVGElement | null>): A
     isSupported,
     isRecording,
     isSaving,
+    isGifEncoding,
+    gifProgress,
     elapsedMs,
     error,
     clip,
+    gifClip,
     startRecording,
     stopRecording,
+    exportGifClip,
     clearClip,
+    clearGifClip,
   };
 }

@@ -3,6 +3,9 @@ export const uk = {
     title: "V-Studio",
     tag: "LIVE RIG PRO v2.4",
     community: "Громада VTuber Україна 🇺🇦",
+    exportProject: "ЕКСПОРТ",
+    importProject: "ІМПОРТ",
+    imported: "ІМПОРТОВАНО ✓",
     saveProject: "ЗБЕРЕГТИ ПРОЕКТ",
     saved: "ЗБЕРЕЖЕНО ✓"
   },
@@ -234,6 +237,10 @@ export const uk = {
       stop: "Стоп",
       saving: "Збереження...",
       download: "Завантажити",
+      gif: "Експорт GIF",
+      gifEncoding: "GIF",
+      downloadGif: "Завантажити GIF",
+      gifNote: "GIF-експорт знімає 2-секундну прозору петлю 400×400 з поточної пози аватара.",
       clear: "Очистити",
       unsupported: "Цей браузер не підтримує захоплення canvas через MediaRecorder. Спробуйте Chrome, Edge або інший Chromium-браузер."
     },
