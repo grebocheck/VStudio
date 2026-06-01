@@ -6,10 +6,25 @@ import { FaceTracking } from './useFaceTracking';
 import { ActiveEmote } from './useEmotes';
 import { classifyEmotion } from '../lib/emotionClassifier';
 import { cameraResponseFromSmoothing, expressionResponseFromSmoothing } from '../lib/cameraCalibration';
+import { advanceHairPhysics, INITIAL_HAIR_PHYSICS } from '../lib/hairPhysics';
 
 const ALL_EMOTIONS: Emotion[] = [
-  'none', 'happy', 'angry', 'cry', 'shocked', 'smug', 'love', 'starry',
-  'squint', 'depressed', 'dizzy', 'cool', 'scared', 'sleepy', 'shy', 'relaxed',
+  'none',
+  'happy',
+  'angry',
+  'cry',
+  'shocked',
+  'smug',
+  'love',
+  'starry',
+  'squint',
+  'depressed',
+  'dizzy',
+  'cool',
+  'scared',
+  'sleepy',
+  'shy',
+  'relaxed',
 ];
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -50,15 +65,8 @@ export function useAnimationEngine({
   const isBlinking = useRef(false);
   const blinkPhase = useRef(0); // 0 idle, 1 closing, 2 opening
 
-  // Spring-mass hair physics
-  const hairSwayXRef = useRef(0);
-  const hairSwayVelXRef = useRef(0);
-  const hairSwayYRef = useRef(0);
-  const hairSwayVelYRef = useRef(0);
-
-  // Angular look memory for inertial drag
-  const prevAngleXRef = useRef(0);
-  const prevAngleYRef = useRef(0);
+  // Spring-mass hair physics + angular look memory for inertial drag
+  const hairPhysicsRef = useRef(INITIAL_HAIR_PHYSICS);
 
   // Emotion stabilization / interactive state
   const emotionFrameCountersRef = useRef<Record<string, number>>({});
@@ -195,7 +203,8 @@ export function useAnimationEngine({
                 const tongueOut = findScore('tongueOut');
 
                 const targetTongueOut = clamp(tongueOut * expressionSensitivity, 0, 1);
-                updated.tongueOut = (updated.tongueOut ?? 0) + (targetTongueOut - (updated.tongueOut ?? 0)) * expressionResponse;
+                updated.tongueOut =
+                  (updated.tongueOut ?? 0) + (targetTongueOut - (updated.tongueOut ?? 0)) * expressionResponse;
 
                 const targetEyeLOpen = clamp(1.0 - eyeBlinkLeft * 1.15 * expressionSensitivity, 0, 1);
                 const targetEyeROpen = clamp(1.0 - eyeBlinkRight * 1.15 * expressionSensitivity, 0, 1);
@@ -230,8 +239,8 @@ export function useAnimationEngine({
 
                 // Dizziness: only fast deliberate head shaking accumulates
                 const headVelocity =
-                  Math.abs(updated.angleX - prevAngleXRef.current) +
-                  Math.abs(updated.angleY - prevAngleYRef.current);
+                  Math.abs(updated.angleX - hairPhysicsRef.current.previousAngleX) +
+                  Math.abs(updated.angleY - hairPhysicsRef.current.previousAngleY);
                 if (headVelocity > 4.0) {
                   dizzinessAccumulatorRef.current = Math.min(100, dizzinessAccumulatorRef.current + headVelocity * 2.5);
                 }
@@ -249,18 +258,28 @@ export function useAnimationEngine({
                 const isTrulySleepy = drowsinessAccumulatorRef.current > 80 && eyeLookDownAvg > 0.4;
 
                 const detected: Emotion = classifyEmotion({
-                  jawOpen, browInnerUp, eyeWideAvg, browOuterUpAvg, browOuterUpDiff,
-                  cheekSquintAvg, smileAvg, eyeLookDownAvg, angryAvg, adjustedAngryAvg,
-                  blinkAvg, puckerAvg, mouthForm: updated.mouthForm, isDizzy, isTrulySleepy,
+                  jawOpen,
+                  browInnerUp,
+                  eyeWideAvg,
+                  browOuterUpAvg,
+                  browOuterUpDiff,
+                  cheekSquintAvg,
+                  smileAvg,
+                  eyeLookDownAvg,
+                  angryAvg,
+                  adjustedAngryAvg,
+                  blinkAvg,
+                  puckerAvg,
+                  mouthForm: updated.mouthForm,
+                  isDizzy,
+                  isTrulySleepy,
                 });
 
                 // Debounce / hysteresis via per-emotion frame counters
                 const counters = emotionFrameCountersRef.current;
                 ALL_EMOTIONS.forEach((emo) => {
                   if (counters[emo] === undefined) counters[emo] = 0;
-                  counters[emo] = emo === detected
-                    ? Math.min(14, counters[emo] + 1)
-                    : Math.max(0, counters[emo] - 1);
+                  counters[emo] = emo === detected ? Math.min(14, counters[emo] + 1) : Math.max(0, counters[emo] - 1);
                 });
 
                 const currentTime = Date.now();
@@ -304,25 +323,10 @@ export function useAnimationEngine({
         }
 
         // 6. Spring-mass hair physics with look-velocity impulses
-        const deltaX = updated.angleX - prevAngleXRef.current;
-        const deltaY = updated.angleY - prevAngleYRef.current;
-        prevAngleXRef.current = updated.angleX;
-        prevAngleYRef.current = updated.angleY;
-
-        hairSwayVelXRef.current -= deltaX * 0.38;
-        hairSwayVelYRef.current += Math.abs(deltaY) * 0.25;
-
-        const targetSwayX = -(updated.angleX * 0.7) - updated.angleZ * 0.6;
-        const forceX = (targetSwayX - hairSwayXRef.current) * 0.16;
-        hairSwayVelXRef.current = (hairSwayVelXRef.current + forceX) * 0.82;
-        hairSwayXRef.current += hairSwayVelXRef.current;
-        updated.hairSwayX = hairSwayXRef.current;
-
-        const targetSwayY = Math.abs(updated.angleY) * 0.35;
-        const forceY = (targetSwayY - hairSwayYRef.current) * 0.2;
-        hairSwayVelYRef.current = (hairSwayVelYRef.current + forceY) * 0.79;
-        hairSwayYRef.current += hairSwayVelYRef.current;
-        updated.hairSwayY = hairSwayYRef.current;
+        const hairPhysics = advanceHairPhysics(hairPhysicsRef.current, updated);
+        hairPhysicsRef.current = hairPhysics;
+        updated.hairSwayX = hairPhysics.swayX;
+        updated.hairSwayY = hairPhysics.swayY;
 
         // 7. Manual emote override (streamer hotkeys / panel) wins while active.
         const emote = emoteRef.current;

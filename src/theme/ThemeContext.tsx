@@ -13,7 +13,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('vstudio_theme');
-    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+    return saved === 'light' || saved === 'dark' ? saved : 'dark';
   });
 
   useEffect(() => {
@@ -31,11 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

@@ -258,10 +258,7 @@ type PresetStats = { presetStats: Record<string, string> };
  * Returns null when `key` is null/unknown (custom or AI-generated avatar),
  * letting callers fall back to the config's own name/lore.
  */
-export function localizePreset(
-  key: string | null,
-  t: PresetStats,
-): { name: string; lore: string } | null {
+export function localizePreset(key: string | null, t: PresetStats): { name: string; lore: string } | null {
   if (!key) return null;
   const stats = t.presetStats;
   const name = stats[`${key}_name`];

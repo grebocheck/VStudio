@@ -49,8 +49,8 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="text-3xl">💥</div>
           <h1 className="text-lg font-bold text-white">Something broke</h1>
           <p className="text-xs text-white/60 leading-relaxed">
-            The studio hit an unexpected error. Try recovering, or reset the saved
-            avatar if a corrupt config is the cause.
+            The studio hit an unexpected error. Try recovering, or reset the saved avatar if a corrupt config is the
+            cause.
           </p>
           <pre className="text-[10px] text-rose-400 bg-black/40 rounded p-2 overflow-auto max-h-32 text-left">
             {this.state.error.message}

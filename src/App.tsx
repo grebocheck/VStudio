@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { RigParams, TrackingMode, SidebarTab, AvatarConfig } from './types';
+import { RigParams, TrackingMode, SidebarTab } from './types';
 import { INITIAL_RIG, PRESETS } from './presets';
 import { LeftSidebar } from './components/LeftSidebar';
 import { CenterStage } from './components/CenterStage';
@@ -13,6 +13,8 @@ import { useAnimationEngine } from './hooks/useAnimationEngine';
 import { useOverlayBroadcast } from './hooks/useOverlaySync';
 import { useEmotes } from './hooks/useEmotes';
 import { useCameraCalibration } from './hooks/useCameraCalibration';
+import { useFpsMeter } from './hooks/useFpsMeter';
+import { useAiGenerate } from './hooks/useAiGenerate';
 import { Download, Upload } from 'lucide-react';
 
 export default function App() {
@@ -33,23 +35,29 @@ export default function App() {
   const avatarSvgRef = useRef<SVGSVGElement | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
   const cameraCalibration = useCameraCalibration();
+  const fps = useFpsMeter();
+  const ai = useAiGenerate({
+    mergeIntoConfig: store.mergeIntoConfig,
+    setRig,
+  });
 
   // Capture devices + per-frame animation engine.
   const mic = useMicrophone(micActive, () => {
     setMicActive(false);
-    alert(isEn
-      ? 'Failed to access microphone. Please verify sound input permissions in your browser.'
-      : 'Не вдалося отримати доступ до мікрофону. Перевірте дозволи вашого браузера.');
+    alert(
+      isEn
+        ? 'Failed to access microphone. Please verify sound input permissions in your browser.'
+        : 'Не вдалося отримати доступ до мікрофону. Перевірте дозволи вашого браузера.',
+    );
   });
   const face = useFaceTracking(trackingMode === 'camera', cameraCalibration.profile.deviceId, () => {
     setTrackingMode('auto');
-    alert(isEn
-      ? 'Failed to open camera. Please make sure camera permissions are enabled.'
-      : 'Не вдалося увімкнути камеру. Будь ласка, переконайтеся в наданні дозволу на камеру.');
+    alert(
+      isEn
+        ? 'Failed to open camera. Please make sure camera permissions are enabled.'
+        : 'Не вдалося увімкнути камеру. Будь ласка, переконайтеся в наданні дозволу на камеру.',
+    );
   });
   const emotes = useEmotes();
   useAnimationEngine({
@@ -67,30 +75,6 @@ export default function App() {
 
   const handleRigChange = (updates: Partial<RigParams>) => setRig((prev) => ({ ...prev, ...updates }));
   const handleResetRig = () => setRig(INITIAL_RIG);
-
-  const handleAiGenerate = async () => {
-    if (!aiPrompt.trim()) return;
-    setAiGenerating(true);
-    setAiError(null);
-    try {
-      const response = await fetch('/api/gemini/generate-style', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: aiPrompt }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Не вдалося згенерувати аватар з ШІ.');
-
-      store.mergeIntoConfig(data as Partial<AvatarConfig>);
-      setRig((prev) => ({ ...prev, mouthForm: 0.9, mouthOpen: 0.15, eyebrowY: 2, angleY: 5 }));
-      setAiPrompt('');
-    } catch (err: any) {
-      console.error(err);
-      setAiError(err.message || 'Синтаксична помилка.');
-    } finally {
-      setAiGenerating(false);
-    }
-  };
 
   const handleSaveLocalPreset = () => {
     store.saveCurrentAsPreset(`${config.name || (isEn ? 'Personal' : 'Особистий')} (${isEn ? 'Saved' : 'Збережений'})`);
@@ -115,19 +99,25 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200 relative ${
-      theme === 'dark' ? 'bg-[#07070a] text-[#d1d1d1]' : 'bg-slate-50 text-slate-800'
-    }`}>
-
+    <div
+      className={`min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200 relative ${
+        theme === 'dark' ? 'bg-[#07070a] text-[#d1d1d1]' : 'bg-slate-50 text-slate-800'
+      }`}
+    >
       {/* Sophisticated Fluid Navigation Bar */}
-      <header className={`h-14 border-b flex items-center justify-between px-6 shrink-0 z-50 ${
-        theme === 'dark' ? 'border-white/10 bg-[#0f0f12]' : 'border-slate-200 bg-white'
-      }`}>
+      <header
+        className={`h-14 border-b flex items-center justify-between px-6 shrink-0 z-50 ${
+          theme === 'dark' ? 'border-white/10 bg-[#0f0f12]' : 'border-slate-200 bg-white'
+        }`}
+        aria-label={isEn ? 'V-Studio toolbar' : 'Панель інструментів V-Studio'}
+      >
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-indigo-500 animate-pulse flex items-center justify-center">
             <div className="w-1.5 h-1.5 rounded-full bg-white" />
           </div>
-          <span className={`font-serif italic text-xl tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+          <span
+            className={`font-serif italic text-xl tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+          >
             V-Studio
             <span className="text-[10px] font-sans not-italic text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-1.5 py-0.5 rounded-sm ml-1.5 font-bold">
               {t.header.tag}
@@ -153,19 +143,25 @@ export default function App() {
                 : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
             }`}
             title={isEn ? 'Toggle Theme' : 'Змінити тему'}
+            aria-label={isEn ? 'Toggle color theme' : 'Змінити колірну тему'}
           >
             <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
             <span className="hidden sm:inline text-[10px] uppercase font-mono tracking-wider">
-              {theme === 'dark' ? (isEn ? 'Light' : 'Світла') : (isEn ? 'Dark' : 'Темна')}
+              {theme === 'dark' ? (isEn ? 'Light' : 'Світла') : isEn ? 'Dark' : 'Темна'}
             </span>
           </button>
 
           {/* Language Selector Controls */}
-          <div className={`flex items-center rounded-sm border overflow-hidden p-0.5 ${
-            theme === 'dark' ? 'bg-[#07070a] border-white/10' : 'bg-slate-100 border-slate-200'
-          }`}>
+          <div
+            className={`flex items-center rounded-sm border overflow-hidden p-0.5 ${
+              theme === 'dark' ? 'bg-[#07070a] border-white/10' : 'bg-slate-100 border-slate-200'
+            }`}
+            role="group"
+            aria-label={isEn ? 'Interface language' : 'Мова інтерфейсу'}
+          >
             <button
               onClick={() => setLanguage('en')}
+              aria-pressed={language === 'en'}
               className={`px-2 py-1 text-[9px] font-bold rounded-sm transition-all cursor-pointer ${
                 language === 'en'
                   ? 'bg-indigo-600 text-white shadow-sm'
@@ -176,6 +172,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setLanguage('uk')}
+              aria-pressed={language === 'uk'}
               className={`px-2 py-1 text-[9px] font-bold rounded-sm transition-all cursor-pointer ${
                 language === 'uk'
                   ? 'bg-indigo-600 text-white shadow-sm'
@@ -194,6 +191,7 @@ export default function App() {
                 : 'border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700'
             }`}
             title={isEn ? 'Export project as .json' : 'Експортувати проект у .json'}
+            aria-label={isEn ? 'Export project as JSON' : 'Експортувати проєкт як JSON'}
           >
             <Download className="w-3.5 h-3.5" />
             <span>{t.header.exportProject}</span>
@@ -209,6 +207,7 @@ export default function App() {
                   : 'border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700'
             }`}
             title={isEn ? 'Import a .vstudio.json project' : 'Імпортувати проект .vstudio.json'}
+            aria-label={isEn ? 'Import a V-Studio JSON project' : 'Імпортувати JSON-проєкт V-Studio'}
           >
             <Upload className="w-3.5 h-3.5" />
             <span>{importSuccess ? t.header.imported : t.header.importProject}</span>
@@ -216,6 +215,7 @@ export default function App() {
 
           <button
             onClick={handleSaveLocalPreset}
+            aria-label={isEn ? 'Save current avatar as a local preset' : 'Зберегти поточний аватар як локальний пресет'}
             className={`px-4 py-1.5 border rounded-sm text-[10px] font-bold tracking-wider transition-all uppercase cursor-pointer ${
               theme === 'dark'
                 ? 'border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-white'
@@ -240,6 +240,7 @@ export default function App() {
           setScreenBuster={setScreenBuster}
           videoRef={face.videoRef}
           isModelLoading={face.isModelLoading}
+          fps={fps}
         />
 
         <CenterStage
@@ -252,6 +253,7 @@ export default function App() {
           activeEmote={emotes.activeEmote}
           onEmote={emotes.triggerEmote}
           avatarSvgRef={avatarSvgRef}
+          fps={fps}
         />
 
         <RightSidebar
@@ -274,11 +276,11 @@ export default function App() {
           onCalibrateCameraNeutral={() => cameraCalibration.calibrateNeutral(rig)}
           onResetCameraCalibration={cameraCalibration.resetProfile}
           avatarSvgRef={avatarSvgRef}
-          aiPrompt={aiPrompt}
-          setAiPrompt={setAiPrompt}
-          aiGenerating={aiGenerating}
-          aiError={aiError}
-          handleAiGenerate={handleAiGenerate}
+          aiPrompt={ai.prompt}
+          setAiPrompt={ai.setPrompt}
+          aiGenerating={ai.generating}
+          aiError={ai.error}
+          handleAiGenerate={ai.generate}
           customPresets={store.customPresets}
           PRESETS={PRESETS}
           activePresetKey={store.activePresetKey}
@@ -289,17 +291,26 @@ export default function App() {
       </div>
 
       {/* Persistent Workspace Footer with dynamic localization settings */}
-      <footer className={`border-t px-6 py-4 text-center text-[10px] font-mono flex flex-col md:flex-row md:justify-between items-center space-y-2 md:space-y-0 shrink-0 z-10 animate-fade-in ${
-        theme === 'dark' ? 'border-white/10 bg-[#07070a] text-[#d1d1d1]/40' : 'border-slate-200 bg-white text-slate-500'
-      }`}>
+      <footer
+        className={`border-t px-6 py-4 text-center text-[10px] font-mono flex flex-col md:flex-row md:justify-between items-center space-y-2 md:space-y-0 shrink-0 z-10 animate-fade-in ${
+          theme === 'dark'
+            ? 'border-white/10 bg-[#07070a] text-[#d1d1d1]/40'
+            : 'border-slate-200 bg-white text-slate-500'
+        }`}
+      >
         <p>{t.footer.copyright}</p>
         <div className="flex space-x-3 text-slate-500 dark:text-white/50">
-          <span className="hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer">{t.footer.help}</span>
-          <span className="hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer">{t.footer.apache}</span>
-          <span className="hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer font-bold text-indigo-500 dark:text-indigo-400">{t.footer.obs}</span>
+          <span className="hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer">
+            {t.footer.help}
+          </span>
+          <span className="hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer">
+            {t.footer.apache}
+          </span>
+          <span className="hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer font-bold text-indigo-500 dark:text-indigo-400">
+            {t.footer.obs}
+          </span>
         </div>
       </footer>
-
     </div>
   );
 }

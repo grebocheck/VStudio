@@ -41,11 +41,11 @@ function pickMimeType(): string {
     return '';
   }
 
-  return [
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm',
-  ].find((type) => MediaRecorder.isTypeSupported(type)) ?? '';
+  return (
+    ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find((type) =>
+      MediaRecorder.isTypeSupported(type),
+    ) ?? ''
+  );
 }
 
 export function formatRecordingDuration(ms: number): string {

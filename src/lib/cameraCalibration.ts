@@ -23,7 +23,12 @@ export function sanitizeCameraCalibration(input: unknown): CameraCalibrationProf
   return {
     deviceId: typeof raw.deviceId === 'string' ? raw.deviceId.slice(0, 220) : DEFAULT_CAMERA_CALIBRATION.deviceId,
     headSensitivity: finiteNumber(raw.headSensitivity, DEFAULT_CAMERA_CALIBRATION.headSensitivity, 0.5, 1.8),
-    expressionSensitivity: finiteNumber(raw.expressionSensitivity, DEFAULT_CAMERA_CALIBRATION.expressionSensitivity, 0.7, 1.8),
+    expressionSensitivity: finiteNumber(
+      raw.expressionSensitivity,
+      DEFAULT_CAMERA_CALIBRATION.expressionSensitivity,
+      0.7,
+      1.8,
+    ),
     smoothing: finiteNumber(raw.smoothing, DEFAULT_CAMERA_CALIBRATION.smoothing, 0, 100),
     yawOffset: finiteNumber(raw.yawOffset, DEFAULT_CAMERA_CALIBRATION.yawOffset, -30, 30),
     pitchOffset: finiteNumber(raw.pitchOffset, DEFAULT_CAMERA_CALIBRATION.pitchOffset, -20, 20),

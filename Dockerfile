@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies first for better caching
 COPY package*.json ./
-RUN npm ci
+RUN HUSKY=0 npm ci
 
 # Copy all source files and build
 COPY . .
@@ -20,7 +20,7 @@ ENV NODE_ENV=production
 
 # Install only production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy build output from the builder stage
 COPY --from=builder /app/dist ./dist

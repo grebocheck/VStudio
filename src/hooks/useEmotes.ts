@@ -82,9 +82,12 @@ export function useEmotes(): EmotesApi {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [triggerEmote]);
 
-  useEffect(() => () => {
-    if (clearTimer.current) clearTimeout(clearTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (clearTimer.current) clearTimeout(clearTimer.current);
+    },
+    [],
+  );
 
   return { activeEmote, triggerEmote, emoteRef };
 }

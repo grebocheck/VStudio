@@ -18,6 +18,7 @@ interface CenterStageProps {
   activeEmote: Emotion | null;
   onEmote: (emotion: Emotion) => void;
   avatarSvgRef?: React.Ref<SVGSVGElement>;
+  fps?: number | null;
 }
 
 export const CenterStage: React.FC<CenterStageProps> = ({
@@ -30,6 +31,7 @@ export const CenterStage: React.FC<CenterStageProps> = ({
   activeEmote,
   onEmote,
   avatarSvgRef,
+  fps = null,
 }) => {
   const { t } = useI18n();
   const { theme } = useTheme();
@@ -41,44 +43,51 @@ export const CenterStage: React.FC<CenterStageProps> = ({
   const lore = localized?.lore || config.lore || t.centerStage.defaultLore;
 
   return (
-    <main className={`flex-grow flex flex-col p-4 lg:p-6 space-y-6 overflow-y-auto ${
-      theme === 'dark' ? 'bg-[#07070a]/40 text-[#d1d1d1]' : 'bg-slate-100/50 text-slate-800'
-    }`} id="center-stage-container">
-      
+    <main
+      className={`flex-grow flex flex-col p-4 lg:p-6 space-y-6 overflow-y-auto ${
+        theme === 'dark' ? 'bg-[#07070a]/40 text-[#d1d1d1]' : 'bg-slate-100/50 text-slate-800'
+      }`}
+      id="center-stage-container"
+      aria-label={t.centerStage.title}
+    >
       {/* Main Visual Frame holding our VTuber */}
-      <div className={`p-4.5 rounded-lg border flex flex-col shadow-2xl relative overflow-hidden ${
-        theme === 'dark' 
-          ? 'bg-[#0f0f12] border-white/10' 
-          : 'bg-white border-slate-200'
-      }`} id="stage-monitoring-frame">
-        
+      <div
+        className={`p-4.5 rounded-lg border flex flex-col shadow-2xl relative overflow-hidden ${
+          theme === 'dark' ? 'bg-[#0f0f12] border-white/10' : 'bg-white border-slate-200'
+        }`}
+        id="stage-monitoring-frame"
+      >
         {/* Viewport bar of the monitor */}
-        <div className={`w-full flex items-center justify-between mb-4 border-b pb-3 ${
-          theme === 'dark' ? 'border-white/5' : 'border-slate-200'
-        }`}>
+        <div
+          className={`w-full flex items-center justify-between mb-4 border-b pb-3 ${
+            theme === 'dark' ? 'border-white/5' : 'border-slate-200'
+          }`}
+        >
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
             <div className="w-2 h-2 rounded-full bg-red-600 absolute" />
-            <span className={`text-[10px] font-bold uppercase tracking-wider pl-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+            <span
+              className={`text-[10px] font-bold uppercase tracking-wider pl-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+            >
               {t.centerStage.title}
             </span>
             <span className="text-[9px] px-1.5 py-0.5 bg-indigo-500/10 border border-indigo-500/25 text-indigo-500 dark:text-indigo-400 rounded-sm font-mono uppercase tracking-wide">
-              {t.centerStage.liveRatio}
+              {fps === null ? '--' : fps.toFixed(1)}fps {t.centerStage.liveRatio}
             </span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <button 
+            <button
               id="shuffle-hair-style"
               onClick={() => {
-                const rands = ['classic','side','center-part','short','hime','spiky'] as const;
-                const rBack = ['straight','tails','curly','short','braids','hime-long'] as const;
-                setConfig(prev => ({
+                const rands = ['classic', 'side', 'center-part', 'short', 'hime', 'spiky'] as const;
+                const rBack = ['straight', 'tails', 'curly', 'short', 'braids', 'hime-long'] as const;
+                setConfig((prev) => ({
                   ...prev,
                   hairStyleBang: rands[Math.floor(Math.random() * rands.length)],
                   hairStyleBack: rBack[Math.floor(Math.random() * rBack.length)],
-                  hairColor: '#' + Math.floor(Math.random()*16777215).toString(16),
-                  eyeColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+                  hairColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                  eyeColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
                 }));
               }}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-sm flex items-center space-x-1.5 transition-all cursor-pointer uppercase tracking-wider ${
@@ -87,6 +96,7 @@ export const CenterStage: React.FC<CenterStageProps> = ({
                   : 'text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300'
               }`}
               title="Швидкий мікс"
+              aria-label={t.centerStage.quickMix}
             >
               <Shuffle className="w-3.5 h-3.5 text-indigo-500 rotate-12" />
               <span>{t.centerStage.quickMix}</span>
@@ -95,10 +105,12 @@ export const CenterStage: React.FC<CenterStageProps> = ({
         </div>
 
         {/* Simulated Live Stage viewport */}
-        <div className={`relative w-full h-[525px] flex items-center justify-center rounded border select-none overflow-hidden shadow-inner ${
-          theme === 'dark' ? 'bg-[#101015] border-white/5' : 'bg-slate-50 border-slate-200/80'
-        }`} id="interactive-rig-stage">
-          
+        <div
+          className={`relative w-full h-[525px] flex items-center justify-center rounded border select-none overflow-hidden shadow-inner ${
+            theme === 'dark' ? 'bg-[#101015] border-white/5' : 'bg-slate-50 border-slate-200/80'
+          }`}
+          id="interactive-rig-stage"
+        >
           {/* Backdrops based on selection state */}
           {config.backgroundStyle === 'green-screen' ? (
             <div className="absolute inset-0 bg-[#00ff00]" />
@@ -116,23 +128,31 @@ export const CenterStage: React.FC<CenterStageProps> = ({
             </div>
           ) : (
             /* dark studio led stand */
-            <div className={`absolute inset-0 bg-gradient-to-b ${
-              theme === 'dark' ? 'from-[#141419] to-[#07070a]' : 'from-slate-200/30 to-slate-100'
-            }`}>
+            <div
+              className={`absolute inset-0 bg-gradient-to-b ${
+                theme === 'dark' ? 'from-[#141419] to-[#07070a]' : 'from-slate-200/30 to-slate-100'
+              }`}
+            >
               <div className="absolute bottom-0 left-0 right-0 h-[100px] bg-gradient-to-t from-indigo-500/5 to-transparent filter blur-md" />
             </div>
           )}
 
           {/* Grid dots visualizer overlay */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-          
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.04]"
+            style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 0)', backgroundSize: '24px 24px' }}
+          ></div>
+
           {/* Massive scale rendering for outstanding visual impact */}
           <div className="relative z-10 w-full h-full flex items-center justify-center transform scale-110">
-            <VTuberAvatar config={config} rig={rig} onScreenBuster={onScreenBuster} svgRef={avatarSvgRef} />
+            <VTuberAvatar config={config} rig={rig} onScreenBuster={onScreenBuster} svgRef={avatarSvgRef} fps={fps} />
           </div>
 
           {/* Status and coordination log overlaid on the stage border */}
-          <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-sm border border-white/10 z-20 font-mono text-[9px] text-white/50 flex items-center gap-3" id="hud-telemetry">
+          <div
+            className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-sm border border-white/10 z-20 font-mono text-[9px] text-white/50 flex items-center gap-3"
+            id="hud-telemetry"
+          >
             <span className="text-white/80 block">{t.centerStage.calibration}</span>
             <span className="text-indigo-400">Yaw {Math.round(rig.angleX)}°</span>
             <span className="text-pink-400">Pitch {Math.round(rig.angleY)}°</span>
@@ -141,11 +161,14 @@ export const CenterStage: React.FC<CenterStageProps> = ({
         </div>
 
         {/* Quick stats and action parameters at the footer of viewport */}
-        <div className={`mt-3 text-[10px] font-mono flex justify-between items-center p-3 rounded border ${
-          theme === 'dark'
-            ? 'text-white/40 bg-[#07070a] border-white/5'
-            : 'text-slate-500 bg-slate-50 border-slate-200/60'
-        }`} id="engine-telemetry">
+        <div
+          className={`mt-3 text-[10px] font-mono flex justify-between items-center p-3 rounded border ${
+            theme === 'dark'
+              ? 'text-white/40 bg-[#07070a] border-white/5'
+              : 'text-slate-500 bg-slate-50 border-slate-200/60'
+          }`}
+          id="engine-telemetry"
+        >
           <span>{t.centerStage.telemetrySquish}</span>
           <span>{t.centerStage.telemetryOrganic}</span>
           <span className="text-emerald-500 dark:text-emerald-400">
@@ -155,9 +178,14 @@ export const CenterStage: React.FC<CenterStageProps> = ({
       </div>
 
       {/* Emote trigger bar — manual expression control for streamers */}
-      <div className={`p-3 rounded-lg border shadow-xl ${
-        theme === 'dark' ? 'bg-[#0f0f12] border-white/10' : 'bg-white border-slate-200'
-      }`} id="emote-trigger-bar">
+      <div
+        className={`p-3 rounded-lg border shadow-xl ${
+          theme === 'dark' ? 'bg-[#0f0f12] border-white/10' : 'bg-white border-slate-200'
+        }`}
+        id="emote-trigger-bar"
+        role="region"
+        aria-label={t.centerStage.emotesTitle}
+      >
         <div className="flex items-center space-x-2 text-slate-400 dark:text-white/40 text-[10px] uppercase font-bold tracking-widest mb-2.5">
           <span className="text-indigo-500 dark:text-indigo-400">⚡</span>
           <span>{t.centerStage.emotesTitle}</span>
@@ -181,7 +209,9 @@ export const CenterStage: React.FC<CenterStageProps> = ({
                 }`}
               >
                 <span className="text-xl leading-none">{emote.icon}</span>
-                <span className={`text-[8px] font-mono mt-1 ${isActive ? 'text-indigo-500 dark:text-indigo-300 font-bold' : 'text-slate-400 dark:text-white/40'}`}>
+                <span
+                  className={`text-[8px] font-mono mt-1 ${isActive ? 'text-indigo-500 dark:text-indigo-300 font-bold' : 'text-slate-400 dark:text-white/40'}`}
+                >
                   {emote.key}
                 </span>
               </button>
@@ -191,13 +221,16 @@ export const CenterStage: React.FC<CenterStageProps> = ({
       </div>
 
       {/* Dossier Card under the central canvas */}
-      <div className={`p-5 rounded-lg border relative overflow-hidden shadow-xl ${
-        theme === 'dark' 
-          ? 'bg-[#0f0f12] border-white/10 text-[#d1d1d1]/85' 
-          : 'bg-white border-slate-200 text-slate-700'
-      }`} id="character-lore-dossier-card">
+      <div
+        className={`p-5 rounded-lg border relative overflow-hidden shadow-xl ${
+          theme === 'dark'
+            ? 'bg-[#0f0f12] border-white/10 text-[#d1d1d1]/85'
+            : 'bg-white border-slate-200 text-slate-700'
+        }`}
+        id="character-lore-dossier-card"
+      >
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full filter blur-2xl"></div>
-        
+
         <div className="flex items-center space-x-2 text-slate-400 dark:text-white/40 text-[10px] uppercase font-bold tracking-widest mb-3">
           <User className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
           <span>{t.centerStage.dossierTitle}</span>
@@ -210,13 +243,14 @@ export const CenterStage: React.FC<CenterStageProps> = ({
           </span>
         </h3>
 
-        <p className={`text-xs leading-relaxed font-sans italic border-l-2 border-indigo-500/40 pl-3.5 mt-3 ${
-          theme === 'dark' ? 'text-[#d1d1d1]/85' : 'text-slate-600'
-        }`}>
+        <p
+          className={`text-xs leading-relaxed font-sans italic border-l-2 border-indigo-500/40 pl-3.5 mt-3 ${
+            theme === 'dark' ? 'text-[#d1d1d1]/85' : 'text-slate-600'
+          }`}
+        >
           "{lore}"
         </p>
       </div>
-
     </main>
   );
 };

@@ -6,13 +6,45 @@ import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { WebSocketServer, WebSocket } from 'ws';
+import { randomUUID } from 'node:crypto';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_TIMEOUT_MS = readPositiveInteger(process.env.GEMINI_TIMEOUT_MS, 25_000);
+const GEMINI_RETRY_ATTEMPTS = readPositiveInteger(process.env.GEMINI_RETRY_ATTEMPTS, 2);
 const MAX_PROMPT_LENGTH = 600;
+
+function readPositiveInteger(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function log(level: 'info' | 'warn' | 'error', event: string, details: Record<string, unknown> = {}) {
+  const entry = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    event,
+    ...details,
+  });
+  if (level === 'error') {
+    console.error(entry);
+  } else if (level === 'warn') {
+    console.warn(entry);
+  } else {
+    console.log(entry);
+  }
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function isTimeoutError(error: unknown): boolean {
+  return error instanceof Error && (error.name === 'APIConnectionTimeoutError' || /timed? ?out/i.test(error.message));
+}
 
 // Cap request body size to avoid memory abuse.
 app.use(express.json({ limit: '16kb' }));
@@ -53,12 +85,16 @@ const aiLimiter = createRateLimiter(60_000, 15); // 15 generations / minute / IP
 const getGeminiClient = () => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.warn('WARNING: GEMINI_API_KEY is not set. AI style generation is disabled.');
+    log('warn', 'gemini.disabled', { reason: 'missing_api_key' });
     return null;
   }
   return new GoogleGenAI({
     apiKey,
-    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
+    httpOptions: {
+      headers: { 'User-Agent': 'v-studio' },
+      timeout: GEMINI_TIMEOUT_MS,
+      retryOptions: { attempts: GEMINI_RETRY_ATTEMPTS },
+    },
   });
 };
 
@@ -70,6 +106,7 @@ app.get('/healthz', (_req, res) => {
 // API Endpoint for AI generating custom VTuber themes
 app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
   const { prompt } = req.body ?? {};
+  const requestId = randomUUID();
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
     return res.status(400).json({ error: 'Промпт порожній або некоректний.' });
@@ -86,6 +123,12 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
   }
 
   try {
+    const startedAt = Date.now();
+    log('info', 'gemini.generate.started', {
+      requestId,
+      model: GEMINI_MODEL,
+      promptLength: prompt.length,
+    });
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
       contents: `Створи детальну художню конфігурацію VTuber аватара відповідно до запиту користувача: "${prompt}".
@@ -96,20 +139,49 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            skinColor: { type: Type.STRING, description: 'HEX color. Normal skin tones (e.g., #fbe2d3), pale gothic tones, or fantasy colors.' },
+            skinColor: {
+              type: Type.STRING,
+              description: 'HEX color. Normal skin tones (e.g., #fbe2d3), pale gothic tones, or fantasy colors.',
+            },
             eyeColor: { type: Type.STRING, description: 'HEX glowing eye iris color' },
-            pupilStyle: { type: Type.STRING, enum: ['round', 'star', 'heart', 'slit'], description: 'pupil contour shape' },
+            pupilStyle: {
+              type: Type.STRING,
+              enum: ['round', 'star', 'heart', 'slit'],
+              description: 'pupil contour shape',
+            },
             pupilColor: { type: Type.STRING, description: 'Inner pupil HEX color, usually darker or bright contrast' },
             eyebrowStyle: { type: Type.STRING, enum: ['normal', 'thick', 'thin', 'sad'] },
             eyebrowColor: { type: Type.STRING, description: 'HEX color matching or contrasting hair' },
-            hairStyleBang: { type: Type.STRING, enum: ['classic', 'side', 'center-part', 'short', 'hime', 'spiky', 'curly-bangs', 'cross-bangs'] },
-            hairStyleBack: { type: Type.STRING, enum: ['straight', 'tails', 'short', 'curly', 'braids', 'hime-long', 'drill-tails', 'wavy'] },
+            hairStyleBang: {
+              type: Type.STRING,
+              enum: ['classic', 'side', 'center-part', 'short', 'hime', 'spiky', 'curly-bangs', 'cross-bangs'],
+            },
+            hairStyleBack: {
+              type: Type.STRING,
+              enum: ['straight', 'tails', 'short', 'curly', 'braids', 'hime-long', 'drill-tails', 'wavy'],
+            },
             hairColor: { type: Type.STRING, description: 'Primary hair HEX color' },
             hairHighlightColor: { type: Type.STRING, description: 'Hair glow arc highlights HEX color' },
-            clothingStyle: { type: Type.STRING, enum: ['hoodie', 'kimono', 'suit', 'cyber-armor', 'goth-dress', 'druid-cloak', 'sailor-fuku', 'sweater', 'maid'] },
+            clothingStyle: {
+              type: Type.STRING,
+              enum: [
+                'hoodie',
+                'kimono',
+                'suit',
+                'cyber-armor',
+                'goth-dress',
+                'druid-cloak',
+                'sailor-fuku',
+                'sweater',
+                'maid',
+              ],
+            },
             clothingColor1: { type: Type.STRING, description: 'Primary clothes HEX color' },
             clothingColor2: { type: Type.STRING, description: 'Secondary clothing accents HEX color' },
-            accessoryStyle: { type: Type.STRING, enum: ['none', 'headphones', 'horns', 'glasses', 'neko-ears', 'angel-halo', 'fox-mask'] },
+            accessoryStyle: {
+              type: Type.STRING,
+              enum: ['none', 'headphones', 'horns', 'glasses', 'neko-ears', 'angel-halo', 'fox-mask'],
+            },
             accessoryColor: { type: Type.STRING, description: 'HEX color of accessory item' },
             backgroundStyle: { type: Type.STRING, enum: ['gaming', 'nebula', 'green-screen', 'dark-studio'] },
             blushColor: { type: Type.STRING, description: 'Blush / makeup HEX color' },
@@ -121,13 +193,30 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
             clothingPrint: { type: Type.STRING, enum: ['none', 'cat', 'star', 'heart', 'cyber', 'cross'] },
             artStyle: { type: Type.STRING, enum: ['classic', 'anime', 'retro'] },
             name: { type: Type.STRING, description: "Креативне ім'я для VTuber-а українською мовою" },
-            lore: { type: Type.STRING, description: 'Коротка, весела та затишна передісторія стрімера українською мовою (2-3 речення).' },
+            lore: {
+              type: Type.STRING,
+              description: 'Коротка, весела та затишна передісторія стрімера українською мовою (2-3 речення).',
+            },
           },
           required: [
-            'skinColor', 'eyeColor', 'pupilStyle', 'pupilColor', 'eyebrowStyle', 'eyebrowColor',
-            'hairStyleBang', 'hairStyleBack', 'hairColor', 'hairHighlightColor', 'clothingStyle',
-            'clothingColor1', 'clothingColor2', 'accessoryStyle', 'accessoryColor', 'backgroundStyle',
-            'name', 'lore',
+            'skinColor',
+            'eyeColor',
+            'pupilStyle',
+            'pupilColor',
+            'eyebrowStyle',
+            'eyebrowColor',
+            'hairStyleBang',
+            'hairStyleBack',
+            'hairColor',
+            'hairHighlightColor',
+            'clothingStyle',
+            'clothingColor1',
+            'clothingColor2',
+            'accessoryStyle',
+            'accessoryColor',
+            'backgroundStyle',
+            'name',
+            'lore',
           ],
         },
       },
@@ -136,10 +225,23 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
     const text = response.text;
     if (!text) throw new Error('Отримано порожню відповідь від моделі.');
 
+    log('info', 'gemini.generate.completed', {
+      requestId,
+      model: GEMINI_MODEL,
+      durationMs: Date.now() - startedAt,
+    });
     res.json(JSON.parse(text.trim()));
-  } catch (error: any) {
-    console.error('Gemini API Error:', error?.message || error);
-    res.status(500).json({ error: 'Помилка під час генерації у Gemini.' });
+  } catch (error: unknown) {
+    const timedOut = isTimeoutError(error);
+    log('error', 'gemini.generate.failed', {
+      requestId,
+      model: GEMINI_MODEL,
+      timedOut,
+      error: getErrorMessage(error),
+    });
+    res.status(timedOut ? 504 : 502).json({
+      error: timedOut ? 'Gemini не відповів вчасно. Спробуйте ще раз.' : 'Помилка під час генерації у Gemini.',
+    });
   }
 });
 
@@ -200,7 +302,7 @@ function setupOverlayRelay(server: http.Server) {
     });
   });
 
-  console.log('Overlay WebSocket relay listening on /ws');
+  log('info', 'overlay.relay.ready', { path: '/ws' });
 }
 
 // Serve frontend assets
@@ -211,21 +313,24 @@ const startServer = async () => {
       appType: 'spa',
     });
     app.use(vite.middlewares);
-    console.log('Vite middleware loaded in DEVELOPMENT mode');
+    log('info', 'server.assets.ready', { mode: 'development' });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
-    console.log('Static server loaded in PRODUCTION mode serving from dist/');
+    log('info', 'server.assets.ready', { mode: 'production', directory: 'dist' });
   }
 
   const server = http.createServer(app);
   setupOverlayRelay(server);
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`VTuber Studio server active on: http://0.0.0.0:${PORT}`);
+    log('info', 'server.ready', { host: '0.0.0.0', port: PORT });
   });
 };
 
-startServer();
+startServer().catch((error: unknown) => {
+  log('error', 'server.start.failed', { error: getErrorMessage(error) });
+  process.exitCode = 1;
+});

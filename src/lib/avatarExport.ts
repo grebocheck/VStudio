@@ -7,11 +7,13 @@ export interface AvatarSvgExportOptions {
 const DEFAULT_EXPORT_SIZE = 800;
 
 export function safeExportFileName(name: string): string {
-  return (name || 'vstudio-avatar')
-    .trim()
-    .replace(/[^\w.-]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-    .slice(0, 80) || 'vstudio-avatar';
+  return (
+    (name || 'vstudio-avatar')
+      .trim()
+      .replace(/[^\w.-]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 80) || 'vstudio-avatar'
+  );
 }
 
 export function timestampForFileName(date = new Date()): string {
@@ -78,17 +80,18 @@ export async function drawAvatarSvgToCanvas(
   ctx: CanvasRenderingContext2D,
   options: AvatarSvgExportOptions = {},
 ): Promise<void> {
-  await drawSerializedSvgToCanvas(serializeAvatarSvg(svg, {
-    width: canvas.width,
-    height: canvas.height,
-    transparent: options.transparent,
-  }), canvas, ctx);
+  await drawSerializedSvgToCanvas(
+    serializeAvatarSvg(svg, {
+      width: canvas.width,
+      height: canvas.height,
+      transparent: options.transparent,
+    }),
+    canvas,
+    ctx,
+  );
 }
 
-export async function avatarSvgToPngBlob(
-  svg: SVGSVGElement,
-  options: AvatarSvgExportOptions = {},
-): Promise<Blob> {
+export async function avatarSvgToPngBlob(svg: SVGSVGElement, options: AvatarSvgExportOptions = {}): Promise<Blob> {
   const canvas = document.createElement('canvas');
   canvas.width = options.width ?? DEFAULT_EXPORT_SIZE;
   canvas.height = options.height ?? DEFAULT_EXPORT_SIZE;

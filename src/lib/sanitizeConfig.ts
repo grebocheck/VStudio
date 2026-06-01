@@ -10,7 +10,17 @@ const ENUMS = {
   eyebrowStyle: ['normal', 'thick', 'thin', 'sad'],
   hairStyleBang: ['classic', 'side', 'center-part', 'short', 'hime', 'spiky', 'curly-bangs', 'cross-bangs'],
   hairStyleBack: ['straight', 'tails', 'short', 'curly', 'braids', 'hime-long', 'drill-tails', 'wavy'],
-  clothingStyle: ['hoodie', 'kimono', 'suit', 'cyber-armor', 'goth-dress', 'druid-cloak', 'sailor-fuku', 'sweater', 'maid'],
+  clothingStyle: [
+    'hoodie',
+    'kimono',
+    'suit',
+    'cyber-armor',
+    'goth-dress',
+    'druid-cloak',
+    'sailor-fuku',
+    'sweater',
+    'maid',
+  ],
   accessoryStyle: ['none', 'headphones', 'horns', 'glasses', 'neko-ears', 'angel-halo', 'fox-mask'],
   backgroundStyle: ['gaming', 'nebula', 'green-screen', 'dark-studio'],
   earStyle: ['normal', 'elf', 'pointy'],
@@ -45,7 +55,18 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
   }
 
   // Color fields (HEX only)
-  for (const key of ['skinColor', 'eyeColor', 'pupilColor', 'eyebrowColor', 'hairColor', 'hairHighlightColor', 'clothingColor1', 'clothingColor2', 'accessoryColor', 'blushColor'] as const) {
+  for (const key of [
+    'skinColor',
+    'eyeColor',
+    'pupilColor',
+    'eyebrowColor',
+    'hairColor',
+    'hairHighlightColor',
+    'clothingColor1',
+    'clothingColor2',
+    'accessoryColor',
+    'blushColor',
+  ] as const) {
     if (isHex(p[key])) out[key] = (p[key] as string).trim();
   }
 

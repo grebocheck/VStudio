@@ -17,7 +17,7 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('vstudio_lang');
-    return (saved === 'uk' || saved === 'en') ? saved : 'en';
+    return saved === 'uk' || saved === 'en' ? saved : 'en';
   });
 
   useEffect(() => {
@@ -27,14 +27,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const value = {
     language,
     setLanguage,
-    t: translations[language]
+    t: translations[language],
   };
 
-  return (
-    <I18nContext.Provider value={value}>
-      {children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {

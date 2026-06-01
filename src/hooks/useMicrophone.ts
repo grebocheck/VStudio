@@ -35,7 +35,8 @@ export function useMicrophone(active: boolean, onError?: (err: unknown) => void)
         }
         streamRef.current = stream;
 
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const AudioContextClass =
+          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         const audioContext = new AudioContextClass();
         audioContextRef.current = audioContext;
 

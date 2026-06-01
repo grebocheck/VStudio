@@ -31,8 +31,10 @@ src/
     useCameraCalibration.ts persisted camera tracking profile
     useAvatarRecorder.ts   SVG → canvas → MediaRecorder WebM clips
     useAnimationEngine.ts  the per-frame rAF loop (blink, mic, auto, camera, emotions, hair)
+    useAiGenerate.ts       Gemini request lifecycle + defensive response handling
   lib/
     avatarExport.ts        SVG serialization + transparent PNG export
+    hairPhysics.ts         pure spring-mass secondary hair motion
     sanitizeConfig.ts      defensive merge/clamp for untrusted configs (AI / import)
     storage.ts             safe localStorage helpers
   components/              UI (sidebars, stage) + components/avatar (SVG parts)
@@ -52,23 +54,26 @@ npm run dev               # http://localhost:3000
 
 ## Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Dev server (Express + Vite middleware, HMR) |
-| `npm run build` | Build client (Vite) + server (esbuild → `dist/server.cjs`) |
-| `npm run start` | Serve the production build |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
-| `npm test` | Run unit tests (Vitest) |
-| `npm run format` | Prettier write |
+| Script                 | Description                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| `npm run dev`          | Dev server (Express + Vite middleware, HMR)                |
+| `npm run build`        | Build client (Vite) + server (esbuild → `dist/server.cjs`) |
+| `npm run start`        | Serve the production build                                 |
+| `npm run typecheck`    | `tsc --noEmit`                                             |
+| `npm run lint`         | ESLint                                                     |
+| `npm test`             | Run unit tests (Vitest)                                    |
+| `npm run format`       | Prettier write                                             |
+| `npm run format:check` | Verify Prettier formatting                                 |
 
 ## Environment
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `GEMINI_API_KEY` | Enables AI style generation (omit to disable the AI endpoint) | — |
-| `GEMINI_MODEL` | Model used for generation | `gemini-3.5-flash` |
-| `PORT` | Server port | `3000` |
+| Variable                | Purpose                                                       | Default            |
+| ----------------------- | ------------------------------------------------------------- | ------------------ |
+| `GEMINI_API_KEY`        | Enables AI style generation (omit to disable the AI endpoint) | —                  |
+| `GEMINI_MODEL`          | Model used for generation                                     | `gemini-2.5-flash` |
+| `GEMINI_TIMEOUT_MS`     | Timeout for each Gemini request attempt                       | `25000`            |
+| `GEMINI_RETRY_ATTEMPTS` | Maximum Gemini attempts, including the initial request        | `2`                |
+| `PORT`                  | Server port                                                   | `3000`             |
 
 ## Docker
 

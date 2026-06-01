@@ -85,7 +85,7 @@ export const HeadBase: React.FC<{
           fill={skinColor}
         />
       )}
-      
+
       {/* Dynamic cheek blush & slash layers */}
       {blushOpacity > 0 && (
         <>
@@ -100,7 +100,7 @@ export const HeadBase: React.FC<{
                 <line x1="140" y1="190" x2="148" y2="200" />
                 <line x1="146" y1="190" x2="154" y2="200" />
                 <line x1="152" y1="190" x2="160" y2="200" />
-                
+
                 <line x1="240" y1="190" x2="248" y2="200" />
                 <line x1="246" y1="190" x2="254" y2="200" />
                 <line x1="252" y1="190" x2="260" y2="200" />
@@ -124,7 +124,14 @@ export const HeadBase: React.FC<{
       ) : artStyle === 'anime' ? (
         <path d="M199 184 L201 190" stroke="rgba(0,0,0,0.35)" strokeWidth="1" fill="none" strokeLinecap="round" />
       ) : (
-        <path d="M198 185 L200 193 L196 195" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M198 185 L200 193 L196 195"
+          stroke="rgba(0,0,0,0.25)"
+          strokeWidth="1.5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       )}
     </g>
   );
@@ -203,7 +210,7 @@ export const Live2DMouth: React.FC<{
                 C ${mouthX + 4} ${mouthY + curveYOffset * 0.1 + 4}, ${mouthX - 4} ${mouthY + curveYOffset * 0.1 + 4}, ${mouthX - 7} ${mouthY + curveYOffset * 0.1} Z`}
             fill="#fb7185"
             stroke="#1c1917"
-            strokeWidth={artStyle === 'anime' ? "1.6" : "2"}
+            strokeWidth={artStyle === 'anime' ? '1.6' : '2'}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -211,7 +218,7 @@ export const Live2DMouth: React.FC<{
         <path
           d={`M ${startX} ${startY} Q ${mouthX} ${controlY}, ${endX} ${endY}`}
           stroke="#1c1917"
-          strokeWidth={artStyle === 'anime' ? "2" : "2.5"}
+          strokeWidth={artStyle === 'anime' ? '2' : '2.5'}
           fill="none"
           strokeLinecap="round"
         />
@@ -256,7 +263,7 @@ export const Live2DMouth: React.FC<{
               Q ${mouthX} ${cavityDepthY}, ${mouthX - width} ${lipTopStartY} Z`}
           fill="#a81a32"
           stroke="#1c1917"
-          strokeWidth={artStyle === 'anime' ? "1.8" : "2"}
+          strokeWidth={artStyle === 'anime' ? '1.8' : '2'}
           strokeLinejoin="round"
         />
 
@@ -306,7 +313,7 @@ export const Live2DMouth: React.FC<{
                 C ${mouthX + 5} ${lipTopStartY + h + 2}, ${mouthX - 5} ${lipTopStartY + h + 2}, ${mouthX - 8} ${lipTopStartY + h * 0.3} Z`}
             fill="#fb7185"
             stroke="#1c1917"
-            strokeWidth={artStyle === 'anime' ? "1.6" : "2"}
+            strokeWidth={artStyle === 'anime' ? '1.6' : '2'}
             strokeLinecap="round"
             strokeLinejoin="round"
           />

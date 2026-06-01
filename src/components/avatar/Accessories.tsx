@@ -107,8 +107,26 @@ export const AccessoryComponent: React.FC<{
           <circle cx="155" cy="135" r="21" fill="none" stroke={color} strokeWidth="3.5" />
           <circle cx="245" cy="135" r="21" fill="none" stroke={color} strokeWidth="3.5" />
           <line x1="176" y1="135" x2="224" y2="135" stroke={color} strokeWidth="3.5" />
-          <line x1="145" y1="125" x2="160" y2="140" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-          <line x1="235" y1="125" x2="250" y2="140" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+          <line
+            x1="145"
+            y1="125"
+            x2="160"
+            y2="140"
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+          <line
+            x1="235"
+            y1="125"
+            x2="250"
+            y2="140"
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
         </g>
       )}
 
@@ -152,22 +170,57 @@ export const AccessoryComponent: React.FC<{
       {style === 'fox-mask' && (
         <g id="accessory-fox-mask" transform="translate(285, 115) rotate(16) scale(0.68)">
           {/* White base mask */}
-          <path d="M 0 -60 C -45 -60, -50 0, -45 40 C -40 65, 0 85, 0 85 C 0 85, 40 65, 45 40 C 50 0, 45 -60, 0 -60 Z" fill="#ffffff" stroke="#1c1917" strokeWidth="3.5" />
+          <path
+            d="M 0 -60 C -45 -60, -50 0, -45 40 C -40 65, 0 85, 0 85 C 0 85, 40 65, 45 40 C 50 0, 45 -60, 0 -60 Z"
+            fill="#ffffff"
+            stroke="#1c1917"
+            strokeWidth="3.5"
+          />
           {/* Fox ears */}
-          <path d="M -38 -35 L -45 -75 L -12 -52 Z" fill="#ffffff" stroke="#1c1917" strokeWidth="3.5" strokeLinejoin="round" />
+          <path
+            d="M -38 -35 L -45 -75 L -12 -52 Z"
+            fill="#ffffff"
+            stroke="#1c1917"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
           <path d="M -35 -38 L -40 -67 L -16 -50 Z" fill="#ef4444" />
-          <path d="M 38 -35 L 45 -75 L 12 -52 Z" fill="#ffffff" stroke="#1c1917" strokeWidth="3.5" strokeLinejoin="round" />
+          <path
+            d="M 38 -35 L 45 -75 L 12 -52 Z"
+            fill="#ffffff"
+            stroke="#1c1917"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
           <path d="M 35 -38 L 40 -67 L 16 -50 Z" fill="#ef4444" />
           {/* Traditional kitsune rouge paint patterns */}
-          <path d="M -25 -5 Q -38 -18, -25 -20 Q -15 -18, -20 -10" fill="none" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" />
-          <path d="M 25 -5 Q 38 -18, 25 -20 Q 15 -18, 20 -10" fill="none" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" />
+          <path
+            d="M -25 -5 Q -38 -18, -25 -20 Q -15 -18, -20 -10"
+            fill="none"
+            stroke="#ef4444"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 25 -5 Q 38 -18, 25 -20 Q 15 -18, 20 -10"
+            fill="none"
+            stroke="#ef4444"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+          />
           {/* Fox eyes (closed slits) */}
           <path d="M -28 5 Q -15 0, -8 11" fill="none" stroke="#1c1917" strokeWidth="4.2" strokeLinecap="round" />
           <path d="M 28 5 Q 15 0, 8 11" fill="none" stroke="#1c1917" strokeWidth="4.2" strokeLinecap="round" />
           {/* Tiny cute nose */}
           <polygon points="-4,38 4,38 0,44" fill="#1c1917" />
           {/* Red decorative rope behind mask */}
-          <path d="M -44 15 C -60 30, -52 65, -45 80" stroke="#ef4444" strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path
+            d="M -44 15 C -60 30, -52 65, -45 80"
+            stroke="#ef4444"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
           <path d="M 44 15 C 60 30, 52 65, 45 80" stroke="#ef4444" strokeWidth="4" fill="none" strokeLinecap="round" />
         </g>
       )}

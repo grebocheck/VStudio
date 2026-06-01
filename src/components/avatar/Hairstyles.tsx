@@ -19,7 +19,12 @@ export const HairComponent: React.FC<{
     <>
       {/* --- BACK HAIR (Renders BEHIND the head layer) --- */}
       {backStyle === 'straight' && (
-        <g style={{ transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${hairSwayX * 0.12}deg)`, transformOrigin: '200px 100px' }}>
+        <g
+          style={{
+            transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${hairSwayX * 0.12}deg)`,
+            transformOrigin: '200px 100px',
+          }}
+        >
           <path
             d="M100 130 C70 170, 75 290, 85 360 C100 360, 110 320, 120 280 L280 280 C290 320, 300 360, 315 360 C325 290, 330 170, 300 130 Z"
             fill={color}
@@ -49,32 +54,81 @@ export const HairComponent: React.FC<{
              C335 340, 340 300, 325 280
              C345 240, 335 160, 295 130 Z"
           fill={color}
-          style={{ transform: `scaleY(${1 + bounce * 0.005 + hairSwayY * 0.01}) scaleX(${1 - hairSwayY * 0.004}) rotate(${hairSwayX * 0.15}deg)`, transformOrigin: '200px 100px' }}
+          style={{
+            transform: `scaleY(${1 + bounce * 0.005 + hairSwayY * 0.01}) scaleX(${1 - hairSwayY * 0.004}) rotate(${hairSwayX * 0.15}deg)`,
+            transformOrigin: '200px 100px',
+          }}
         />
       )}
 
       {backStyle === 'drill-tails' && (
         <g id="hair-drill-tails">
-          <g style={{ transform: `scaleY(${1 + bounce * 0.005 + hairSwayY * 0.012}) rotate(${tailSway + hairSwayX * 1.15}deg)`, transformOrigin: '110px 130px' }}>
+          <g
+            style={{
+              transform: `scaleY(${1 + bounce * 0.005 + hairSwayY * 0.012}) rotate(${tailSway + hairSwayX * 1.15}deg)`,
+              transformOrigin: '110px 130px',
+            }}
+          >
             <path
               d="M110 120 C100 120, 60 140, 50 180 C40 220, 65 240, 45 280 C30 310, 55 350, 70 340 C85 330, 65 285, 80 250 C95 215, 78 190, 85 160 C92 130, 105 125, 110 120 Z"
               fill={color}
             />
-            <path d="M85 160 C65 175, 48 210, 58 230" stroke={highlightColor} strokeWidth="2.5" fill="none" opacity="0.65" />
-            <path d="M78 220 C55 242, 42 270, 52 290" stroke={highlightColor} strokeWidth="2.5" fill="none" opacity="0.65" />
-            <path d="M68 280 C45 305, 48 322, 60 330" stroke={highlightColor} strokeWidth="2" fill="none" opacity="0.65" />
+            <path
+              d="M85 160 C65 175, 48 210, 58 230"
+              stroke={highlightColor}
+              strokeWidth="2.5"
+              fill="none"
+              opacity="0.65"
+            />
+            <path
+              d="M78 220 C55 242, 42 270, 52 290"
+              stroke={highlightColor}
+              strokeWidth="2.5"
+              fill="none"
+              opacity="0.65"
+            />
+            <path
+              d="M68 280 C45 305, 48 322, 60 330"
+              stroke={highlightColor}
+              strokeWidth="2"
+              fill="none"
+              opacity="0.65"
+            />
           </g>
-          
-          <g style={{ transform: `scaleY(${1 + bounce * 0.005 + hairSwayY * 0.012}) rotate(${-tailSway + hairSwayX * 1.15}deg)`, transformOrigin: '290px 130px' }}>
+
+          <g
+            style={{
+              transform: `scaleY(${1 + bounce * 0.005 + hairSwayY * 0.012}) rotate(${-tailSway + hairSwayX * 1.15}deg)`,
+              transformOrigin: '290px 130px',
+            }}
+          >
             <path
               d="M290 120 C300 120, 340 140, 350 180 C360 220, 335 240, 355 280 C370 310, 345 350, 330 340 C315 330, 335 285, 320 250 C305 215, 322 190, 315 160 C308 130, 295 125, 290 120 Z"
               fill={color}
             />
-            <path d="M315 160 C335 175, 352 210, 342 230" stroke={highlightColor} strokeWidth="2.5" fill="none" opacity="0.65" />
-            <path d="M322 220 C345 242, 358 270, 348 290" stroke={highlightColor} strokeWidth="2.5" fill="none" opacity="0.65" />
-            <path d="M332 280 C355 305, 352 322, 340 330" stroke={highlightColor} strokeWidth="2" fill="none" opacity="0.65" />
+            <path
+              d="M315 160 C335 175, 352 210, 342 230"
+              stroke={highlightColor}
+              strokeWidth="2.5"
+              fill="none"
+              opacity="0.65"
+            />
+            <path
+              d="M322 220 C345 242, 358 270, 348 290"
+              stroke={highlightColor}
+              strokeWidth="2.5"
+              fill="none"
+              opacity="0.65"
+            />
+            <path
+              d="M332 280 C355 305, 352 322, 340 330"
+              stroke={highlightColor}
+              strokeWidth="2"
+              fill="none"
+              opacity="0.65"
+            />
           </g>
-          
+
           <circle cx="104" cy="132" r="6" fill={highlightColor} />
           <circle cx="296" cy="132" r="6" fill={highlightColor} />
         </g>
@@ -95,7 +149,10 @@ export const HairComponent: React.FC<{
              T 325 220
              Q330 170, 298 130 Z"
           fill={color}
-          style={{ transform: `scaleY(${1 + bounce * 0.007 + hairSwayY * 0.01}) scaleX(${1 - hairSwayY * 0.004}) rotate(${hairSwayX * 0.15}deg)`, transformOrigin: '200px 100px' }}
+          style={{
+            transform: `scaleY(${1 + bounce * 0.007 + hairSwayY * 0.01}) scaleX(${1 - hairSwayY * 0.004}) rotate(${hairSwayX * 0.15}deg)`,
+            transformOrigin: '200px 100px',
+          }}
         />
       )}
 
@@ -109,7 +166,10 @@ export const HairComponent: React.FC<{
                C55 335, 65 290, 60 220
                C58 190, 85 150, 95 140 Z"
             fill={color}
-            style={{ transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${tailSway + hairSwayX * 1.15}deg)`, transformOrigin: '110px 130px' }}
+            style={{
+              transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${tailSway + hairSwayX * 1.15}deg)`,
+              transformOrigin: '110px 130px',
+            }}
           />
           {/* Right twin-tail */}
           <path
@@ -119,7 +179,10 @@ export const HairComponent: React.FC<{
                C345 335, 335 290, 340 220
                C342 190, 315 150, 305 140 Z"
             fill={color}
-            style={{ transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${-tailSway + hairSwayX * 1.15}deg)`, transformOrigin: '290px 130px' }}
+            style={{
+              transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${-tailSway + hairSwayX * 1.15}deg)`,
+              transformOrigin: '290px 130px',
+            }}
           />
 
           <circle cx="104" cy="132" r="6" fill={highlightColor} />
@@ -128,26 +191,30 @@ export const HairComponent: React.FC<{
       )}
 
       {backStyle === 'short' && (
-        <path
-          d="M110 130 C100 160, 90 200, 105 230 Q200 240, 295 230 C310 200, 300 160, 290 130 Z"
-          fill={color}
-        />
+        <path d="M110 130 C100 160, 90 200, 105 230 Q200 240, 295 230 C310 200, 300 160, 290 130 Z" fill={color} />
       )}
 
       {backStyle === 'braids' && (
         <g id="hair-braids">
+          <path d="M105 130 C95 160, 70 240, 75 330 C80 340, 90 340, 90 310 C85 240, 105 170, 115 130 Z" fill={color} />
           <path
-            d="M105 130 C95 160, 70 240, 75 330 C80 340, 90 340, 90 310 C85 240, 105 170, 115 130 Z"
-            fill={color}
+            d="M 100 150 Q 85 160, 95 180 Q 80 190, 90 210 Q 75 220, 85 240 Q 70 255, 80 275 Q 65 290, 75 310"
+            stroke="rgba(0,0,0,0.15)"
+            strokeWidth="3"
+            fill="none"
           />
-          <path d="M 100 150 Q 85 160, 95 180 Q 80 190, 90 210 Q 75 220, 85 240 Q 70 255, 80 275 Q 65 290, 75 310" stroke="rgba(0,0,0,0.15)" strokeWidth="3" fill="none" />
-          
+
           <path
             d="M295 130 C305 160, 330 240, 325 330 C320 340, 310 340, 310 310 C315 240, 295 170, 285 130 Z"
             fill={color}
           />
-          <path d="M 300 150 Q 315 160, 305 180 Q 320 190, 310 210 Q 325 220, 315 240 Q 330 255, 320 275 Q 335 290, 325 310" stroke="rgba(0,0,0,0.15)" strokeWidth="3" fill="none" />
-          
+          <path
+            d="M 300 150 Q 315 160, 305 180 Q 320 190, 310 210 Q 325 220, 315 240 Q 330 255, 320 275 Q 335 290, 325 310"
+            stroke="rgba(0,0,0,0.15)"
+            strokeWidth="3"
+            fill="none"
+          />
+
           <rect x="68" y="305" width="14" height="6" fill={highlightColor} rx="1" />
           <rect x="318" y="305" width="14" height="6" fill={highlightColor} rx="1" />
         </g>
@@ -155,10 +222,7 @@ export const HairComponent: React.FC<{
 
       {backStyle === 'hime-long' && (
         <g id="hair-hime-long">
-          <path
-            d="M100 130 C80 170, 75 240, 72 380 L328 380 C325 240, 320 170, 300 130 Z"
-            fill={color}
-          />
+          <path d="M100 130 C80 170, 75 240, 72 380 L328 380 C325 240, 320 170, 300 130 Z" fill={color} />
           {isAnime ? (
             <>
               {/* Flawless shaded secondary overlap layers */}
@@ -341,7 +405,13 @@ export const FrontHairComponent: React.FC<{
             fill={color}
           />
           <path d="M192 120 L212 182 L198 182 L185 140 Z" fill={color} opacity="0.95" />
-          <path d="M208 120 L188 182 L202 182 L215 140 Z" fill={color} opacity="0.95" stroke={highlightColor} strokeWidth="1" />
+          <path
+            d="M208 120 L188 182 L202 182 L215 140 Z"
+            fill={color}
+            opacity="0.95"
+            stroke={highlightColor}
+            strokeWidth="1"
+          />
           <path d="M106 130 Q88 170, 115 225 L125 195 Q106 160, 118 135 Z" fill={color} />
           <path d="M294 130 Q312 170, 285 225 L275 195 Q294 160, 282 135 Z" fill={color} />
         </g>
@@ -366,16 +436,8 @@ export const FrontHairComponent: React.FC<{
             strokeLinecap="round"
             opacity="0.82"
           />
-          <path
-            d="M 160 102 L 165 92 L 170 102 L 165 106 Z"
-            fill="#ffffff"
-            opacity="0.9"
-          />
-          <path
-            d="M 235 102 L 240 92 L 245 102 L 240 106 Z"
-            fill="#ffffff"
-            opacity="0.9"
-          />
+          <path d="M 160 102 L 165 92 L 170 102 L 165 106 Z" fill="#ffffff" opacity="0.9" />
+          <path d="M 235 102 L 240 92 L 245 102 L 240 106 Z" fill="#ffffff" opacity="0.9" />
         </g>
       ) : (
         <path

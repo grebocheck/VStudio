@@ -128,7 +128,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
       <div>
         <h4 className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 tracking-widest mb-3 flex items-center space-x-1.5 font-mono">
           <Smile className="w-3.5 h-3.5 text-pink-500 dark:text-pink-400" />
-          <span>{isEn ? "Emotion Controls (Live2D Presets)" : "Керування Емоціями (Live2D Presets)"}</span>
+          <span>{isEn ? 'Emotion Controls (Live2D Presets)' : 'Керування Емоціями (Live2D Presets)'}</span>
         </h4>
         <div className="grid grid-cols-3 gap-2">
           {expressions.map((item) => (
@@ -148,15 +148,18 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
       </div>
 
       {/* Controller Mode Selection */}
-      <div className={`p-4 rounded border shadow-inner ${
-        theme === 'dark' ? 'bg-[#0a0a0c] border-white/10' : 'bg-slate-100/50 border-slate-200'
-      }`}>
+      <div
+        className={`p-4 rounded border shadow-inner ${
+          theme === 'dark' ? 'bg-[#0a0a0c] border-white/10' : 'bg-slate-100/50 border-slate-200'
+        }`}
+      >
         <h4 className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 tracking-widest mb-3 font-mono">
-          {isEn ? "INTERACTIVE RIG TRACKING ENGINE SOURCE" : "ДЖЕРЕЛО ІНТЕРАКТИВНОГО РУХУ"}
+          {isEn ? 'INTERACTIVE RIG TRACKING ENGINE SOURCE' : 'ДЖЕРЕЛО ІНТЕРАКТИВНОГО РУХУ'}
         </h4>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setTrackingMode('manual')}
+            aria-pressed={trackingMode === 'manual'}
             className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all cursor-pointer ${
               trackingMode === 'manual'
                 ? theme === 'dark'
@@ -167,11 +170,12 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            {isEn ? "🎛️ Manual Sliders" : "🎛️ Ручні повзунки"}
+            {isEn ? '🎛️ Manual Sliders' : '🎛️ Ручні повзунки'}
           </button>
-          
+
           <button
             onClick={() => setTrackingMode('mouse')}
+            aria-pressed={trackingMode === 'mouse'}
             className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all cursor-pointer ${
               trackingMode === 'mouse'
                 ? theme === 'dark'
@@ -184,9 +188,10 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
           >
             {t.riggingPanel.mouseCursorMode}
           </button>
-          
+
           <button
             onClick={() => setTrackingMode('auto')}
+            aria-pressed={trackingMode === 'auto'}
             className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all cursor-pointer ${
               trackingMode === 'auto'
                 ? theme === 'dark'
@@ -199,10 +204,11 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
           >
             {t.riggingPanel.autoTrackMode}
           </button>
-          
+
           <button
             onClick={toggleMic}
             disabled={!micSupported}
+            aria-pressed={micActive}
             className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               micActive
                 ? theme === 'dark'
@@ -213,11 +219,20 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            <span>{micActive ? (isEn ? '🎤 Voice Active' : '🎤 Голос Активний') : (isEn ? '🎤 Voice Sync' : '🎤 Синхр. з голосом')}</span>
+            <span>
+              {micActive
+                ? isEn
+                  ? '🎤 Voice Active'
+                  : '🎤 Голос Активний'
+                : isEn
+                  ? '🎤 Voice Sync'
+                  : '🎤 Синхр. з голосом'}
+            </span>
           </button>
 
           <button
             onClick={() => setTrackingMode(trackingMode === 'camera' ? 'auto' : 'camera')}
+            aria-pressed={trackingMode === 'camera'}
             className={`px-3 py-2 text-xs font-semibold rounded-sm border transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               trackingMode === 'camera'
                 ? theme === 'dark'
@@ -235,15 +250,26 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
         {/* Informational tracking notice */}
         {trackingMode === 'mouse' && (
-          <p className="text-[11px] text-slate-500 dark:text-white/50 mt-2.5 flex items-center space-x-1">
+          <p className="text-[11px] text-slate-500 dark:text-white/50 mt-2.5 flex items-center space-x-1" role="status">
             <Eye className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-            <span>{isEn ? "The avatar will smoothly follow mouse coordinates inside the viewport." : "Аватар плавно слідкуватиме очима та головою за рухом миші у зоні перегляду."}</span>
+            <span>
+              {isEn
+                ? 'The avatar will smoothly follow mouse coordinates inside the viewport.'
+                : 'Аватар плавно слідкуватиме очима та головою за рухом миші у зоні перегляду.'}
+            </span>
           </p>
         )}
         {micActive && (
-          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-2.5 flex items-center space-x-1.5 font-bold">
+          <p
+            className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-2.5 flex items-center space-x-1.5 font-bold"
+            role="status"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-            <span>{isEn ? "The avatar's mouth opens and flaps automatically based on microphone audio volume!" : "Рот аватара автоматично відкриватиметься під гучність вашого мікрофону!"}</span>
+            <span>
+              {isEn
+                ? "The avatar's mouth opens and flaps automatically based on microphone audio volume!"
+                : 'Рот аватара автоматично відкриватиметься під гучність вашого мікрофону!'}
+            </span>
           </p>
         )}
       </div>
@@ -263,7 +289,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
       <div className={`space-y-4 ${trackingMode !== 'manual' ? 'opacity-40 pointer-events-none' : ''}`}>
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold text-slate-400 tracking-wider">
-            {isEn ? "MANUAL RIGGING SIMULATION" : "ПОВЗУНКИ СИМУЛЯЦІЇ RIGGING"}
+            {isEn ? 'MANUAL RIGGING SIMULATION' : 'ПОВЗУНКИ СИМУЛЯЦІЇ RIGGING'}
           </span>
           <button
             onClick={onReset}
@@ -271,16 +297,20 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center space-x-1 disabled:opacity-35 disabled:pointer-events-none cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>{isEn ? "Reset All" : "Скинути"}</span>
+            <span>{isEn ? 'Reset All' : 'Скинути'}</span>
           </button>
         </div>
 
         {/* Head rotations */}
-        <div className={`space-y-3 p-3 rounded border ${
-          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
-        }`}>
-          <h5 className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest font-mono">{isEn ? "HEAD ORIENTATION & SWAY" : "ОРІЄНТАЦІЯ ГОЛОВИ"}</h5>
-          
+        <div
+          className={`space-y-3 p-3 rounded border ${
+            theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
+          }`}
+        >
+          <h5 className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest font-mono">
+            {isEn ? 'HEAD ORIENTATION & SWAY' : 'ОРІЄНТАЦІЯ ГОЛОВИ'}
+          </h5>
+
           <div className="space-y-1">
             <div className="flex justify-between text-[11px] font-mono">
               <span className="text-slate-500 dark:text-white/40">{t.riggingPanel.headMovement}</span>
@@ -288,6 +318,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             </div>
             <input
               type="range"
+              aria-label={t.riggingPanel.headMovement}
               min="-30"
               max="30"
               value={rig.angleX}
@@ -304,6 +335,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             </div>
             <input
               type="range"
+              aria-label={t.riggingPanel.headPitch}
               min="-20"
               max="20"
               value={rig.angleY}
@@ -320,6 +352,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             </div>
             <input
               type="range"
+              aria-label={t.riggingPanel.headRoll}
               min="-15"
               max="15"
               value={rig.angleZ}
@@ -331,19 +364,26 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
         </div>
 
         {/* Eyes controls */}
-        <div className={`space-y-3 p-3 rounded border ${
-          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
-        }`}>
-          <h5 className="text-[10px] text-pink-500 font-bold uppercase tracking-widest font-mono">{isEn ? "EYES & PUPILS DEVIATION" : "ОЧІ & ЗІНИЦІ"}</h5>
+        <div
+          className={`space-y-3 p-3 rounded border ${
+            theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
+          }`}
+        >
+          <h5 className="text-[10px] text-pink-500 font-bold uppercase tracking-widest font-mono">
+            {isEn ? 'EYES & PUPILS DEVIATION' : 'ОЧІ & ЗІНИЦІ'}
+          </h5>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">{isEn ? "Left eye" : "Ліве око"}</span>
+                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">
+                  {isEn ? 'Left eye' : 'Ліве око'}
+                </span>
                 <span className="text-slate-800 dark:text-white/85 font-mono">{Math.round(rig.eyeLOpen * 100)}%</span>
               </div>
               <input
                 type="range"
+                aria-label={isEn ? 'Left eye openness' : 'Відкритість лівого ока'}
                 min="0"
                 max="100"
                 value={rig.eyeLOpen * 100}
@@ -355,11 +395,14 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">{isEn ? "Right eye" : "Праве око"}</span>
+                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">
+                  {isEn ? 'Right eye' : 'Праве око'}
+                </span>
                 <span className="text-slate-800 dark:text-white/85 font-mono">{Math.round(rig.eyeROpen * 100)}%</span>
               </div>
               <input
                 type="range"
+                aria-label={isEn ? 'Right eye openness' : 'Відкритість правого ока'}
                 min="0"
                 max="100"
                 value={rig.eyeROpen * 100}
@@ -373,11 +416,14 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">{isEn ? "Pupil X" : "Зіниці X"}</span>
+                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">
+                  {isEn ? 'Pupil X' : 'Зіниці X'}
+                </span>
                 <span className="text-slate-800 dark:text-white/85 font-mono">{rig.pupilX}</span>
               </div>
               <input
                 type="range"
+                aria-label={isEn ? 'Horizontal pupil position' : 'Горизонтальна позиція зіниць'}
                 min="-100"
                 max="100"
                 value={rig.pupilX * 100}
@@ -389,11 +435,14 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
 
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">{isEn ? "Pupil Y" : "Зіниці Y"}</span>
+                <span className="text-slate-500 dark:text-white/40 text-[10px] truncate">
+                  {isEn ? 'Pupil Y' : 'Зіниці Y'}
+                </span>
                 <span className="text-slate-800 dark:text-white/85 font-mono">{rig.pupilY}</span>
               </div>
               <input
                 type="range"
+                aria-label={isEn ? 'Vertical pupil position' : 'Вертикальна позиція зіниць'}
                 min="-100"
                 max="100"
                 value={rig.pupilY * 100}
@@ -406,10 +455,14 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
         </div>
 
         {/* Mouth controls */}
-        <div className={`space-y-3 p-3 rounded border ${
-          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
-        }`}>
-          <h5 className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest font-mono">{isEn ? "MOUTH RIG & ARTICULATION" : "РОТ & ВИРАЗ"}</h5>
+        <div
+          className={`space-y-3 p-3 rounded border ${
+            theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200'
+          }`}
+        >
+          <h5 className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest font-mono">
+            {isEn ? 'MOUTH RIG & ARTICULATION' : 'РОТ & ВИРАЗ'}
+          </h5>
 
           <div className="space-y-1">
             <div className="flex justify-between text-[11px] font-mono">
@@ -418,6 +471,7 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             </div>
             <input
               type="range"
+              aria-label={t.riggingPanel.mouthOpen}
               min="0"
               max="100"
               value={rig.mouthOpen * 100}
@@ -431,11 +485,18 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
             <div className="flex justify-between text-[11px] font-mono">
               <span className="text-slate-500 dark:text-white/40">{t.riggingPanel.mouthForm}</span>
               <span className="text-slate-800 dark:text-white/80 font-bold">
-                {rig.mouthForm > 0 ? (isEn ? `Smile (+${rig.mouthForm})` : `Посмішка (+${rig.mouthForm})`) : (isEn ? `Sad (${rig.mouthForm})` : `Смуток (${rig.mouthForm})`)}
+                {rig.mouthForm > 0
+                  ? isEn
+                    ? `Smile (+${rig.mouthForm})`
+                    : `Посмішка (+${rig.mouthForm})`
+                  : isEn
+                    ? `Sad (${rig.mouthForm})`
+                    : `Смуток (${rig.mouthForm})`}
               </span>
             </div>
             <input
               type="range"
+              aria-label={t.riggingPanel.mouthForm}
               min="-100"
               max="100"
               value={rig.mouthForm * 100}
@@ -448,22 +509,27 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
       </div>
 
       {/* ScreenBuster toggle */}
-      <div className={`p-3.5 rounded border flex items-center justify-between ${
-        theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200 shadow-inner'
-      }`}>
+      <div
+        className={`p-3.5 rounded border flex items-center justify-between ${
+          theme === 'dark' ? 'bg-[#0a0a0c] border-white/5' : 'bg-white border-slate-200 shadow-inner'
+        }`}
+      >
         <div className="flex items-center space-x-2">
           <HelpCircle className="w-4.5 h-4.5 text-slate-400 dark:text-white/40 shrink-0" />
           <div className="text-left">
             <p className="text-xs font-semibold text-slate-800 dark:text-white/90">
-              {isEn ? "Show Calibration Frame" : "Показати Сітку Деформації"}
+              {isEn ? 'Show Calibration Frame' : 'Показати Сітку Деформації'}
             </p>
             <p className="text-[9px] text-slate-500 dark:text-white/45 font-mono">
-              {isEn ? "Live2D vector mesh skeleton visual lines" : "Візуальний режим Live2D скелету"}
+              {isEn ? 'Live2D vector mesh skeleton visual lines' : 'Візуальний режим Live2D скелету'}
             </p>
           </div>
         </div>
         <button
           onClick={() => setScreenBuster(!onScreenBuster)}
+          role="switch"
+          aria-checked={onScreenBuster}
+          aria-label={isEn ? 'Show calibration frame' : 'Показати сітку деформації'}
           className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
             onScreenBuster ? 'bg-indigo-600' : 'bg-[#1c1c24] dark:bg-[#1a1a24] bg-slate-200'
           }`}
@@ -477,124 +543,126 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
       </div>
 
       {/* Interactive Expression Trigger Guide Card */}
-      <div className={`p-4 rounded border text-left space-y-3 ${
-        theme === 'dark' ? 'bg-[#0e0e13] border-indigo-500/10' : 'bg-slate-50 border-slate-200 shadow-inner'
-      }`}>
+      <div
+        className={`p-4 rounded border text-left space-y-3 ${
+          theme === 'dark' ? 'bg-[#0e0e13] border-indigo-500/10' : 'bg-slate-50 border-slate-200 shadow-inner'
+        }`}
+      >
         <div className="flex items-center space-x-2 pb-1.5 border-b border-slate-250/25 dark:border-white/5">
           <HelpCircle className="w-4 h-4 text-indigo-500 shrink-0" />
           <h4 className="text-[11px] font-bold text-slate-800 dark:text-white uppercase font-sans tracking-wide">
-            {isEn ? "📸 EXPRESSION TRIGGER GUIDE" : "📸 КЕРУВАННЯ ТА ТРИГЕРИ ЖЕСТІВ"}
+            {isEn ? '📸 EXPRESSION TRIGGER GUIDE' : '📸 КЕРУВАННЯ ТА ТРИГЕРИ ЖЕСТІВ'}
           </h4>
         </div>
-        
+
         <p className={`text-[10px] leading-relaxed ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}>
           {isEn
-            ? "Your camera captures high-fidelity micro-expressions! Maintain solid, even lighting and face your screen directly. Below are custom camera gesture triggers:"
-            : "Камера зчитує ваші мікровирази обличчя! Забезпечте рівномірне освітлення та дивіться прямо в екран. Спробуйте наступні тригери:"}
+            ? 'Your camera captures high-fidelity micro-expressions! Maintain solid, even lighting and face your screen directly. Below are custom camera gesture triggers:'
+            : 'Камера зчитує ваші мікровирази обличчя! Забезпечте рівномірне освітлення та дивіться прямо в екран. Спробуйте наступні тригери:'}
         </p>
 
         <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
           {/* Dizzy */}
           <div className="p-2 rounded bg-yellow-500/5 border border-yellow-500/10 text-[10px]">
             <p className="font-bold text-yellow-600 dark:text-yellow-400 flex items-center justify-between">
-              <span>{isEn ? "🌀 Dizzy State (Spinning Spirals)" : "🌀 Запаморочення (Спіралі в очах)"}</span>
+              <span>{isEn ? '🌀 Dizzy State (Spinning Spirals)' : '🌀 Запаморочення (Спіралі в очах)'}</span>
               <span className="text-[9px] px-1 bg-yellow-500/10 rounded">@_@</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Rotate or shake your head left/right very quickly OR cross your eyes!" 
-                : "Швидко покрутіть або похитайте головою вліво-вправо АБО зведіть очі до носа (скосіть очі)!"}
+              {isEn
+                ? 'Rotate or shake your head left/right very quickly OR cross your eyes!'
+                : 'Швидко покрутіть або похитайте головою вліво-вправо АБО зведіть очі до носа (скосіть очі)!'}
             </p>
           </div>
 
           {/* Sleepy */}
           <div className="p-2 rounded bg-indigo-500/5 border border-indigo-500/10 text-[10px]">
             <p className="font-bold text-indigo-500 flex items-center justify-between">
-              <span>{isEn ? "😴 Sleepy State (Zzz Bubbles)" : "😴 Сонливість (Бульбашка та Zzz)"}</span>
+              <span>{isEn ? '😴 Sleepy State (Zzz Bubbles)' : '😴 Сонливість (Бульбашка та Zzz)'}</span>
               <span className="text-[9px] px-1 bg-indigo-500/10 rounded">Zzz</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Look down deeply, tilt your head slightly down, and let your eyelids droop." 
-                : "Подивіться глибоко вниз, нахиліть трохи голову та прикрийте наполовину очі."}
+              {isEn
+                ? 'Look down deeply, tilt your head slightly down, and let your eyelids droop.'
+                : 'Подивіться глибоко вниз, нахиліть трохи голову та прикрийте наполовину очі.'}
             </p>
           </div>
 
           {/* Scared */}
           <div className="p-2 rounded bg-amber-500/5 border border-amber-500/10 text-[10px]">
             <p className="font-bold text-amber-600 dark:text-amber-500 flex items-center justify-between">
-              <span>{isEn ? "😨 Scared (Panicked Shivering)" : "😨 Переляк (Панічне дрижання)"}</span>
+              <span>{isEn ? '😨 Scared (Panicked Shivering)' : '😨 Переляк (Панічне дрижання)'}</span>
               <span className="text-[9px] px-1 bg-amber-500/10 rounded">! !</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Open your eyes extremely wide (surprised look) and drop your jaw down!" 
-                : "Дуже широко розплющте очі (здивований погляд) та сильно опустіть/відкрийте рота!"}
+              {isEn
+                ? 'Open your eyes extremely wide (surprised look) and drop your jaw down!'
+                : 'Дуже широко розплющте очі (здивований погляд) та сильно опустіть/відкрийте рота!'}
             </p>
           </div>
 
           {/* Shy */}
           <div className="p-2 rounded bg-rose-500/5 border border-rose-500/10 text-[10px]">
             <p className="font-bold text-rose-500 flex items-center justify-between">
-              <span>{isEn ? "😳 Shy / Embarrassed (Red Cheeks)" : "😳 Сором'язливість (Червоні щоки)"}</span>
+              <span>{isEn ? '😳 Shy / Embarrassed (Red Cheeks)' : "😳 Сором'язливість (Червоні щоки)"}</span>
               <span className="text-[10px] px-1 bg-rose-500/10 rounded">Blush</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Make a very subtle, small closed smile while raising your cheek muscles." 
-                : "Легко й ніжно посміхніться із закритим ротом, піднімаючи вилиці (cheek squint)."}
+              {isEn
+                ? 'Make a very subtle, small closed smile while raising your cheek muscles.'
+                : 'Легко й ніжно посміхніться із закритим ротом, піднімаючи вилиці (cheek squint).'}
             </p>
           </div>
 
           {/* Relaxed */}
           <div className="p-2 rounded bg-red-400/5 border border-red-400/10 text-[10px]">
             <p className="font-bold text-red-500 flex items-center justify-between">
-              <span>{isEn ? "🌸 Relaxed / Chill (Sakura Petals)" : "🌸 Розслаблення (Пелюстки сакури)"}</span>
+              <span>{isEn ? '🌸 Relaxed / Chill (Sakura Petals)' : '🌸 Розслаблення (Пелюстки сакури)'}</span>
               <span className="text-[9px] px-1 bg-red-400/10 rounded">Chill</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Relax your eyebrows, look down slightly, and make a soft warm smile." 
-                : "Розслабте та опустіть брови, подивіться трохи вниз та тепло посміхніться."}
+              {isEn
+                ? 'Relax your eyebrows, look down slightly, and make a soft warm smile.'
+                : 'Розслабте та опустіть брови, подивіться трохи вниз та тепло посміхніться.'}
             </p>
           </div>
 
           {/* Love */}
           <div className="p-2 rounded bg-pink-500/5 border border-pink-500/10 text-[10px]">
             <p className="font-bold text-pink-500 flex items-center justify-between">
-              <span>{isEn ? "💖 Love (Pulsing Heart Eyes)" : "💖 Кохання (Сердечка в очах)"}</span>
+              <span>{isEn ? '💖 Love (Pulsing Heart Eyes)' : '💖 Кохання (Сердечка в очах)'}</span>
               <span className="text-[9px] px-1 bg-pink-500/10 rounded">Kiss</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Pucker / fold your lips in a puckered shape or pretend to blow a kiss!" 
-                : "Складіть губи трубочкою (pucker) або покажіть повітряний поцілунок!"}
+              {isEn
+                ? 'Pucker / fold your lips in a puckered shape or pretend to blow a kiss!'
+                : 'Складіть губи трубочкою (pucker) або покажіть повітряний поцілунок!'}
             </p>
           </div>
 
           {/* Starry */}
           <div className="p-2 rounded bg-purple-500/5 border border-purple-500/10 text-[10px]">
             <p className="font-bold text-purple-500 flex items-center justify-between">
-              <span>{isEn ? "⭐ Starry Excitement (Sparks)" : "⭐ Захоплення (Очі-зірочки)"}</span>
+              <span>{isEn ? '⭐ Starry Excitement (Sparks)' : '⭐ Захоплення (Очі-зірочки)'}</span>
               <span className="text-[9px] px-1 bg-purple-500/10 rounded">✨</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Raise your eyebrows high up and smile widely (showing teeth)!" 
-                : "Високо підніміть очі та брови вгору і водночас широко радісно посміхніться!"}
+              {isEn
+                ? 'Raise your eyebrows high up and smile widely (showing teeth)!'
+                : 'Високо підніміть очі та брови вгору і водночас широко радісно посміхніться!'}
             </p>
           </div>
 
           {/* Tongue Out */}
           <div className="p-2 rounded bg-teal-500/5 border border-teal-500/10 text-[10px]">
             <p className="font-bold text-teal-600 dark:text-teal-400 flex items-center justify-between">
-              <span>{isEn ? "👅 Tongue Out (Playful / Wink)" : "👅 Показування язика (Ahegao)"}</span>
+              <span>{isEn ? '👅 Tongue Out (Playful / Wink)' : '👅 Показування язика (Ahegao)'}</span>
               <span className="text-[9px] px-1 bg-teal-500/10 rounded">Ahegao</span>
             </p>
             <p className="text-slate-500 dark:text-white/50 mt-0.5 leading-snug">
-              {isEn 
-                ? "Stick your tongue out! Works best with winking & looking down." 
-                : "Просто висуньте язик у кадрі! Особливо ефектно виглядає під час підморгування."}
+              {isEn
+                ? 'Stick your tongue out! Works best with winking & looking down.'
+                : 'Просто висуньте язик у кадрі! Особливо ефектно виглядає під час підморгування.'}
             </p>
           </div>
         </div>

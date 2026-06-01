@@ -1,13 +1,25 @@
 // Shared union types reused across the app (avatar, rig, tracking, UI).
 export type Emotion =
-  | 'none' | 'happy' | 'angry' | 'cry' | 'shocked' | 'smug' | 'love'
-  | 'starry' | 'squint' | 'depressed' | 'dizzy' | 'cool' | 'scared'
-  | 'sleepy' | 'shy' | 'relaxed';
+  | 'none'
+  | 'happy'
+  | 'angry'
+  | 'cry'
+  | 'shocked'
+  | 'smug'
+  | 'love'
+  | 'starry'
+  | 'squint'
+  | 'depressed'
+  | 'dizzy'
+  | 'cool'
+  | 'scared'
+  | 'sleepy'
+  | 'shy'
+  | 'relaxed';
 
 export type TrackingMode = 'manual' | 'mouse' | 'mic' | 'auto' | 'camera';
 
-export type SidebarTab =
-  | 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
+export type SidebarTab = 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
 
 export interface CameraCalibrationProfile {
   /** Empty string means browser/default camera. */
@@ -35,7 +47,16 @@ export interface AvatarConfig {
   hairStyleBack: 'straight' | 'tails' | 'short' | 'curly' | 'braids' | 'hime-long' | 'drill-tails' | 'wavy';
   hairColor: string;
   hairHighlightColor: string;
-  clothingStyle: 'hoodie' | 'kimono' | 'suit' | 'cyber-armor' | 'goth-dress' | 'druid-cloak' | 'sailor-fuku' | 'sweater' | 'maid';
+  clothingStyle:
+    | 'hoodie'
+    | 'kimono'
+    | 'suit'
+    | 'cyber-armor'
+    | 'goth-dress'
+    | 'druid-cloak'
+    | 'sailor-fuku'
+    | 'sweater'
+    | 'maid';
   clothingColor1: string;
   clothingColor2: string;
   accessoryStyle: 'none' | 'headphones' | 'horns' | 'glasses' | 'neko-ears' | 'angel-halo' | 'fox-mask';
@@ -50,7 +71,7 @@ export interface AvatarConfig {
   earStyle: 'normal' | 'elf' | 'pointy';
   hairGradient: 'none' | 'linear' | 'sunset' | 'indigo-fade';
   accessoryGlow: boolean;
-  
+
   // Custom proportions variables
   headSize?: number; // 0.8 to 1.2
   neckWidth?: number; // 0.6 to 1.4

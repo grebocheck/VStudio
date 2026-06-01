@@ -21,13 +21,11 @@ export const parseImportedProject = (raw: unknown): ImportedProject => {
     project.config = mergeConfig(DEFAULT_CONFIG, raw.config as Partial<AvatarConfig>);
   }
   if (Array.isArray(raw.customPresets)) {
-    project.customPresets = raw.customPresets
-      .filter(isRecord)
-      .map((preset, index) => ({
-        id: typeof preset.id === 'string' ? preset.id : `imported-${index}`,
-        name: typeof preset.name === 'string' ? preset.name.slice(0, 80) : `Imported ${index + 1}`,
-        config: mergeConfig(DEFAULT_CONFIG, isRecord(preset.config) ? preset.config as Partial<AvatarConfig> : {}),
-      }));
+    project.customPresets = raw.customPresets.filter(isRecord).map((preset, index) => ({
+      id: typeof preset.id === 'string' ? preset.id : `imported-${index}`,
+      name: typeof preset.name === 'string' ? preset.name.slice(0, 80) : `Imported ${index + 1}`,
+      config: mergeConfig(DEFAULT_CONFIG, isRecord(preset.config) ? (preset.config as Partial<AvatarConfig>) : {}),
+    }));
   }
 
   if (!project.config && !project.customPresets?.length) {
@@ -86,12 +84,12 @@ export function useAvatarStore(): AvatarStore {
     setConfig((prev) => mergeConfig(prev, partial));
   }, []);
 
-  const saveCurrentAsPreset = useCallback((label: string) => {
-    setCustomPresets((prev) => [
-      ...prev,
-      { id: `custom-${Date.now()}`, name: label, config: { ...config } },
-    ]);
-  }, [config]);
+  const saveCurrentAsPreset = useCallback(
+    (label: string) => {
+      setCustomPresets((prev) => [...prev, { id: `custom-${Date.now()}`, name: label, config: { ...config } }]);
+    },
+    [config],
+  );
 
   const deleteCustomPreset = useCallback((id: string) => {
     setCustomPresets((prev) => prev.filter((p) => p.id !== id));

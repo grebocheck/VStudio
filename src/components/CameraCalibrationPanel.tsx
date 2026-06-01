@@ -60,32 +60,35 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
   const hasSavedMissingDevice = profile.deviceId && !devices.some((device) => device.deviceId === profile.deviceId);
 
   const stepCircle = (step: number, active = true) => (
-    <span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 ${
-      active
-        ? 'bg-rose-500/15 border-rose-500/50 text-rose-500 dark:text-rose-300'
-        : 'border-slate-300 dark:border-white/10 text-slate-400 dark:text-white/35'
-    }`}>
+    <span
+      className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 ${
+        active
+          ? 'bg-rose-500/15 border-rose-500/50 text-rose-500 dark:text-rose-300'
+          : 'border-slate-300 dark:border-white/10 text-slate-400 dark:text-white/35'
+      }`}
+    >
       {step}
     </span>
   );
 
   return (
-    <section className={`p-4 rounded border space-y-4 ${
-      theme === 'dark' ? 'bg-[#0a0a0c] border-rose-500/15' : 'bg-rose-50/40 border-rose-200/70'
-    }`}>
+    <section
+      className={`p-4 rounded border space-y-4 ${
+        theme === 'dark' ? 'bg-[#0a0a0c] border-rose-500/15' : 'bg-rose-50/40 border-rose-200/70'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="text-[10px] uppercase font-bold text-rose-600 dark:text-rose-300 tracking-widest font-mono flex items-center gap-1.5">
             <Camera className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">{copy.title}</span>
           </h4>
-          <p className="text-[10px] text-slate-500 dark:text-white/50 mt-1 leading-relaxed">
-            {copy.subtitle}
-          </p>
+          <p className="text-[10px] text-slate-500 dark:text-white/50 mt-1 leading-relaxed">{copy.subtitle}</p>
         </div>
         <button
           type="button"
           onClick={() => setTrackingMode(isCameraActive ? 'auto' : 'camera')}
+          aria-pressed={isCameraActive}
           className={`px-2.5 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
             isCameraActive
               ? 'bg-rose-500/20 border-rose-500/60 text-rose-500 dark:text-rose-300'
@@ -104,7 +107,10 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
           {stepCircle(1)}
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <label htmlFor="camera-device-select" className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-white/45">
+              <label
+                htmlFor="camera-device-select"
+                className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-white/45"
+              >
                 {copy.device}
               </label>
               <button
@@ -121,7 +127,9 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
               value={profile.deviceId}
               onChange={(event) => setProfile((prev) => ({ ...prev, deviceId: event.target.value }))}
               className={`w-full text-xs rounded-sm border px-2.5 py-2 focus:outline-none focus:border-rose-500 ${
-                theme === 'dark' ? 'bg-[#050507] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+                theme === 'dark'
+                  ? 'bg-[#050507] border-white/10 text-white'
+                  : 'bg-white border-slate-200 text-slate-800'
               }`}
             >
               <option value="">{copy.defaultDevice}</option>
@@ -179,9 +187,7 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
               <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-white/45">
                 {copy.neutralTitle}
               </p>
-              <p className="text-[10px] text-slate-500 dark:text-white/50 mt-0.5 leading-relaxed">
-                {copy.neutralHelp}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/50 mt-0.5 leading-relaxed">{copy.neutralHelp}</p>
             </div>
             <div className="grid grid-cols-3 gap-1.5 text-[9px] font-mono text-center">
               <span className="px-1 py-1 rounded-sm bg-white/60 dark:bg-white/5 text-slate-600 dark:text-white/55">
@@ -218,7 +224,7 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
               </button>
             </div>
             {!isCameraActive && (
-              <p className="text-[9px] text-amber-600 dark:text-amber-300 font-mono">
+              <p className="text-[9px] text-amber-600 dark:text-amber-300 font-mono" role="status">
                 {copy.activateHint}
               </p>
             )}

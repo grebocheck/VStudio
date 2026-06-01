@@ -8,8 +8,16 @@ import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
 
 const HAIR_SWATCHES = [
-  '#e11d48', '#d97706', '#059669', '#2563eb', '#1e1b4b', 
-  '#7c3aed', '#ec4899', '#db2777', '#18181b', '#ffffff'
+  '#e11d48',
+  '#d97706',
+  '#059669',
+  '#2563eb',
+  '#1e1b4b',
+  '#7c3aed',
+  '#ec4899',
+  '#db2777',
+  '#18181b',
+  '#ffffff',
 ];
 
 interface RightSidebarProps {
@@ -102,48 +110,59 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   };
 
   return (
-    <aside className={`w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l flex flex-col justify-between overflow-y-auto ${
-      theme === 'dark'
-        ? 'border-white/10 bg-[#0f0f12]/95 text-white'
-        : 'border-slate-200 bg-white text-slate-800'
-    }`} id="right-sidebar">
-      
+    <aside
+      className={`w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l flex flex-col justify-between overflow-y-auto ${
+        theme === 'dark' ? 'border-white/10 bg-[#0f0f12]/95 text-white' : 'border-slate-200 bg-white text-slate-800'
+      }`}
+      id="right-sidebar"
+      aria-label={isEn ? 'Avatar editor' : 'Редактор аватара'}
+    >
       {/* Header of Active Editor Section */}
-      <div className={`p-4 border-b flex items-center space-x-2.5 shrink-0 ${
-        theme === 'dark' ? 'border-white/10 bg-[#121217]' : 'border-slate-200 bg-slate-50'
-      }`}>
-         <Palette className="w-4.5 h-4.5 text-indigo-500 dark:text-indigo-400" />
-         <div className="text-left">
-           <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-             {t.rightSidebar.params} {
-               activeSidebarTab === 'presets' ? t.leftSidebar.tabs.presets :
-               activeSidebarTab === 'hair' ? t.leftSidebar.tabs.hair :
-               activeSidebarTab === 'face' ? t.leftSidebar.tabs.face :
-               activeSidebarTab === 'clothes' ? t.leftSidebar.tabs.clothes :
-               activeSidebarTab === 'metadata' ? t.leftSidebar.tabs.metadata :
-               activeSidebarTab === 'rigging' ? t.leftSidebar.tabs.rigging :
-               activeSidebarTab === 'ai' ? t.leftSidebar.tabs.ai : t.leftSidebar.tabs.obs
-             }
-           </h3>
-           <p className="text-[9px] text-slate-500 dark:text-white/50">{t.rightSidebar.activeSec}</p>
-         </div>
+      <div
+        className={`p-4 border-b flex items-center space-x-2.5 shrink-0 ${
+          theme === 'dark' ? 'border-white/10 bg-[#121217]' : 'border-slate-200 bg-slate-50'
+        }`}
+      >
+        <Palette className="w-4.5 h-4.5 text-indigo-500 dark:text-indigo-400" />
+        <div className="text-left">
+          <h3
+            className={`text-[11px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+          >
+            {t.rightSidebar.params}{' '}
+            {activeSidebarTab === 'presets'
+              ? t.leftSidebar.tabs.presets
+              : activeSidebarTab === 'hair'
+                ? t.leftSidebar.tabs.hair
+                : activeSidebarTab === 'face'
+                  ? t.leftSidebar.tabs.face
+                  : activeSidebarTab === 'clothes'
+                    ? t.leftSidebar.tabs.clothes
+                    : activeSidebarTab === 'metadata'
+                      ? t.leftSidebar.tabs.metadata
+                      : activeSidebarTab === 'rigging'
+                        ? t.leftSidebar.tabs.rigging
+                        : activeSidebarTab === 'ai'
+                          ? t.leftSidebar.tabs.ai
+                          : t.leftSidebar.tabs.obs}
+          </h3>
+          <p className="text-[9px] text-slate-500 dark:text-white/50">{t.rightSidebar.activeSec}</p>
+        </div>
       </div>
 
       {/* Form Editing options container */}
       <div className="p-5 flex-grow space-y-5 text-left leading-relaxed">
-        
         {/* TABS EDITORS: 1. PRESETS */}
         {activeSidebarTab === 'presets' && (
           <div className="space-y-4">
             <div className="pb-2">
-              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+              >
                 {t.rightSidebar.presetsTitle}
               </h4>
-              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">
-                {t.rightSidebar.presetsSub}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.presetsSub}</p>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-2.5">
               {PRESETS.map((p) => {
                 const isActive = activePresetKey === p.id;
@@ -161,7 +180,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                           : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <span className={`font-bold text-xs block ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}>
+                    <span
+                      className={`font-bold text-xs block ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}
+                    >
                       {getPresetName(p.id, p.name)}
                     </span>
                     <span className="text-[9px] font-mono opacity-60 block truncate mt-1">
@@ -187,7 +208,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     }`}
                   >
                     <button onClick={() => onApplyPreset(p)} className="flex-1 text-left cursor-pointer min-w-0">
-                      <span className={`font-bold text-xs block truncate ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}>
+                      <span
+                        className={`font-bold text-xs block truncate ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}
+                      >
                         🌟 {p.name}
                       </span>
                       <span className="text-[9px] font-mono opacity-60 block truncate mt-1">
@@ -207,9 +230,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               })}
 
               {customPresets.length === 0 && (
-                <p className={`text-[10px] italic text-center py-4 rounded border ${
-                  theme === 'dark' ? 'text-white/40 bg-[#08080a] border-white/5' : 'text-slate-400 bg-slate-50 border-slate-200'
-                }`}>
+                <p
+                  className={`text-[10px] italic text-center py-4 rounded border ${
+                    theme === 'dark'
+                      ? 'text-white/40 bg-[#08080a] border-white/5'
+                      : 'text-slate-400 bg-slate-50 border-slate-200'
+                  }`}
+                >
                   {t.presets.noCustomPresets}
                 </p>
               )}
@@ -221,24 +248,29 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {activeSidebarTab === 'hair' && (
           <div className="space-y-4">
             <div className="pb-1">
-              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+              >
                 {t.rightSidebar.hairTitle}
               </h4>
-              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">
-                {t.rightSidebar.hairSub}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.hairSub}</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Front Hair (Bangs Style)" : "Спереду (Чубчик)"}
+                <label
+                  htmlFor="character-name"
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Front Hair (Bangs Style)' : 'Спереду (Чубчик)'}
                 </label>
                 <select
                   value={config.hairStyleBang}
-                  onChange={(e) => setConfig(prev => ({ ...prev, hairStyleBang: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, hairStyleBang: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="classic">{t.rightSidebar.bangsOptions.classic}</option>
@@ -247,27 +279,33 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   <option value="short">{t.rightSidebar.bangsOptions.short}</option>
                   <option value="hime">{t.rightSidebar.bangsOptions.hime}</option>
                   <option value="spiky">{t.rightSidebar.bangsOptions.spiky}</option>
-                  <option value="curly-bangs">{isEn ? "Curly Bangs" : "Кучерява чілка (завитушки)"}</option>
-                  <option value="cross-bangs">{isEn ? "Cross Strands (Anime)" : "Хрестоподібна чілка (аніме)"}</option>
+                  <option value="curly-bangs">{isEn ? 'Curly Bangs' : 'Кучерява чілка (завитушки)'}</option>
+                  <option value="cross-bangs">{isEn ? 'Cross Strands (Anime)' : 'Хрестоподібна чілка (аніме)'}</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Back Hair (Length Style)" : "Позаду (Задня довжина)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Back Hair (Length Style)' : 'Позаду (Задня довжина)'}
                 </label>
                 <select
                   value={config.hairStyleBack}
-                  onChange={(e) => setConfig(prev => ({ ...prev, hairStyleBack: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, hairStyleBack: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="straight">{t.rightSidebar.backOptions.straight}</option>
                   <option value="tails">{t.rightSidebar.backOptions.tails}</option>
-                  <option value="drill-tails">{isEn ? "Spiralled Drill Tails (Curls)" : "Спіральні хвостики (завитушки)"}</option>
+                  <option value="drill-tails">
+                    {isEn ? 'Spiralled Drill Tails (Curls)' : 'Спіральні хвостики (завитушки)'}
+                  </option>
                   <option value="curly">{t.rightSidebar.backOptions.curly}</option>
-                  <option value="wavy">{isEn ? "Fluffy Wavy Curls" : "Пишні кучері (завитушки)"}</option>
+                  <option value="wavy">{isEn ? 'Fluffy Wavy Curls' : 'Пишні кучері (завитушки)'}</option>
                   <option value="short">{t.rightSidebar.backOptions.short}</option>
                   <option value="braids">{t.rightSidebar.backOptions.braids}</option>
                   <option value="hime-long">{t.rightSidebar.backOptions.himeLong}</option>
@@ -275,14 +313,18 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Hair Gradient Effect" : "Ефект Градієнту волосся"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Hair Gradient Effect' : 'Ефект Градієнту волосся'}
                 </label>
                 <select
                   value={config.hairGradient || 'none'}
-                  onChange={(e) => setConfig(prev => ({ ...prev, hairGradient: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, hairGradient: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="none">{t.rightSidebar.gradientOptions.none}</option>
@@ -293,41 +335,49 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Primary Color & Neon Highlight" : "Основний колір & Свічення"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Primary Color & Neon Highlight' : 'Основний колір & Свічення'}
                 </label>
-                <div className={`flex items-center space-x-2 p-2 rounded border ${
-                  theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
-                }`}>
+                <div
+                  className={`flex items-center space-x-2 p-2 rounded border ${
+                    theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                  }`}
+                >
                   <input
                     type="color"
                     value={config.hairColor}
-                    onChange={(e) => setConfig(p => ({ ...p, hairColor: e.target.value }))}
+                    onChange={(e) => setConfig((p) => ({ ...p, hairColor: e.target.value }))}
                     className={`w-10 h-8 rounded-sm cursor-pointer ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-200'}`}
                     title="Primary"
                   />
                   <input
                     type="color"
                     value={config.hairHighlightColor}
-                    onChange={(e) => setConfig(p => ({ ...p, hairHighlightColor: e.target.value }))}
+                    onChange={(e) => setConfig((p) => ({ ...p, hairHighlightColor: e.target.value }))}
                     className={`w-10 h-8 rounded-sm cursor-pointer ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-200'}`}
                     title="Gradient"
                   />
-                  <span className="text-[10px] font-mono text-slate-500 dark:text-white/50">{config.hairColor} / {config.hairHighlightColor}</span>
+                  <span className="text-[10px] font-mono text-slate-500 dark:text-white/50">
+                    {config.hairColor} / {config.hairHighlightColor}
+                  </span>
                 </div>
               </div>
 
               <div className="space-y-2 pt-1">
                 <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 dark:text-white/40 block">
-                  {isEn ? "Quick Hair Palette Suggestions" : "Швидка Палітра волосся"}
+                  {isEn ? 'Quick Hair Palette Suggestions' : 'Швидка Палітра волосся'}
                 </label>
-                <div className={`flex flex-wrap gap-1.5 p-2 rounded border ${
-                  theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
-                }`}>
+                <div
+                  className={`flex flex-wrap gap-1.5 p-2 rounded border ${
+                    theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                  }`}
+                >
                   {HAIR_SWATCHES.map((color) => (
                     <button
                       key={color}
-                      onClick={() => setConfig(p => ({ ...p, hairColor: color, hairHighlightColor: color + '55' }))}
+                      onClick={() => setConfig((p) => ({ ...p, hairColor: color, hairHighlightColor: color + '55' }))}
                       className="w-6 h-6 rounded-full border border-white/10 hover:scale-110 transition-all cursor-pointer"
                       style={{ backgroundColor: color }}
                     />
@@ -342,67 +392,85 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {activeSidebarTab === 'face' && (
           <div className="space-y-4">
             <div className="pb-1">
-              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+              >
                 {t.rightSidebar.faceTitle}
               </h4>
-              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">
-                {t.rightSidebar.faceSub}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.faceSub}</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Design Group / Painting Art Style" : "Група Дизайну / Стиль Малювання"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Design Group / Painting Art Style' : 'Група Дизайну / Стиль Малювання'}
                 </label>
                 <select
                   value={config.artStyle || 'classic'}
-                  onChange={(e) => setConfig(prev => ({ ...prev, artStyle: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, artStyle: e.target.value as any }))}
                   className={`w-full text-xs font-semibold p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-white border-white/10' : 'bg-white text-slate-800 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-white border-white/10'
+                      : 'bg-white text-slate-800 border-slate-200'
                   }`}
                 >
-                  <option value="classic">{isEn ? "Classic (Universal Vector)" : "Класичний (Classic)"}</option>
-                  <option value="anime">{isEn ? "Japanese Anime (Manga Sparks)" : "Японське Аніме (Anime Style)"}</option>
-                  <option value="retro">{isEn ? "1930s Mickey Retro (Rubber Hose)" : "Ретро-Мультфільм 1930х (Retro Style)"}</option>
+                  <option value="classic">{isEn ? 'Classic (Universal Vector)' : 'Класичний (Classic)'}</option>
+                  <option value="anime">
+                    {isEn ? 'Japanese Anime (Manga Sparks)' : 'Японське Аніме (Anime Style)'}
+                  </option>
+                  <option value="retro">
+                    {isEn ? '1930s Mickey Retro (Rubber Hose)' : 'Ретро-Мультфільм 1930х (Retro Style)'}
+                  </option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Blush Opacity & Makeup Accent" : "Стиль Макіяжу / Рум’янцю (Blush)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Blush Opacity & Makeup Accent' : 'Стиль Макіяжу / Рум’янцю (Blush)'}
                 </label>
-                <div className={`flex items-center space-x-3 p-2.5 rounded border ${
-                  theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
-                }`}>
+                <div
+                  className={`flex items-center space-x-3 p-2.5 rounded border ${
+                    theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                  }`}
+                >
                   <input
                     type="range"
                     min="0"
                     max="1"
                     step="0.05"
                     value={config.blushOpacity ?? 0.25}
-                    onChange={(e) => setConfig(prev => ({ ...prev, blushOpacity: parseFloat(e.target.value) }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, blushOpacity: parseFloat(e.target.value) }))}
                     className="flex-1 accent-indigo-500 cursor-pointer h-1.5"
                   />
                   <input
                     type="color"
                     value={config.blushColor ?? '#ff4d6d'}
-                    onChange={(e) => setConfig(p => ({ ...p, blushColor: e.target.value }))}
+                    onChange={(e) => setConfig((p) => ({ ...p, blushColor: e.target.value }))}
                     className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border-slate-200'}`}
                   />
-                  <span className="text-[10px] font-mono whitespace-nowrap text-slate-500 dark:text-white/50 w-8 text-right">{Math.round((config.blushOpacity ?? 0.25) * 100)}%</span>
+                  <span className="text-[10px] font-mono whitespace-nowrap text-slate-500 dark:text-white/50 w-8 text-right">
+                    {Math.round((config.blushOpacity ?? 0.25) * 100)}%
+                  </span>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Cosplay Ears Style" : "Стиль Вушок (Ear Type)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Cosplay Ears Style' : 'Стиль Вушок (Ear Type)'}
                 </label>
                 <select
                   value={config.earStyle || 'normal'}
-                  onChange={(e) => setConfig(prev => ({ ...prev, earStyle: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, earStyle: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="normal">{t.rightSidebar.earOptions.normal}</option>
@@ -412,14 +480,18 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Pupils Pattern Shape (Iris Rig)" : "Форма Зіниць (Pupils Rig)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Pupils Pattern Shape (Iris Rig)' : 'Форма Зіниць (Pupils Rig)'}
                 </label>
                 <select
                   value={config.pupilStyle}
-                  onChange={(e) => setConfig(prev => ({ ...prev, pupilStyle: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, pupilStyle: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="round">{t.rightSidebar.pupilOptions.round}</option>
@@ -430,14 +502,18 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Eyebrows Style" : "Форма Брів (Eyebrows Style)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Eyebrows Style' : 'Форма Брів (Eyebrows Style)'}
                 </label>
                 <select
                   value={config.eyebrowStyle}
-                  onChange={(e) => setConfig(prev => ({ ...prev, eyebrowStyle: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, eyebrowStyle: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="normal">{t.rightSidebar.eyebrowOptions.normal}</option>
@@ -448,63 +524,86 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Mouth & Teeth Visual Options" : "Зовнішній вигляд Рота"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Mouth & Teeth Visual Options' : 'Зовнішній вигляд Рота'}
                 </label>
-                <div className={`flex items-center space-x-2.5 h-10 px-3 rounded border ${
-                  theme === 'dark' ? 'bg-[#0a0a0c]/80 border-white/5' : 'bg-slate-50 border-slate-200'
-                }`}>
+                <div
+                  className={`flex items-center space-x-2.5 h-10 px-3 rounded border ${
+                    theme === 'dark' ? 'bg-[#0a0a0c]/80 border-white/5' : 'bg-slate-50 border-slate-200'
+                  }`}
+                >
                   <input
                     type="checkbox"
                     id="fangs-drawer-checkbox"
                     checked={config.hasFangs ?? false}
-                    onChange={(e) => setConfig(prev => ({ ...prev, hasFangs: e.target.checked }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, hasFangs: e.target.checked }))}
                     className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/40 w-4 h-4 cursor-pointer accent-indigo-500"
                   />
-                  <label htmlFor="fangs-drawer-checkbox" className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}>
-                    {isEn ? "Show Sharp Vampire Fangs" : "Показувати гострі Ікла (Fangs)"}
+                  <label
+                    htmlFor="fangs-drawer-checkbox"
+                    className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}
+                  >
+                    {isEn ? 'Show Sharp Vampire Fangs' : 'Показувати гострі Ікла (Fangs)'}
                   </label>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Active Emotional Overlays" : "Емоційний стан & Оверлеї"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Active Emotional Overlays' : 'Емоційний стан & Оверлеї'}
                 </label>
                 <select
                   value={config.activeEmotion || 'none'}
-                  onChange={(e) => setConfig(prev => ({ ...prev, activeEmotion: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, activeEmotion: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
-                  <option value="none">{isEn ? "None (Calm)" : "Немає (Спокій)"}</option>
-                  <option value="happy">{isEn ? "Happy (Floating Hearts)" : "Радість (Рожеві сердечка)"}</option>
-                  <option value="angry">{isEn ? "Angry Pop (Pulsing Vein)" : "Гнів (Червона вена)"}</option>
-                  <option value="cry">{isEn ? "Cry (Streaming Teardrops)" : "Сльози (Потоки сліз)"}</option>
-                  <option value="shocked">{isEn ? "Shocked Bubble (! Alert)" : "Шок (Увага !)"}</option>
-                  <option value="smug">{isEn ? "Smug Twinkle (Playful Cross)" : "Хитрість (Сяйво)"}</option>
-                  <option value="squint">{isEn ? "Squint / Squeezed Shut (>_<)" : "Замружений (>_<)"}</option>
-                  <option value="love">{isEn ? "Love (Heart Eyes)" : "Кохання (Очі-сердечка)"}</option>
-                  <option value="starry">{isEn ? "Starry (Excitement / Sparkly)" : "Зоряний (Захоплення / Іскри)"}</option>
-                  <option value="depressed">{isEn ? "Depressed (Gloom vertical lines)" : "Пригніченість (Темні смуги)"}</option>
-                  <option value="dizzy">{isEn ? "Dizzy (Spinning Spiral @_@)" : "Запаморочення (Спіралі @_@)"}</option>
-                  <option value="cool">{isEn ? "Cool (Stylish Sunglasses)" : "Крутий (Окуляри й ноти)"}</option>
-                  <option value="scared">{isEn ? "Scared (Panicked Shivering)" : "Переляк (Дрижання)"}</option>
-                  <option value="sleepy">{isEn ? "Sleepy (Yawning Bubble Zzz)" : "Сонливість (Бульбашка й Zzz)"}</option>
-                  <option value="shy">{isEn ? "Shy / Embarrassed (Red Cheeks)" : "Сором'язливість (Красні щоки)"}</option>
-                  <option value="relaxed">{isEn ? "Relaxed / Chill (Blossom Petals)" : "Розслаблення (Пелюстки сакури)"}</option>
+                  <option value="none">{isEn ? 'None (Calm)' : 'Немає (Спокій)'}</option>
+                  <option value="happy">{isEn ? 'Happy (Floating Hearts)' : 'Радість (Рожеві сердечка)'}</option>
+                  <option value="angry">{isEn ? 'Angry Pop (Pulsing Vein)' : 'Гнів (Червона вена)'}</option>
+                  <option value="cry">{isEn ? 'Cry (Streaming Teardrops)' : 'Сльози (Потоки сліз)'}</option>
+                  <option value="shocked">{isEn ? 'Shocked Bubble (! Alert)' : 'Шок (Увага !)'}</option>
+                  <option value="smug">{isEn ? 'Smug Twinkle (Playful Cross)' : 'Хитрість (Сяйво)'}</option>
+                  <option value="squint">{isEn ? 'Squint / Squeezed Shut (>_<)' : 'Замружений (>_<)'}</option>
+                  <option value="love">{isEn ? 'Love (Heart Eyes)' : 'Кохання (Очі-сердечка)'}</option>
+                  <option value="starry">
+                    {isEn ? 'Starry (Excitement / Sparkly)' : 'Зоряний (Захоплення / Іскри)'}
+                  </option>
+                  <option value="depressed">
+                    {isEn ? 'Depressed (Gloom vertical lines)' : 'Пригніченість (Темні смуги)'}
+                  </option>
+                  <option value="dizzy">{isEn ? 'Dizzy (Spinning Spiral @_@)' : 'Запаморочення (Спіралі @_@)'}</option>
+                  <option value="cool">{isEn ? 'Cool (Stylish Sunglasses)' : 'Крутий (Окуляри й ноти)'}</option>
+                  <option value="scared">{isEn ? 'Scared (Panicked Shivering)' : 'Переляк (Дрижання)'}</option>
+                  <option value="sleepy">
+                    {isEn ? 'Sleepy (Yawning Bubble Zzz)' : 'Сонливість (Бульбашка й Zzz)'}
+                  </option>
+                  <option value="shy">
+                    {isEn ? 'Shy / Embarrassed (Red Cheeks)' : "Сором'язливість (Красні щоки)"}
+                  </option>
+                  <option value="relaxed">
+                    {isEn ? 'Relaxed / Chill (Blossom Petals)' : 'Розслаблення (Пелюстки сакури)'}
+                  </option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div className="space-y-1">
-                  <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">{isEn ? "Skin tone" : "Шкіра / тіло"}</label>
+                  <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">
+                    {isEn ? 'Skin tone' : 'Шкіра / тіло'}
+                  </label>
                   <div className="flex items-center space-x-2">
                     <input
                       type="color"
                       value={config.skinColor}
-                      onChange={(e) => setConfig(p => ({ ...p, skinColor: e.target.value }))}
+                      onChange={(e) => setConfig((p) => ({ ...p, skinColor: e.target.value }))}
                       className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-250'}`}
                     />
                     <span className="text-[9px] font-mono text-slate-500 dark:text-white/50">{config.skinColor}</span>
@@ -512,12 +611,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">{isEn ? "Eyes Iris" : "Райдужка ока"}</label>
+                  <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">
+                    {isEn ? 'Eyes Iris' : 'Райдужка ока'}
+                  </label>
                   <div className="flex items-center space-x-2">
                     <input
                       type="color"
                       value={config.eyeColor}
-                      onChange={(e) => setConfig(p => ({ ...p, eyeColor: e.target.value }))}
+                      onChange={(e) => setConfig((p) => ({ ...p, eyeColor: e.target.value }))}
                       className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-250'}`}
                     />
                     <span className="text-[9px] font-mono text-slate-500 dark:text-white/50">{config.eyeColor}</span>
@@ -532,24 +633,28 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {activeSidebarTab === 'clothes' && (
           <div className="space-y-4">
             <div className="pb-1">
-              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+              >
                 {t.rightSidebar.clothesTitle}
               </h4>
-              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">
-                {t.rightSidebar.clothesSub}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.clothesSub}</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Outfit Uniform Style" : "Стиль Стрімерського Одягу"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Outfit Uniform Style' : 'Стиль Стрімерського Одягу'}
                 </label>
                 <select
                   value={config.clothingStyle}
-                  onChange={(e) => setConfig(prev => ({ ...prev, clothingStyle: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, clothingStyle: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="hoodie">{t.rightSidebar.outfitOptions.hoodie}</option>
@@ -558,41 +663,49 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   <option value="cyber-armor">{t.rightSidebar.outfitOptions.cyber}</option>
                   <option value="goth-dress">{t.rightSidebar.outfitOptions.goth}</option>
                   <option value="druid-cloak">{t.rightSidebar.outfitOptions.druid}</option>
-                  <option value="sailor-fuku">{isEn ? "High School Sailor Suit" : "Матроска (Sailor Uniform)"}</option>
-                  <option value="sweater">{isEn ? "Cozy Winter Sweater" : "Теплий в'язаний светр"}</option>
-                  <option value="maid">{isEn ? "Graceful Maid Dress" : "Костюм покоївки (Maid Dress)"}</option>
+                  <option value="sailor-fuku">{isEn ? 'High School Sailor Suit' : 'Матроска (Sailor Uniform)'}</option>
+                  <option value="sweater">{isEn ? 'Cozy Winter Sweater' : "Теплий в'язаний светр"}</option>
+                  <option value="maid">{isEn ? 'Graceful Maid Dress' : 'Костюм покоївки (Maid Dress)'}</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Clothing Chest Print / Stamp" : "Прінт на Одязі (Chest Print)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Clothing Chest Print / Stamp' : 'Прінт на Одязі (Chest Print)'}
                 </label>
                 <select
                   value={config.clothingPrint || 'none'}
-                  onChange={(e) => setConfig(prev => ({ ...prev, clothingPrint: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, clothingPrint: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
-                  <option value="none">{isEn ? "None (Plain)" : "Немає (Однотонний)"}</option>
-                  <option value="cat">{isEn ? "Neko Cat Paw Print 🐾" : "Котик 🐾"}</option>
-                  <option value="star">{isEn ? "Mystical Shiny Star ⭐" : "Зірка ⭐"}</option>
-                  <option value="heart">{isEn ? "Lovely Pink Heart 💖" : "Сердечко 💖"}</option>
-                  <option value="cyber">{isEn ? "Cyber Matrix Circuit ⚡" : "Кібер Мережа ⚡"}</option>
-                  <option value="cross">{isEn ? "Gothic Lolita Cross ✙" : "Хрест ✙"}</option>
+                  <option value="none">{isEn ? 'None (Plain)' : 'Немає (Однотонний)'}</option>
+                  <option value="cat">{isEn ? 'Neko Cat Paw Print 🐾' : 'Котик 🐾'}</option>
+                  <option value="star">{isEn ? 'Mystical Shiny Star ⭐' : 'Зірка ⭐'}</option>
+                  <option value="heart">{isEn ? 'Lovely Pink Heart 💖' : 'Сердечко 💖'}</option>
+                  <option value="cyber">{isEn ? 'Cyber Matrix Circuit ⚡' : 'Кібер Мережа ⚡'}</option>
+                  <option value="cross">{isEn ? 'Gothic Lolita Cross ✙' : 'Хрест ✙'}</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Head Accessory & Gear" : "Аксесуар Голови"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Head Accessory & Gear' : 'Аксесуар Голови'}
                 </label>
                 <select
                   value={config.accessoryStyle}
-                  onChange={(e) => setConfig(prev => ({ ...prev, accessoryStyle: e.target.value as any }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, accessoryStyle: e.target.value as any }))}
                   className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-white text-slate-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-white text-slate-700 border-slate-200'
                   }`}
                 >
                   <option value="none">{t.rightSidebar.decorOptions.none}</option>
@@ -604,61 +717,76 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Clothing Palette (Primary / Accents)" : "Кольори Одягу (Первинний / Другорядний)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Clothing Palette (Primary / Accents)' : 'Кольори Одягу (Первинний / Другорядний)'}
                 </label>
-                <div className={`flex items-center space-x-2 p-2 rounded border ${
-                  theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
-                }`}>
+                <div
+                  className={`flex items-center space-x-2 p-2 rounded border ${
+                    theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                  }`}
+                >
                   <input
                     type="color"
                     value={config.clothingColor1}
-                    onChange={(e) => setConfig(p => ({ ...p, clothingColor1: e.target.value }))}
+                    onChange={(e) => setConfig((p) => ({ ...p, clothingColor1: e.target.value }))}
                     className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-200'}`}
                     title="Primary clothing"
                   />
                   <input
                     type="color"
                     value={config.clothingColor2}
-                    onChange={(e) => setConfig(p => ({ ...p, clothingColor2: e.target.value }))}
+                    onChange={(e) => setConfig((p) => ({ ...p, clothingColor2: e.target.value }))}
                     className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-200'}`}
                     title="Accents detail"
                   />
-                  <span className="text-[10px] font-mono text-slate-500 dark:text-white/50">{config.clothingColor1} / {config.clothingColor2}</span>
+                  <span className="text-[10px] font-mono text-slate-500 dark:text-white/50">
+                    {config.clothingColor1} / {config.clothingColor2}
+                  </span>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "LED Glow Accessory Highlights" : "Аксесуар Свічення (LED Glow)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'LED Glow Accessory Highlights' : 'Аксесуар Свічення (LED Glow)'}
                 </label>
-                <div className={`flex items-center space-x-2.5 h-10 px-3 rounded border ${
-                  theme === 'dark' ? 'bg-[#0a0a0c]/80 border-white/5' : 'bg-slate-50 border-slate-200'
-                }`}>
+                <div
+                  className={`flex items-center space-x-2.5 h-10 px-3 rounded border ${
+                    theme === 'dark' ? 'bg-[#0a0a0c]/80 border-white/5' : 'bg-slate-50 border-slate-200'
+                  }`}
+                >
                   <input
                     type="checkbox"
                     id="glow-drawer-checkbox"
                     checked={config.accessoryGlow ?? false}
-                    onChange={(e) => setConfig(prev => ({ ...prev, accessoryGlow: e.target.checked }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, accessoryGlow: e.target.checked }))}
                     className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/40 w-4 h-4 cursor-pointer accent-indigo-500"
                   />
-                  <label htmlFor="glow-drawer-checkbox" className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}>
-                    {isEn ? "Enable Neon Aura-Glow Backlighting" : "Увімкнути неонову тінь-свічення"}
+                  <label
+                    htmlFor="glow-drawer-checkbox"
+                    className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}
+                  >
+                    {isEn ? 'Enable Neon Aura-Glow Backlighting' : 'Увімкнути неонову тінь-свічення'}
                   </label>
                 </div>
               </div>
 
-              <div className={`mt-4 p-4 rounded-sm border space-y-4 ${
-                theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
-              }`}>
+              <div
+                className={`mt-4 p-4 rounded-sm border space-y-4 ${
+                  theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                }`}
+              >
                 <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 block font-mono">
-                  {isEn ? "Body Anatomy & Proportions" : "Анатомічні пропорції тіла"}
+                  {isEn ? 'Body Anatomy & Proportions' : 'Анатомічні пропорції тіла'}
                 </span>
 
                 {/* 1. Head Size */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-semibold">
-                    <span>{isEn ? "Head Scaling" : "Розмір голови (Head)"}</span>
+                    <span>{isEn ? 'Head Scaling' : 'Розмір голови (Head)'}</span>
                     <span className="text-indigo-500">{Math.round((config.headSize ?? 1.0) * 100)}%</span>
                   </div>
                   <input
@@ -667,7 +795,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     max="1.15"
                     step="0.01"
                     value={config.headSize ?? 1.0}
-                    onChange={(e) => setConfig(prev => ({ ...prev, headSize: parseFloat(e.target.value) }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, headSize: parseFloat(e.target.value) }))}
                     className="w-full accent-indigo-500 cursor-pointer h-1.5"
                   />
                 </div>
@@ -675,7 +803,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 {/* 2. Neck Width */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-semibold">
-                    <span>{isEn ? "Neck Thickness" : "Ширина шиї (Neck Width)"}</span>
+                    <span>{isEn ? 'Neck Thickness' : 'Ширина шиї (Neck Width)'}</span>
                     <span className="text-indigo-500">{Math.round((config.neckWidth ?? 1.0) * 100)}%</span>
                   </div>
                   <input
@@ -684,7 +812,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     max="1.25"
                     step="0.01"
                     value={config.neckWidth ?? 1.0}
-                    onChange={(e) => setConfig(prev => ({ ...prev, neckWidth: parseFloat(e.target.value) }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, neckWidth: parseFloat(e.target.value) }))}
                     className="w-full accent-indigo-500 cursor-pointer h-1.5"
                   />
                 </div>
@@ -692,7 +820,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 {/* 3. Neck Height */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-semibold">
-                    <span>{isEn ? "Neck Height" : "Висота шиї (Neck Height)"}</span>
+                    <span>{isEn ? 'Neck Height' : 'Висота шиї (Neck Height)'}</span>
                     <span className="text-indigo-500">{Math.round((config.neckHeight ?? 1.0) * 100)}%</span>
                   </div>
                   <input
@@ -701,7 +829,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     max="1.25"
                     step="0.01"
                     value={config.neckHeight ?? 1.0}
-                    onChange={(e) => setConfig(prev => ({ ...prev, neckHeight: parseFloat(e.target.value) }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, neckHeight: parseFloat(e.target.value) }))}
                     className="w-full accent-indigo-500 cursor-pointer h-1.5"
                   />
                 </div>
@@ -709,7 +837,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 {/* 4. Shoulder Width */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-semibold">
-                    <span>{isEn ? "Shoulders Width" : "Ширина плечей (Shoulders)"}</span>
+                    <span>{isEn ? 'Shoulders Width' : 'Ширина плечей (Shoulders)'}</span>
                     <span className="text-indigo-500">{Math.round((config.shoulderWidth ?? 1.0) * 100)}%</span>
                   </div>
                   <input
@@ -718,19 +846,23 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     max="1.25"
                     step="0.01"
                     value={config.shoulderWidth ?? 1.0}
-                    onChange={(e) => setConfig(prev => ({ ...prev, shoulderWidth: parseFloat(e.target.value) }))}
+                    onChange={(e) => setConfig((prev) => ({ ...prev, shoulderWidth: parseFloat(e.target.value) }))}
                     className="w-full accent-indigo-500 cursor-pointer h-1.5"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5 pt-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-                  {isEn ? "Backdrop Studio Environment" : "Задній Фон Студії (Backdrop)"}
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
+                  {isEn ? 'Backdrop Studio Environment' : 'Задній Фон Студії (Backdrop)'}
                 </label>
-                <div className={`grid grid-cols-2 gap-2 p-2 rounded border ${
-                  theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
-                }`}>
+                <div
+                  className={`grid grid-cols-2 gap-2 p-2 rounded border ${
+                    theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                  }`}
+                >
                   {[
                     { id: 'gaming', label: t.rightSidebar.backdropOptions.gaming },
                     { id: 'nebula', label: t.rightSidebar.backdropOptions.nebula },
@@ -741,7 +873,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     return (
                       <button
                         key={bg.id}
-                        onClick={() => setConfig(prev => ({ ...prev, backgroundStyle: bg.id as any }))}
+                        onClick={() => setConfig((prev) => ({ ...prev, backgroundStyle: bg.id as any }))}
                         className={`px-2 py-2 text-[10px] font-semibold rounded-sm border transition-all cursor-pointer truncate ${
                           isActive
                             ? theme === 'dark'
@@ -766,40 +898,51 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {activeSidebarTab === 'metadata' && (
           <div className="space-y-4">
             <div className="pb-1">
-              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+              >
                 {t.rightSidebar.metadataTitle}
               </h4>
-              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">
-                {t.rightSidebar.metadataSub}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.metadataSub}</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+                <label
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
                   {t.rightSidebar.charName}
                 </label>
                 <input
+                  id="character-name"
                   type="text"
                   value={config.name || ''}
-                  onChange={(e) => setConfig(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder={t.rightSidebar.charNamePlaceholder}
                   className={`w-full text-xs p-3 rounded-sm border focus:outline-none focus:border-indigo-500 placeholder:text-slate-400/55 dark:placeholder:text-white/20 font-medium font-sans ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-white border-white/10' : 'bg-slate-50 text-slate-800 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-white border-white/10'
+                      : 'bg-slate-50 text-slate-800 border-slate-200'
                   }`}
                 />
               </div>
 
               <div className="space-y-1">
-                <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+                <label
+                  htmlFor="character-lore"
+                  className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+                >
                   {t.rightSidebar.charLore}
                 </label>
                 <textarea
+                  id="character-lore"
                   value={config.lore || ''}
-                  onChange={(e) => setConfig(prev => ({ ...prev, lore: e.target.value }))}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, lore: e.target.value }))}
                   placeholder={t.rightSidebar.charLorePlaceholder}
                   className={`w-full text-xs p-3 rounded-sm border focus:outline-none focus:border-indigo-500 placeholder:text-slate-400/55 dark:placeholder:text-white/20 h-44 resize-none font-sans leading-relaxed ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-slate-50 text-slate-800 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                      : 'bg-slate-50 text-slate-800 border-slate-200'
                   }`}
                 />
               </div>
@@ -811,12 +954,12 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {activeSidebarTab === 'rigging' && (
           <div className="space-y-4">
             <div className="pb-1">
-              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+              >
                 {t.rightSidebar.riggingTitle}
               </h4>
-              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">
-                {t.rightSidebar.riggingSub}
-              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.riggingSub}</p>
             </div>
             <RiggingSliderPanel
               rig={rig}
@@ -842,31 +985,42 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {/* TABS EDITORS: 7. SHI GEMINI AI CONCEPT DESIGNER */}
         {activeSidebarTab === 'ai' && (
           <div className="space-y-4">
-            <div className={`p-4 rounded-sm border ${
-              theme === 'dark' ? 'bg-yellow-500/5 border-yellow-500/20' : 'bg-yellow-500/5 border-yellow-300'
-            }`}>
+            <div
+              className={`p-4 rounded-sm border ${
+                theme === 'dark' ? 'bg-yellow-500/5 border-yellow-500/20' : 'bg-yellow-500/5 border-yellow-300'
+              }`}
+            >
               <h4 className="text-xs font-bold text-yellow-600 dark:text-yellow-500 flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-yellow-500" />
                 <span>{t.rightSidebar.aiTitle}</span>
               </h4>
-              <p className={`text-[10px] leading-relaxed mt-1 ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}>
+              <p
+                className={`text-[10px] leading-relaxed mt-1 ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}
+              >
                 {t.rightSidebar.aiSub}
               </p>
             </div>
 
             <div className="space-y-2">
               <textarea
+                id="ai-avatar-prompt"
+                aria-label={t.rightSidebar.aiPlaceholder}
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder={t.rightSidebar.aiPlaceholder}
                 className={`w-full text-xs p-3 rounded-sm border placeholder:text-slate-400/55 dark:placeholder:text-white/20 focus:outline-none focus:border-yellow-500/55 h-32 resize-none leading-relaxed font-sans ${
-                  theme === 'dark' ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10' : 'bg-slate-50 text-slate-800 border-slate-205'
+                  theme === 'dark'
+                    ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                    : 'bg-slate-50 text-slate-800 border-slate-205'
                 }`}
               />
             </div>
 
             {aiError && (
-              <div className="flex items-start space-x-2 p-3 bg-red-950/20 border border-red-500/20 rounded-sm text-red-500 dark:text-red-300 text-[10px]">
+              <div
+                className="flex items-start space-x-2 p-3 bg-red-950/20 border border-red-500/20 rounded-sm text-red-500 dark:text-red-300 text-[10px]"
+                role="alert"
+              >
                 <Info className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <span>{aiError}</span>
               </div>
@@ -877,6 +1031,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 id="generate-ai-btn"
                 onClick={handleAiGenerate}
                 disabled={aiGenerating || !aiPrompt.trim()}
+                aria-busy={aiGenerating}
                 className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 hover:scale-[1.01] text-white disabled:opacity-40 font-bold text-xs rounded-sm flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:pointer-events-none uppercase tracking-wider"
               >
                 {aiGenerating ? (
@@ -898,14 +1053,18 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {/* TABS EDITORS: 8. OBS EXPORT INTEGRATION */}
         {activeSidebarTab === 'obs' && (
           <div className="space-y-4">
-            <div className={`p-4 rounded-sm border ${
-              theme === 'dark' ? 'bg-cyan-500/5 border-cyan-500/20' : 'bg-cyan-500/5 border-cyan-300'
-            }`}>
+            <div
+              className={`p-4 rounded-sm border ${
+                theme === 'dark' ? 'bg-cyan-500/5 border-cyan-500/20' : 'bg-cyan-500/5 border-cyan-300'
+              }`}
+            >
               <h4 className="text-xs font-bold text-cyan-500 dark:text-cyan-400 flex items-center space-x-2">
                 <Tv className="w-4 h-4 text-cyan-500" />
                 <span>{t.rightSidebar.obsTitle}</span>
               </h4>
-              <p className={`text-[10px] leading-relaxed mt-1 ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}>
+              <p
+                className={`text-[10px] leading-relaxed mt-1 ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}
+              >
                 {t.rightSidebar.obsSub}
               </p>
             </div>
@@ -921,16 +1080,22 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 </p>
               </div>
 
-              <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 dark:text-white/40 block">
+              <label
+                htmlFor="obs-overlay-url"
+                className="text-[9px] uppercase font-mono tracking-wider text-slate-400 dark:text-white/40 block"
+              >
                 {t.rightSidebar.obsOverlay.urlLabel}
               </label>
               <div className="flex items-center gap-2">
                 <input
+                  id="obs-overlay-url"
                   readOnly
                   value={overlayUrl}
                   onFocus={(e) => e.currentTarget.select()}
                   className={`flex-1 min-w-0 text-[10px] font-mono p-2 rounded-sm border focus:outline-none focus:border-cyan-500 ${
-                    theme === 'dark' ? 'bg-[#0a0a0c] text-cyan-300 border-white/10' : 'bg-slate-50 text-cyan-700 border-slate-200'
+                    theme === 'dark'
+                      ? 'bg-[#0a0a0c] text-cyan-300 border-white/10'
+                      : 'bg-slate-50 text-cyan-700 border-slate-200'
                   }`}
                 />
                 <button
@@ -955,22 +1120,40 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </a>
 
               {/* Live connection status */}
-              <div className={`flex items-center gap-2 text-[10px] font-mono px-3 py-2 rounded-sm border ${
-                overlayCount > 0
-                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : theme === 'dark' ? 'border-white/10 bg-white/5 text-white/40' : 'border-slate-200 bg-slate-50 text-slate-500'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${overlayCount > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                {overlayCount > 0 ? `${overlayCount} ${t.rightSidebar.obsOverlay.connected}` : t.rightSidebar.obsOverlay.none}
+              <div
+                className={`flex items-center gap-2 text-[10px] font-mono px-3 py-2 rounded-sm border ${
+                  overlayCount > 0
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    : theme === 'dark'
+                      ? 'border-white/10 bg-white/5 text-white/40'
+                      : 'border-slate-200 bg-slate-50 text-slate-500'
+                }`}
+                role="status"
+                aria-live="polite"
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${overlayCount > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}
+                />
+                {overlayCount > 0
+                  ? `${overlayCount} ${t.rightSidebar.obsOverlay.connected}`
+                  : t.rightSidebar.obsOverlay.none}
               </div>
 
               <div className={`space-y-2 pt-1 divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-slate-100'}`}>
                 {(['1', '2', '3'] as const).map((step) => (
                   <div key={step} className="flex gap-2.5 text-[10px] pt-3 text-left">
-                    <span className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">{step}</span>
+                    <span className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">
+                      {step}
+                    </span>
                     <div>
-                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>{t.rightSidebar.obsOverlay.steps[step].title}</p>
-                      <p className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}>{t.rightSidebar.obsOverlay.steps[step].text}</p>
+                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>
+                        {t.rightSidebar.obsOverlay.steps[step].title}
+                      </p>
+                      <p
+                        className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}
+                      >
+                        {t.rightSidebar.obsOverlay.steps[step].text}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -988,14 +1171,16 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             />
 
             {/* Alternative: Window Capture + Chroma Key */}
-            <div className={`space-y-2 font-sans pt-4 mt-2 border-t ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}>
+            <div
+              className={`space-y-2 font-sans pt-4 mt-2 border-t ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}
+            >
               <h5 className={`text-[11px] font-bold ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}>
                 {t.rightSidebar.obsAltTitle}
               </h5>
               <button
                 id="obs-chromakey-shortcut"
                 onClick={() => {
-                  setConfig(prev => ({ ...prev, backgroundStyle: 'green-screen' }));
+                  setConfig((prev) => ({ ...prev, backgroundStyle: 'green-screen' }));
                   alert(t.rightSidebar.obsAlert);
                 }}
                 className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-sm font-bold text-xs uppercase tracking-wider transition-all cursor-pointer text-center"
@@ -1006,10 +1191,18 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               <div className={`space-y-2 pt-2 divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-slate-100'}`}>
                 {(['1', '2', '3'] as const).map((step) => (
                   <div key={step} className="flex gap-2.5 text-[10px] pt-3 text-left">
-                    <span className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">{step}</span>
+                    <span className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/20 text-cyan-600 dark:text-cyan-300 flex items-center justify-center font-bold font-mono shrink-0 text-[9px]">
+                      {step}
+                    </span>
                     <div>
-                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>{t.rightSidebar.obsSteps[step].title}</p>
-                      <p className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}>{t.rightSidebar.obsSteps[step].text}</p>
+                      <p className={`font-bold text-[10.5px] ${theme === 'dark' ? 'text-white/90' : 'text-slate-800'}`}>
+                        {t.rightSidebar.obsSteps[step].title}
+                      </p>
+                      <p
+                        className={`mt-0.5 leading-relaxed text-[9px] ${theme === 'dark' ? 'text-[#d1d1d1]/55' : 'text-slate-500'}`}
+                      >
+                        {t.rightSidebar.obsSteps[step].text}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -1017,17 +1210,21 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             </div>
           </div>
         )}
-
       </div>
 
       {/* Sidebar Footer detailing the calibration ratio values in real-time */}
-      <div className={`p-4 border-t font-mono text-[10px] flex items-center justify-between shrink-0 ${
-        theme === 'dark' ? 'border-white/10 bg-[#0c0c10] text-[#d1d1d1]/40' : 'border-slate-200 bg-slate-50 text-slate-500'
-      }`}>
-        <span>{t.rightSidebar.footerLabel}: {config.name || (isEn ? 'Personal' : 'Особистий')}</span>
+      <div
+        className={`p-4 border-t font-mono text-[10px] flex items-center justify-between shrink-0 ${
+          theme === 'dark'
+            ? 'border-white/10 bg-[#0c0c10] text-[#d1d1d1]/40'
+            : 'border-slate-200 bg-slate-50 text-slate-500'
+        }`}
+      >
+        <span>
+          {t.rightSidebar.footerLabel}: {config.name || (isEn ? 'Personal' : 'Особистий')}
+        </span>
         <span>{t.rightSidebar.footerTotal}</span>
       </div>
-
     </aside>
   );
 };

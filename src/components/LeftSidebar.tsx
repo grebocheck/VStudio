@@ -15,6 +15,7 @@ interface LeftSidebarProps {
   setScreenBuster: (val: boolean) => void;
   videoRef?: React.RefObject<HTMLVideoElement | null>;
   isModelLoading?: boolean;
+  fps?: number | null;
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -28,22 +29,25 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   setScreenBuster,
   videoRef,
   isModelLoading = false,
+  fps = null,
 }) => {
   const { t, language } = useI18n();
   const { theme } = useTheme();
 
   return (
-    <aside className={`w-full lg:w-76 shrink-0 border-b lg:border-b-0 lg:border-r flex flex-col justify-between p-4 gap-4 overflow-y-auto ${
-      theme === 'dark' 
-        ? 'border-white/10 bg-[#0f0f12]/95 text-[#d1d1d1]' 
-        : 'border-slate-200 bg-white text-slate-800'
-    }`} id="left-sidebar">
+    <aside
+      className={`w-full lg:w-76 shrink-0 border-b lg:border-b-0 lg:border-r flex flex-col justify-between p-4 gap-4 overflow-y-auto ${
+        theme === 'dark' ? 'border-white/10 bg-[#0f0f12]/95 text-[#d1d1d1]' : 'border-slate-200 bg-white text-slate-800'
+      }`}
+      id="left-sidebar"
+      aria-label={language === 'uk' ? 'Налаштування студії' : 'Studio settings'}
+    >
       <div className="space-y-4">
         <span className="text-[9px] uppercase font-bold text-indigo-500 dark:text-indigo-400 tracking-widest block font-mono pl-1">
           {t.leftSidebar.menuTitle}
         </span>
-        
-        <nav className="flex flex-col gap-1">
+
+        <nav className="flex flex-col gap-1" aria-label={t.leftSidebar.menuTitle}>
           {[
             { id: 'presets', label: t.leftSidebar.tabs.presets },
             { id: 'hair', label: t.leftSidebar.tabs.hair },
@@ -58,6 +62,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               id={`tab-btn-${tab.id}`}
               key={tab.id}
               onClick={() => setActiveSidebarTab(tab.id as any)}
+              aria-current={activeSidebarTab === tab.id ? 'page' : undefined}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-sm text-xs font-semibold transition-all cursor-pointer text-left ${
                 activeSidebarTab === tab.id
                   ? theme === 'dark'
@@ -69,13 +74,17 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               }`}
             >
               <span className="truncate">{tab.label}</span>
-              {activeSidebarTab === tab.id && <Check className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 ml-1" />}
+              {activeSidebarTab === tab.id && (
+                <Check className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 ml-1" />
+              )}
             </button>
           ))}
         </nav>
       </div>
 
-      <div className={`pt-4 border-t flex flex-col gap-4 shrink-0 ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}>
+      <div
+        className={`pt-4 border-t flex flex-col gap-4 shrink-0 ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}
+      >
         <div>
           <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-white/30 tracking-widest pl-1 block font-mono mb-2">
             {t.leftSidebar.quickModes}
@@ -95,6 +104,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                       : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-100'
                 }`}
                 title={t.leftSidebar.cursorTracking}
+                aria-pressed={trackingMode === 'mouse'}
               >
                 <span className="text-sm">🖱️</span>
                 <span>{t.leftSidebar.cursorTracking}</span>
@@ -113,6 +123,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                       : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-100'
                 }`}
                 title={t.leftSidebar.voiceMatch}
+                aria-pressed={micActive}
               >
                 <span className="text-sm">{micActive ? '🎙️' : '🎤'}</span>
                 <span>{t.leftSidebar.voiceMatch}</span>
@@ -129,33 +140,41 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     ? 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white hover:bg-white/10'
                     : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title={t.leftSidebar.cameraTracking || "Camera Tracking"}
+              title={t.leftSidebar.cameraTracking || 'Camera Tracking'}
+              aria-pressed={trackingMode === 'camera'}
             >
               <span className="text-sm">📹</span>
-              <span>{t.leftSidebar.cameraTracking || (language === 'uk' ? "Захват камери" : "Camera tracking")}</span>
+              <span>{t.leftSidebar.cameraTracking || (language === 'uk' ? 'Захват камери' : 'Camera tracking')}</span>
             </button>
 
-             {trackingMode === 'camera' && (
+            {trackingMode === 'camera' && (
               <div className="relative mt-1 rounded-sm overflow-hidden border border-rose-500/30 aspect-video bg-black/40">
                 <video
                   ref={videoRef}
                   muted
                   playsInline
+                  aria-label={language === 'uk' ? 'Попередній перегляд камери' : 'Camera preview'}
                   className="w-full h-full object-cover scale-x-[-1]"
                 />
                 <div className="absolute top-1.5 left-1.5 bg-rose-600 text-[8px] font-mono font-bold text-white px-1 py-0.5 rounded-sm flex items-center gap-1 shadow-md z-10">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                   CAM RIGGING
                 </div>
-                
+
                 {isModelLoading && (
-                  <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 text-center transition-all backdrop-blur-xs z-20">
+                  <div
+                    className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 text-center transition-all backdrop-blur-xs z-20"
+                    role="status"
+                    aria-live="polite"
+                  >
                     <div className="w-5 h-5 rounded-full border-2 border-indigo-500/40 border-t-indigo-400 animate-spin mb-2" />
                     <span className="text-[9px] text-white/90 font-bold uppercase tracking-wider animate-pulse">
                       {language === 'uk' ? 'Ініціалізація ШІ трекера...' : 'Initializing Tracking Model...'}
                     </span>
                     <span className="text-[7.5px] text-white/50 font-mono mt-1 block max-w-[160px] leading-relaxed">
-                      {language === 'uk' ? 'Завантаження MediaPipe Face Mesh (~5MB) із CDN для високоточного захоплення очей та міміки.' : 'Loading MediaPipe Face Mesh (~5MB) model for high-precision live tracking.'}
+                      {language === 'uk'
+                        ? 'Завантаження MediaPipe Face Mesh (~5MB) із CDN для високоточного захоплення очей та міміки.'
+                        : 'Loading MediaPipe Face Mesh (~5MB) model for high-precision live tracking.'}
                     </span>
                   </div>
                 )}
@@ -167,6 +186,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         <button
           id="toggle-mesh-cmd"
           onClick={() => setScreenBuster(!onScreenBuster)}
+          aria-pressed={onScreenBuster}
           className={`w-full py-2.5 border rounded-sm text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer text-center ${
             onScreenBuster
               ? 'bg-amber-600/25 border-amber-500/60 text-amber-300'
@@ -177,18 +197,32 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         >
           {onScreenBuster ? t.leftSidebar.diagnosticOn : t.leftSidebar.vectorMesh}
         </button>
-        
-        <div className={`p-2.5 rounded-sm border text-[9px] font-mono space-y-1 ${
-          theme === 'dark'
-            ? 'bg-white/5 border-white/5 text-white/40'
-            : 'bg-slate-50 border-slate-200/60 text-slate-500'
-        }`} id="diagnostics-monitor">
-          <span className={`block uppercase text-[8px] font-bold tracking-wide ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}>{t.leftSidebar.engineResources}</span>
-          <div className="flex justify-between"><span>{t.leftSidebar.fps}</span> <span className="text-emerald-500 dark:text-emerald-400 font-bold">60.0 FPS</span></div>
-          <div className="flex justify-between"><span>{t.leftSidebar.updated}</span> <span className="text-indigo-500 dark:text-indigo-400">{t.centerStage.liveIndicator}</span></div>
+
+        <div
+          className={`p-2.5 rounded-sm border text-[9px] font-mono space-y-1 ${
+            theme === 'dark'
+              ? 'bg-white/5 border-white/5 text-white/40'
+              : 'bg-slate-50 border-slate-200/60 text-slate-500'
+          }`}
+          id="diagnostics-monitor"
+        >
+          <span
+            className={`block uppercase text-[8px] font-bold tracking-wide ${theme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}
+          >
+            {t.leftSidebar.engineResources}
+          </span>
+          <div className="flex justify-between">
+            <span>{t.leftSidebar.fps}</span>{' '}
+            <span className="text-emerald-500 dark:text-emerald-400 font-bold">
+              {fps === null ? '--' : fps.toFixed(1)} FPS
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>{t.leftSidebar.updated}</span>{' '}
+            <span className="text-indigo-500 dark:text-indigo-400">{t.centerStage.liveIndicator}</span>
+          </div>
         </div>
       </div>
     </aside>
   );
 };
-

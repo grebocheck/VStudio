@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { Download, FileCode2, ImageDown } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
-import {
-  avatarExportFileName,
-  avatarSvgToPngBlob,
-  downloadBlob,
-  serializeAvatarSvg,
-} from '../lib/avatarExport';
+import { avatarExportFileName, avatarSvgToPngBlob, downloadBlob, serializeAvatarSvg } from '../lib/avatarExport';
 
 interface AvatarExportPanelProps {
   sourceRef: React.RefObject<SVGSVGElement | null>;
@@ -66,17 +61,19 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
   };
 
   return (
-    <section className={`space-y-3 rounded-sm border p-4 ${
-      theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/70 border-indigo-200'
-    }`}>
+    <section
+      className={`space-y-3 rounded-sm border p-4 ${
+        theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/70 border-indigo-200'
+      }`}
+    >
       <div>
-        <h5 className={`text-[11px] font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+        <h5
+          className={`text-[11px] font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
+        >
           <Download className="w-4 h-4 text-indigo-500" />
           <span>{copy.title}</span>
         </h5>
-        <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1 leading-relaxed">
-          {copy.sub}
-        </p>
+        <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1 leading-relaxed">{copy.sub}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -104,12 +101,13 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
         </button>
       </div>
 
-      <p className="text-[9px] text-slate-500 dark:text-white/45 font-mono leading-relaxed">
-        {copy.note}
-      </p>
+      <p className="text-[9px] text-slate-500 dark:text-white/45 font-mono leading-relaxed">{copy.note}</p>
 
       {error && (
-        <p className="rounded-sm border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-600 dark:text-rose-300">
+        <p
+          className="rounded-sm border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-600 dark:text-rose-300"
+          role="alert"
+        >
           {error}
         </p>
       )}

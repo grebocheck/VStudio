@@ -35,7 +35,8 @@ export function classifyEmotion(f: EmotionFeatures): Emotion {
   if (f.eyeWideAvg > 0.5 && f.jawOpen > 0.25) return 'scared';
   if (f.browOuterUpDiff > 0.45 || f.browOuterUpAvg > 0.5) return 'cool';
   if (f.cheekSquintAvg > 0.45 && f.smileAvg > 0.15 && f.smileAvg < 0.4 && f.jawOpen < 0.1) return 'shy';
-  if (f.smileAvg > 0.12 && f.smileAvg < 0.35 && f.eyeLookDownAvg > 0.35 && f.browInnerUp < 0.15 && f.angryAvg < 0.15) return 'relaxed';
+  if (f.smileAvg > 0.12 && f.smileAvg < 0.35 && f.eyeLookDownAvg > 0.35 && f.browInnerUp < 0.15 && f.angryAvg < 0.15)
+    return 'relaxed';
   if (f.blinkAvg > 0.65 && (f.cheekSquintAvg > 0.3 || f.smileAvg > 0.3)) return 'squint';
   if (f.adjustedAngryAvg > 0.45 && f.mouthForm < 0.05) return 'angry';
   if (f.smileAvg > 0.42 && f.blinkAvg > 0.35) return 'smug';
