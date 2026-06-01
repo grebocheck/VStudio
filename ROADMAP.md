@@ -11,7 +11,7 @@
 Веб-застосунок для створення та анімації 2D VTuber-аватарів у браузері:
 
 - **Стек:** React 19 + TypeScript + Vite 6 + Tailwind 4, Express-сервер (SSR-проксі до Gemini), MediaPipe Tasks Vision для трекінгу обличчя.
-- **Рендер аватара:** SVG (`viewBox 0 0 400 400`), процедурна анімація через `requestAnimationFrame` ([App.tsx:470](src/App.tsx#L470)).
+- **Рендер аватара:** SVG (`viewBox 0 0 400 400`), процедурна анімація через `requestAnimationFrame` у [useAnimationEngine.ts](src/hooks/useAnimationEngine.ts), а частий rig-frame стейт локалізовано в [LiveRigWorkspace.tsx](src/components/LiveRigWorkspace.tsx). Transform-рух SVG застосовується через `ref` на кожному кадрі, важчі React shape-render-и обмежено приблизно до 30 fps.
 - **Можливості:** конструктор зовнішності (волосся, очі, одяг, аксесуари, пропорції), 6 пресетів, ригінг-слайдери, 4 режими трекінгу (auto / mouse / mic / camera), ШІ-генерація стилю через Gemini, експорт PNG/SVG/JSON, запис WebM/GIF, OBS overlay, емоут-хоткеї, калібрування камери, двомовний UI (uk/en), темна/світла тема.
 
 **Загальний вердикт:** фази 0 і 2 виконані, а фаза 1 суттєво просунута: критичні блокери прибрані, додано персистентність, експорт, запис кліпів, OBS overlay, тести та CI. Найближчий фокус — завершити інженерний фундамент і рухати продуктивність, доступність, адаптив та онбординг із фази 3.
@@ -44,11 +44,11 @@
 
 ## 3. Архітектурні та якісні проблеми 🟠
 
-### 3.1. Перерендер усього дерева 60 разів/сек
+### 3.1. 🟡 SVG-render переведено на гібридний pipeline
 
-Анімаційний цикл викликає `setRig(...)` щокадру ([App.tsx:483](src/App.tsx#L483)), що змушує React перемальовувати весь `VTuberAvatar` (≈650 рядків SVG) 60 fps. Працює, але неоптимально: грітиме CPU, особливо разом з MediaPipe.
+Частий стейт винесено з `App` у [LiveRigWorkspace.tsx](src/components/LiveRigWorkspace.tsx): shell, ліва панель і закриті вкладки редактора більше не рендеряться на кожен rig-кадр. Фон сцени, emote-панель і dossier-картка ізольовані через `React.memo` у [CenterStageStatic.tsx](src/components/CenterStageStatic.tsx). Формули руху винесено в [avatarFrame.ts](src/lib/avatarFrame.ts): transform-и голови, волосся, торса, parallax і аксесуарів мутуються напряму через SVG `ref` на кожному `requestAnimationFrame`, а React-стан для shape-змін очей, рота й емоцій публікується приблизно 30 fps.
 
-- **Напрям:** винести анімацію з React-стейту — мутувати DOM/SVG через `ref` напряму, або рендерити аватар на `<canvas>`; принаймні мемоїзувати важкі підкомпоненти (`React.memo`) і розбити стейт на «статичний конфіг» vs «риг-кадр».
+- **Наступний напрям:** перевести деформацію очей і рота на цільові SVG `ref`-мутації або рендерити аватар на `<canvas>`; виміряти CPU/GPU профіль разом із MediaPipe.
 
 ### 3.2. ✅ Узгоджені типи `TrackingMode` / `Emotion`
 
@@ -62,35 +62,35 @@
 
 ### 3.4. Частково розділені компоненти
 
-[App.tsx](src/App.tsx) вже став тоншим оркестратором завдяки хукам `useFaceTracking`, `useMicrophone`, `useAnimationEngine`, `useAvatarStore`, `useCameraCalibration`, `useOverlaySync`, `useEmotes`, `useAvatarRecorder`. Наступні кандидати на декомпозицію — [RightSidebar.tsx](src/components/RightSidebar.tsx) і [VTuberAvatar.tsx](src/components/VTuberAvatar.tsx).
+[App.tsx](src/App.tsx) вже став тоншим оркестратором завдяки хукам `useFaceTracking`, `useMicrophone`, `useAvatarStore`, `useCameraCalibration`, компоненту [LiveRigWorkspace.tsx](src/components/LiveRigWorkspace.tsx) і memo-блокам [CenterStageStatic.tsx](src/components/CenterStageStatic.tsx). Наступні кандидати на декомпозицію — [RightSidebar.tsx](src/components/RightSidebar.tsx) і [VTuberAvatar.tsx](src/components/VTuberAvatar.tsx).
 
 ### 3.5. Частково посилений сервер
 
-[server.ts](src/server.ts) має обмеження body та промпту, rate-limit, security headers, `/healthz` і `PORT` з env. Лишилося додати таймаут/ретраї Gemini, структуроване логування та production-grade rate-limit store для горизонтального масштабування.
+[server.ts](src/server.ts) має обмеження body та промпту, rate-limit, security headers, `/healthz`, `PORT` з env, Gemini timeout/retry та структуроване JSON-логування. Для горизонтального масштабування лишилися production-grade зовнішні сховища логів і rate-limit store.
 
 ---
 
 ## 4. Прогалини продукту (чого бракує для «справжнього інструмента») 🟡
 
-| Область                      | Поточний стан                                                                        | Потрібно                                                 |
-| ---------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| **Експорт аватара**          | ✅ PNG, SVG, JSON, WebM, GIF                                                         | розширювати формати за потреби                           |
-| **Реальна OBS-інтеграція**   | ✅ `/overlay` + WebSocket relay + Browser Source URL                                 | production-hardening relay                               |
-| **Персистентність**          | ✅ автозбереження, бібліотека пресетів, JSON import/export                           | опційне хмарне збереження                                |
-| **Хоткеї та «емоут»-панель** | ✅ клавіші 1–9 + панель                                                              | кастомізація bindings                                    |
-| **Калібрування камери**      | ✅ вибір пристрою, neutral pose, sensitivity, smoothing                              | профілі під кілька сценаріїв                             |
-| **Профілі трекінгу**         | ✅ локальне збереження налаштувань                                                   | іменовані профілі                                        |
-| **Онбординг**                | немає                                                                                | перший запуск: тур по UI, пояснення режимів              |
-| **Доступність (a11y)**       | 🟡 додано `focus-visible`, reduced-motion, базові ARIA-ролі/стани та назви контролів | аудит контрасту й повна клавіатурна перевірка            |
-| **Адаптив/мобільний**        | частковий                                                                            | повноцінний адаптив або явне попередження «desktop-only» |
+| Область                      | Поточний стан                                                                                             | Потрібно                                       |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **Експорт аватара**          | ✅ PNG, SVG, JSON, WebM, GIF                                                                              | розширювати формати за потреби                 |
+| **Реальна OBS-інтеграція**   | ✅ `/overlay` + WebSocket relay + Browser Source URL                                                      | production-hardening relay                     |
+| **Персистентність**          | ✅ автозбереження, бібліотека пресетів, JSON import/export                                                | опційне хмарне збереження                      |
+| **Хоткеї та «емоут»-панель** | ✅ клавіші 1–9 + панель                                                                                   | кастомізація bindings                          |
+| **Калібрування камери**      | ✅ вибір пристрою, neutral pose, sensitivity, smoothing                                                   | профілі під кілька сценаріїв                   |
+| **Профілі трекінгу**         | ✅ локальне збереження налаштувань                                                                        | іменовані профілі                              |
+| **Онбординг**                | ✅ first-run тур по пресетах, трекінгу, кастомізації та OBS; повторний запуск із toolbar                  | розширювати контекстними підказками за потреби |
+| **Доступність (a11y)**       | 🟡 додано `focus-visible`, reduced-motion, ARIA-ролі/стани, axe-аудит shell обох тем і keyboard flow туру | повна клавіатурна перевірка всіх вкладок       |
+| **Адаптив/мобільний**        | ✅ інтерфейс лишається доступним, на вузьких екранах показується явна desktop-рекомендація                | повноцінний мобільний layout за потреби        |
 
 ---
 
 ## 5. Інженерна гігієна ⚙️
 
-- **Тести:** ✅ Vitest покриває sanitize/merge, класифікатор емоцій, hair-sway фізику, калібрування, експорт, store, рекордер і FPS-розрахунок. Ще немає E2E (Playwright).
+- **Тести:** ✅ Vitest покриває sanitize/merge, класифікатор емоцій, hair-sway фізику, калібрування, експорт, store, рекордер, FPS-розрахунок, memo-компаратор редактора, SVG frame-transform pipeline і навігацію onboarding. Playwright E2E перевіряє first-run tour, mobile desktop-рекомендацію, chrome-free `/overlay`, axe-аудит обох тем і keyboard flow онбордингу.
 - **Лінтинг/форматування:** ✅ ESLint + Prettier застосовані до кодової бази; Husky + lint-staged перевіряють staged-файли перед комітом.
-- **CI/CD:** ✅ GitHub Actions запускає typecheck, lint, format-check, test, build і docker build.
+- **CI/CD:** ✅ GitHub Actions запускає typecheck, lint, format-check, unit-тести, build, Playwright E2E і docker build.
 - **Залежності:** `package.json` має продуктову назву та версію; ще немає Renovate/Dependabot.
 - **README:** ✅ описує продукт, архітектуру, запуск, env і Docker.
 - **Error boundaries / телеметрія:** ✅ React Error Boundary логгує падіння клієнта, а `useFpsMeter` показує виміряний FPS замість фейкового значення.
@@ -117,11 +117,12 @@
 
 1. ✅ ESLint + Prettier + lint-staged + Husky; форматування застосовано до наявного коду.
 2. ✅ Vitest: юніт-тести на класифікатор емоцій, hair-sway фізику, ШІ-merge/clamp, кольори, експорт, store, рекордер і FPS.
-3. ✅ GitHub Actions: `typecheck → lint → format-check → test → build → docker build`.
+3. ✅ GitHub Actions: `typecheck → lint → format-check → test → build → test:e2e → docker build`.
 4. ✅ React Error Boundary + базове логування клієнтських помилок.
 5. ✅ `App.tsx` розділено на основні хуки, включно з `useAiGenerate`.
 6. ✅ Сервер має max-length, rate-limit, `/healthz`, security headers, env-порт, Gemini timeout/retry та структуроване логування.
 7. ✅ README та `package.json` оновлені під реальний продукт.
+8. ✅ Playwright E2E: first-run onboarding із повторним запуском, mobile desktop-рекомендація з персистентним dismiss, chrome-free `/overlay`, axe-аудит обох тем і keyboard flow онбордингу.
 
 ### Фаза 2 — Ключові фічі кріейтора (1–2 тижні) 🟡
 
@@ -133,10 +134,10 @@
 
 ### Фаза 3 — Полірування та масштаб (постійно) 🟢
 
-1. Продуктивність: рендер аватара через ref-мутації або `<canvas>`; розділити «config» і «rig-frame» стейти; `React.memo`.
-2. 🟡 Доступність: додано ARIA-стани, назви основних контролів, `focus-visible` і `prefers-reduced-motion`; лишилися аудит контрасту та повна клавіатурна перевірка.
-3. Адаптив/мобільний або явний desktop-gate.
-4. Онбординг-тур + пресети-приклади під різні ніші.
+1. 🟡 Продуктивність: «config» і «rig-frame» стейти розділено через `LiveRigWorkspace`, статичні панелі ізольовано `React.memo`, transform-рух SVG переведено на 60 fps `ref`-мутації, а важчі React shape-render-и обмежено приблизно до 30 fps; лишилися імперативні деформації очей/рота або `<canvas>` і профілювання з MediaPipe.
+2. 🟡 Доступність: додано ARIA-стани, назви основних контролів, `focus-visible` і `prefers-reduced-motion`; axe-аудит shell для обох тем і keyboard flow онбордингу автоматизовано у Playwright, знайдені контрастні порушення виправлено. Лишилася повна клавіатурна перевірка всіх редакторських вкладок.
+3. ✅ Адаптив/мобільний: додано явну dismissible desktop-рекомендацію для вузьких екранів; повний mobile layout лишається опційним розширенням.
+4. ✅ Онбординг-тур: first-run dialog із локальним збереженням, клавіатурною навігацією, повторним запуском із toolbar і поясненням пресетів, tracking, кастомізації та OBS.
 5. Розширення контенту: більше зачісок/одягу/аксесуарів, кастомні кольорові градієнти.
 6. (Опційно) акаунти + хмарне збереження бібліотеки аватарів.
 7. ✅ Реальна телеметрія FPS/перформансу замість захардкоджених значень.
@@ -156,7 +157,7 @@
 
 ## 8. Підсумок
 
-Проєкт уже має **сильну продуктову основу**: детальний SVG-аватар, MediaPipe-трекінг, персистентність, експорт, OBS overlay, кліпи, тести й CI. Фаза 1 закрита для поточного масштабу; наступний етап — виконувати фазу 3: оптимізацію рендеру, доступність, адаптив і онбординг. Окремим наступним шаром якості варто додати E2E-тести та production-grade зовнішні сервіси для логів і rate-limit store.
+Проєкт уже має **сильну продуктову основу**: детальний SVG-аватар, MediaPipe-трекінг, персистентність, експорт, OBS overlay, кліпи, unit- та E2E-тести й CI. Фаза 1 закрита для поточного масштабу; у фазі 3 локалізовано щокадрові React-render-и, додано гібридний SVG pipeline, desktop-рекомендацію, доступний first-run тур і автоматизований axe-аудит shell. Наступні кроки — профілювання з MediaPipe, цільові ref-деформації очей/рота або `<canvas>`, клавіатурна перевірка всіх редакторських вкладок та production-grade зовнішні сервіси для логів і rate-limit store.
 
 ## 9, Мої ідейки
 

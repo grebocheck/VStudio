@@ -20,7 +20,7 @@ const HAIR_SWATCHES = [
   '#ffffff',
 ];
 
-interface RightSidebarProps {
+export interface RightSidebarProps {
   activeSidebarTab: SidebarTab;
   config: AvatarConfig;
   setConfig: React.Dispatch<React.SetStateAction<AvatarConfig>>;
@@ -53,7 +53,7 @@ interface RightSidebarProps {
   overlayCount: number;
 }
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({
+const RightSidebarComponent: React.FC<RightSidebarProps> = ({
   activeSidebarTab,
   config,
   setConfig,
@@ -185,7 +185,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     >
                       {getPresetName(p.id, p.name)}
                     </span>
-                    <span className="text-[9px] font-mono opacity-60 block truncate mt-1">
+                    <span className="text-[9px] font-mono text-slate-600 dark:text-white/70 block truncate mt-1">
                       {p.config.clothingStyle} · {p.config.hairStyleBack}
                     </span>
                   </button>
@@ -213,7 +213,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                       >
                         🌟 {p.name}
                       </span>
-                      <span className="text-[9px] font-mono opacity-60 block truncate mt-1">
+                      <span className="text-[9px] font-mono text-slate-600 dark:text-white/70 block truncate mt-1">
                         {t.presets.customSaved}
                       </span>
                     </button>
@@ -233,8 +233,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 <p
                   className={`text-[10px] italic text-center py-4 rounded border ${
                     theme === 'dark'
-                      ? 'text-white/40 bg-[#08080a] border-white/5'
-                      : 'text-slate-400 bg-slate-50 border-slate-200'
+                      ? 'text-white/65 bg-[#08080a] border-white/5'
+                      : 'text-slate-600 bg-slate-50 border-slate-200'
                   }`}
                 >
                   {t.presets.noCustomPresets}
@@ -1228,3 +1228,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     </aside>
   );
 };
+
+/**
+ * Live rig frames only affect the manual rigging tab. Keep the heavier editor
+ * panels asleep while the avatar continues animating in the center stage.
+ */
+export const areRightSidebarPropsEqual = (previous: RightSidebarProps, next: RightSidebarProps) => {
+  const riggingVisible = previous.activeSidebarTab === 'rigging' || next.activeSidebarTab === 'rigging';
+
+  for (const key of Object.keys(previous) as Array<keyof RightSidebarProps>) {
+    if (key === 'rig' && !riggingVisible) continue;
+    if (!Object.is(previous[key], next[key])) return false;
+  }
+
+  return true;
+};
+
+export const RightSidebar = React.memo(RightSidebarComponent, areRightSidebarPropsEqual);

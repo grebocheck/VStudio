@@ -5,6 +5,7 @@ import { HeadBase, Live2DMouth } from './avatar/HeadAndFace';
 import { EyebrowSVG, EyeSVG } from './avatar/Eyes';
 import { HairComponent, FrontHairComponent } from './avatar/Hairstyles';
 import { AccessoryComponent } from './avatar/Accessories';
+import { calculateAvatarFrameStyles } from '../lib/avatarFrame';
 
 interface VTuberAvatarProps {
   config: AvatarConfig;
@@ -48,7 +49,6 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
     earStyle = 'normal',
     hairGradient = 'none',
     accessoryGlow = false,
-    headSize = 1.0,
     neckWidth = 1.0,
     neckHeight = 1.0,
     shoulderWidth = 1.0,
@@ -58,9 +58,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
   } = config;
 
   const {
-    angleX,
     angleY,
-    angleZ,
     eyeLOpen,
     eyeROpen,
     pupilX,
@@ -110,38 +108,8 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
     }
   };
 
-  // Let's compute fine-tuned offsets for simulating Live2D multi-layer depth!
-  // Facial features (eyes, eyebrows, mouth) shift together inside the head based on head yaw/pitch
-  const facesTranslateX = angleX * 0.6; // strong facial shift
-  const facesTranslateY = angleY * 0.5;
-
-  const outlineTranslateX = angleX * 0.2; // subtle head-outline shift for perspective depth
-  const outlineTranslateY = angleY * 0.15;
-
-  const headRotation = angleZ; // rotate entire head around neck base
-
-  // Neck pivot and breathing effect scales
-  const isRetro = artStyle === 'retro';
-  const isAnime = artStyle === 'anime';
-
-  // Amplified bounce tempo for retro squash & stretch
-  const retroBounceY = isRetro ? Math.sin(breath * Math.PI * 2) * 0.05 : 0;
-  const retroBounceX = isRetro ? -Math.cos(breath * Math.PI * 2) * 0.03 : 0;
-
-  const chestBreathingScale =
-    1.0 + (isRetro ? Math.sin(breath * Math.PI * 2) * 0.03 : Math.sin(breath * Math.PI * 2) * 0.012);
-
-  // Squash & Stretch Kinematics:
-  // When looking far, the head vertically elongates and narrows slightly to preserve volume.
-  // This provides distinct animation elasticity.
-  const lookDistance = Math.sqrt(angleX * angleX + angleY * angleY);
-  const headStretchY = 1.0 + lookDistance * 0.0016 + retroBounceY; // vertical stretch
-  const headStretchX = 1.0 - lookDistance * 0.0008 + retroBounceX; // horizontal squeeze to preserve volume
-
-  // High-inertia physical hair sway values processed by raw physics loops
-  // Amplify sway physics for gorgeous anime hair strands
-  const physicsSwayX = (rig.hairSwayX ?? 0) * (isAnime ? 1.35 : 1.0);
-  const physicsSwayY = (rig.hairSwayY ?? 0) * (isAnime ? 1.25 : 1.0);
+  const frame = calculateAvatarFrameStyles(config, rig);
+  const { headRotation, physicsSwayX, physicsSwayY } = frame;
 
   // Background configurations
   const getBackgroundContent = () => {
@@ -248,8 +216,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
 
         {/* --- Back Hair Layer (Placed behind Torso/Neck in absolute SVG layers) --- */}
         <g
+          data-rig-node="back-hair"
           style={{
-            transform: `translate(${bodyX * 0.6}px, ${outlineTranslateY - angleY * 0.38}px) rotate(${headRotation}deg) scale(${headSize}) scale(${headStretchX}, ${headStretchY}) translate(${physicsSwayX * 0.15 + facesTranslateX * -0.1}px, ${physicsSwayY * 0.08}px) rotate(${physicsSwayX * 0.08}deg)`,
+            transform: frame.backHairTransform,
             transformOrigin: '200px 220px',
           }}
         >
@@ -267,7 +236,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
         </g>
 
         {/* --- Chest / Torso Layer (Stays somewhat static, responds to breath & minor body physics) --- */}
-        <g style={{ transform: `scale(${chestBreathingScale})`, transformOrigin: '200px 380px' }}>
+        <g data-rig-node="chest" style={{ transform: frame.chestTransform, transformOrigin: '200px 380px' }}>
           <NeckAndShoulders
             skinColor={skinColor}
             clothingStyle={clothingStyle}
@@ -286,13 +255,14 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
         {/* --- HEAD & FACE GROUP (Fully Rotatable, Tilting, Warpable, Scalable) --- */}
         <g
           id="rigged-head-module"
+          data-rig-node="head"
           style={{
-            transform: `translate(${bodyX * 0.6}px, ${outlineTranslateY - angleY * 0.38}px) rotate(${headRotation}deg) scale(${headSize}) scale(${headStretchX}, ${headStretchY})`,
+            transform: frame.headTransform,
             transformOrigin: '200px 220px', // Rotate around face base
           }}
         >
           {/* Head Base skin silhouette */}
-          <g style={{ transform: `translateX(${outlineTranslateX}px)` }}>
+          <g data-rig-node="head-outline" style={{ transform: frame.headOutlineTransform }}>
             <HeadBase
               skinColor={skinColor}
               blushOpacity={blushOpacity}
@@ -390,8 +360,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
           {/* Shadow from Front Hair / Fringe on the Forehead (for advanced anime depth) */}
           {artStyle === 'anime' && (
             <g
+              data-rig-node="front-hair-shadow"
               style={{
-                transform: `translateX(${facesTranslateX * 0.72 + physicsSwayX * 0.25 + 1.5}px) translateY(4px) rotate(${physicsSwayX * 0.08}deg)`,
+                transform: frame.frontHairShadowTransform,
                 transformOrigin: '200px 140px',
                 opacity: 0.15,
               }}
@@ -408,8 +379,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
 
           {/* Front Hair / Fringe (Sweeps across the face, translates slightly less than face details for depth) */}
           <g
+            data-rig-node="front-hair"
             style={{
-              transform: `translateX(${facesTranslateX * 0.72 + physicsSwayX * 0.25}px) rotate(${physicsSwayX * 0.08}deg)`,
+              transform: frame.frontHairTransform,
               transformOrigin: '200px 140px', // Pivot point near center of head
             }}
           >
@@ -425,8 +397,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
           {/* FACIAL DETAILS (Shift strongly within head contour to create parallax depth) */}
           <g
             id="parallax-facial-features"
+            data-rig-node="face"
             style={{
-              transform: `translate(${facesTranslateX}px, ${facesTranslateY}px)`,
+              transform: frame.faceTransform,
             }}
           >
             {/* Eyebrows */}
@@ -481,18 +454,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
 
           {/* Accessories (Top hats, horns, headphones, glasses) */}
           <g
+            data-rig-node="accessory"
             style={{
-              transform: `translateX(${
-                accessoryStyle === 'glasses'
-                  ? facesTranslateX
-                  : accessoryStyle === 'neko-ears' || accessoryStyle === 'horns' || accessoryStyle === 'angel-halo'
-                    ? facesTranslateX * 0.72 + physicsSwayX * 0.25
-                    : outlineTranslateX * 1.15
-              }px) rotate(${
-                accessoryStyle === 'neko-ears' || accessoryStyle === 'horns' || accessoryStyle === 'angel-halo'
-                  ? physicsSwayX * 0.08
-                  : 0
-              }deg)`,
+              transform: frame.accessoryTransform,
               transformOrigin: '200px 140px',
             }}
           >
@@ -979,8 +943,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
           <g id="rigging-debug-grid" opacity="0.35" pointerEvents="none">
             {/* Head circle mesh */}
             <circle
-              cx={200 + bodyX * 0.6}
-              cy={160 + outlineTranslateY}
+              data-rig-node="debug-head"
+              cx={frame.debugHeadCx}
+              cy={frame.debugHeadCy}
               r="75"
               fill="none"
               stroke="#22c55e"
@@ -989,8 +954,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
             />
             {/* Face grid coordinates tracking head rotation */}
             <g
+              data-rig-node="debug-face"
               style={{
-                transform: `translate(${bodyX * 0.6 + facesTranslateX}px, ${outlineTranslateY + facesTranslateY}px) rotate(${headRotation}deg)`,
+                transform: frame.debugFaceTransform,
                 transformOrigin: '200px 220px',
               }}
             >

@@ -18,7 +18,7 @@ interface LeftSidebarProps {
   fps?: number | null;
 }
 
-export const LeftSidebar: React.FC<LeftSidebarProps> = ({
+const LeftSidebarComponent: React.FC<LeftSidebarProps> = ({
   activeSidebarTab,
   setActiveSidebarTab,
   trackingMode,
@@ -86,7 +86,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         className={`pt-4 border-t flex flex-col gap-4 shrink-0 ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}
       >
         <div>
-          <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-white/30 tracking-widest pl-1 block font-mono mb-2">
+          <span className="text-[9px] uppercase font-bold text-slate-600 dark:text-white/65 tracking-widest pl-1 block font-mono mb-2">
             {t.leftSidebar.quickModes}
           </span>
           <div className="flex flex-col gap-2">
@@ -226,3 +226,5 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
     </aside>
   );
 };
+
+export const LeftSidebar = React.memo(LeftSidebarComponent);

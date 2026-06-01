@@ -15,6 +15,7 @@ with **camera face-tracking**, **microphone mouth-sync**, **mouse tracking**, or
 - **AI styling** — describe a character in natural language; a server-side Gemini call returns a full avatar config (validated + clamped before applying).
 - **Presets & persistence** — built-in characters, plus save/export/import your own avatars (`localStorage` + `.vstudio.json`).
 - **Exports, OBS & clips** — transparent PNG/SVG avatar exports, transparent Browser Source overlay, chroma-key fallback, short WebM recording, and transparent GIF loops.
+- **Guided first run** — a keyboard-friendly quick tour introduces presets, tracking, customization, and OBS; narrow screens receive an explicit desktop-workspace recommendation.
 - **i18n + theming** — Ukrainian / English, dark / light.
 
 ## Architecture
@@ -34,12 +35,17 @@ src/
     useAiGenerate.ts       Gemini request lifecycle + defensive response handling
   lib/
     avatarExport.ts        SVG serialization + transparent PNG export
+    avatarFrame.ts         shared declarative/ref SVG motion formulas
     hairPhysics.ts         pure spring-mass secondary hair motion
+    onboarding.ts          desktop breakpoint + tour step helpers
     sanitizeConfig.ts      defensive merge/clamp for untrusted configs (AI / import)
     storage.ts             safe localStorage helpers
   components/              UI (sidebars, stage) + components/avatar (SVG parts)
   i18n/                    en / uk dictionaries
   server.ts                Express: Gemini proxy, rate-limit, health, static serve
+e2e/
+  studio.e2e.ts            Playwright smoke flows for onboarding, mobile notice, OBS overlay
+  accessibility.e2e.ts     Axe scans for both themes + onboarding keyboard flow
 ```
 
 ## Run locally
@@ -54,16 +60,18 @@ npm run dev               # http://localhost:3000
 
 ## Scripts
 
-| Script                 | Description                                                |
-| ---------------------- | ---------------------------------------------------------- |
-| `npm run dev`          | Dev server (Express + Vite middleware, HMR)                |
-| `npm run build`        | Build client (Vite) + server (esbuild → `dist/server.cjs`) |
-| `npm run start`        | Serve the production build                                 |
-| `npm run typecheck`    | `tsc --noEmit`                                             |
-| `npm run lint`         | ESLint                                                     |
-| `npm test`             | Run unit tests (Vitest)                                    |
-| `npm run format`       | Prettier write                                             |
-| `npm run format:check` | Verify Prettier formatting                                 |
+| Script                     | Description                                                |
+| -------------------------- | ---------------------------------------------------------- |
+| `npm run dev`              | Dev server (Express + Vite middleware, HMR)                |
+| `npm run build`            | Build client (Vite) + server (esbuild → `dist/server.cjs`) |
+| `npm run start`            | Serve the production build                                 |
+| `npm run typecheck`        | `tsc --noEmit`                                             |
+| `npm run lint`             | ESLint                                                     |
+| `npm test`                 | Run unit tests (Vitest)                                    |
+| `npm run test:e2e`         | Run Chromium end-to-end tests (Playwright)                 |
+| `npm run test:e2e:install` | Install the local Chromium runner for Playwright           |
+| `npm run format`           | Prettier write                                             |
+| `npm run format:check`     | Verify Prettier formatting                                 |
 
 ## Environment
 

@@ -7,6 +7,7 @@ import { ActiveEmote } from './useEmotes';
 import { classifyEmotion } from '../lib/emotionClassifier';
 import { cameraResponseFromSmoothing, expressionResponseFromSmoothing } from '../lib/cameraCalibration';
 import { advanceHairPhysics, INITIAL_HAIR_PHYSICS } from '../lib/hairPhysics';
+import { shouldPublishRigFrame } from '../lib/avatarFrame';
 
 const ALL_EMOTIONS: Emotion[] = [
   'none',
@@ -37,6 +38,10 @@ interface EngineDeps {
   cameraCalibration: CameraCalibrationProfile;
   /** Manual emote override (streamer hotkeys/panel); wins over tracking while active. */
   emoteRef: React.MutableRefObject<ActiveEmote | null>;
+  /** Latest rig frame used by the engine between throttled React renders. */
+  rigRef: React.MutableRefObject<RigParams>;
+  /** Applies transform-only SVG motion on every animation frame. */
+  onFrame?: (rig: RigParams) => void;
   setRig: React.Dispatch<React.SetStateAction<RigParams>>;
 }
 
@@ -53,12 +58,20 @@ export function useAnimationEngine({
   face,
   cameraCalibration,
   emoteRef,
+  rigRef,
+  onFrame,
   setRig,
 }: EngineDeps): void {
   const animationFrameId = useRef<number | null>(null);
   const lastTime = useRef<number>(0);
+  const lastPublishedAt = useRef(0);
+  const onFrameRef = useRef(onFrame);
   const { analyserRef, dataArrayRef } = mic;
   const { videoRef, faceLandmarkerRef } = face;
+
+  useEffect(() => {
+    onFrameRef.current = onFrame;
+  }, [onFrame]);
 
   // Blink state machine
   const blinkTimer = useRef(0);
@@ -92,7 +105,8 @@ export function useAnimationEngine({
       dizzinessAccumulatorRef.current = Math.max(0, dizzinessAccumulatorRef.current - elapsed / 30);
       drowsinessAccumulatorRef.current = Math.max(0, drowsinessAccumulatorRef.current - elapsed / 12);
 
-      setRig((prev) => {
+      const updated = (() => {
+        const prev = rigRef.current;
         const updated = { ...prev };
         updated.activeEmotion = 'none';
 
@@ -335,7 +349,14 @@ export function useAnimationEngine({
         }
 
         return updated;
-      });
+      })();
+
+      rigRef.current = updated;
+      onFrameRef.current?.(updated);
+      if (shouldPublishRigFrame(lastPublishedAt.current, now)) {
+        lastPublishedAt.current = now;
+        setRig(updated);
+      }
 
       animationFrameId.current = requestAnimationFrame(loop);
     };
@@ -353,6 +374,7 @@ export function useAnimationEngine({
     faceLandmarkerRef,
     cameraCalibration,
     emoteRef,
+    rigRef,
     setRig,
   ]);
 
@@ -363,18 +385,21 @@ export function useAnimationEngine({
     const handleMouseMove = (e: MouseEvent) => {
       const dx = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
       const dy = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-      setRig((prev) => ({
-        ...prev,
+      const updated = {
+        ...rigRef.current,
         angleX: dx * 28,
         angleY: -dy * 16,
         angleZ: dx * -10,
         pupilX: dx * 0.75,
         pupilY: dy * 0.6,
         bodyX: dx * 12,
-      }));
+      };
+      rigRef.current = updated;
+      onFrameRef.current?.(updated);
+      setRig(updated);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [trackingMode, setRig]);
+  }, [trackingMode, rigRef, setRig]);
 }

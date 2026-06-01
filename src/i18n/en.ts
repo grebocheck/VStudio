@@ -9,6 +9,38 @@ export const en = {
     saveProject: 'SAVE PROJECT',
     saved: 'SAVED ✓',
   },
+  desktopNotice: {
+    title: 'Desktop workspace recommended',
+    body: 'V-Studio opens on this screen, but live rigging, camera calibration, and OBS setup are designed for a desktop viewport at least 1024px wide.',
+    dismiss: 'Dismiss desktop recommendation',
+  },
+  onboarding: {
+    open: 'Open quick tour',
+    tour: 'Tour',
+    progress: 'Quick tour {current}/{total}',
+    skip: 'Skip tour',
+    back: 'Back',
+    next: 'Next',
+    finish: 'Start creating',
+    steps: [
+      {
+        title: 'Start from a character preset',
+        body: 'Choose a complete avatar template first. Every color, costume, and story field stays editable, so presets are a quick launchpad rather than a locked design.',
+      },
+      {
+        title: 'Pick a live tracking mode',
+        body: 'Use autopilot for an instant animated preview, cursor tracking for manual control, microphone sync for mouth movement, or camera rigging for MediaPipe face tracking.',
+      },
+      {
+        title: 'Shape your on-stream identity',
+        body: 'Open the face, hair, wardrobe, and biography tabs to customize your avatar. The quick mix button is useful when you want a fresh direction in one click.',
+      },
+      {
+        title: 'Send the avatar to OBS',
+        body: 'The OBS tab provides a transparent Browser Source URL. Add it to OBS once and the overlay will mirror your live avatar automatically.',
+      },
+    ],
+  },
   leftSidebar: {
     menuTitle: 'SETTINGS MENU:',
     tabs: {
