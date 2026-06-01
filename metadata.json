@@ -1,0 +1,6 @@
+{
+  "name": "VTuber Customizer & Live Rigging Studio",
+  "description": "An interactive VTuber Avatar Builder, Rigging simulator, and OBS Overlay with AI styling and Live tracking.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
