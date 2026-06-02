@@ -1,6 +1,6 @@
 import React from 'react';
-import { Camera, RefreshCw, RotateCcw, SlidersHorizontal, Target, Video } from 'lucide-react';
-import { CameraCalibrationProfile, TrackingMode } from '../types';
+import { Camera, RefreshCw, RotateCcw, Save, SlidersHorizontal, Target, Trash2, Video } from 'lucide-react';
+import { CameraCalibrationProfile, NamedCameraCalibrationProfile, TrackingMode } from '../types';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -9,10 +9,16 @@ interface CameraCalibrationPanelProps {
   setTrackingMode: (mode: TrackingMode) => void;
   devices: MediaDeviceInfo[];
   profile: CameraCalibrationProfile;
+  profiles: NamedCameraCalibrationProfile[];
+  activeProfileId: string | null;
   setProfile: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
   onRefreshDevices: () => void | Promise<void>;
   onCalibrateNeutral: () => void;
   onResetProfile: () => void;
+  onApplyProfile: (id: string) => void;
+  onSaveProfile: (name: string) => void;
+  onUpdateActiveProfile: () => void;
+  onDeleteProfile: (id: string) => void;
 }
 
 interface SliderRowProps {
@@ -48,16 +54,25 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
   setTrackingMode,
   devices,
   profile,
+  profiles,
+  activeProfileId,
   setProfile,
   onRefreshDevices,
   onCalibrateNeutral,
   onResetProfile,
+  onApplyProfile,
+  onSaveProfile,
+  onUpdateActiveProfile,
+  onDeleteProfile,
 }) => {
   const { t } = useI18n();
   const { theme } = useTheme();
   const copy = t.riggingPanel.cameraCalibration;
   const isCameraActive = trackingMode === 'camera';
   const hasSavedMissingDevice = profile.deviceId && !devices.some((device) => device.deviceId === profile.deviceId);
+  const [profileName, setProfileName] = React.useState('');
+  const hasActiveSavedProfile = Boolean(activeProfileId && profiles.some((saved) => saved.id === activeProfileId));
+  const canSaveProfile = profileName.trim().length > 0;
 
   const stepCircle = (step: number, active = true) => (
     <span
@@ -70,6 +85,24 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
       {step}
     </span>
   );
+
+  const handleProfileSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextProfileId = event.target.value;
+    if (!nextProfileId) return;
+    const nextProfile = profiles.find((saved) => saved.id === nextProfileId);
+    setProfileName(nextProfile?.name ?? '');
+    onApplyProfile(nextProfileId);
+  };
+
+  const handleSaveProfile = () => {
+    if (!canSaveProfile) return;
+    onSaveProfile(profileName);
+    setProfileName('');
+  };
+
+  const handleDeleteProfile = () => {
+    if (activeProfileId) onDeleteProfile(activeProfileId);
+  };
 
   return (
     <section
@@ -103,6 +136,91 @@ export const CameraCalibrationPanel: React.FC<CameraCalibrationPanelProps> = ({
       </div>
 
       <div className="space-y-3">
+        <div
+          className={`rounded border p-3 space-y-2 ${
+            theme === 'dark' ? 'bg-[#050507] border-white/10' : 'bg-white/70 border-rose-100'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <label
+              htmlFor="camera-profile-select"
+              className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-white/45"
+            >
+              {copy.savedProfiles}
+            </label>
+            <span className="text-[9px] font-mono text-slate-400 dark:text-white/35">
+              {profiles.length}/{copy.profileLimit}
+            </span>
+          </div>
+          <select
+            id="camera-profile-select"
+            value={activeProfileId ?? ''}
+            onChange={handleProfileSelect}
+            className={`w-full text-xs rounded-sm border px-2.5 py-2 focus:outline-none focus:border-rose-500 ${
+              theme === 'dark' ? 'bg-[#0a0a0c] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+            }`}
+          >
+            <option value="">{profiles.length ? copy.unsavedProfile : copy.noSavedProfiles}</option>
+            {profiles.map((saved) => (
+              <option key={saved.id} value={saved.id}>
+                {saved.name}
+              </option>
+            ))}
+          </select>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+            <input
+              type="text"
+              value={profileName}
+              onChange={(event) => setProfileName(event.target.value)}
+              placeholder={copy.profileNamePlaceholder}
+              aria-label={copy.profileNamePlaceholder}
+              maxLength={48}
+              className={`min-w-0 text-xs rounded-sm border px-2.5 py-2 focus:outline-none focus:border-rose-500 ${
+                theme === 'dark'
+                  ? 'bg-[#0a0a0c] border-white/10 text-white placeholder:text-white/30'
+                  : 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400'
+              }`}
+            />
+            <button
+              type="button"
+              onClick={handleSaveProfile}
+              disabled={!canSaveProfile}
+              className="px-2.5 py-2 rounded-sm bg-rose-600 hover:bg-rose-500 disabled:bg-slate-400/40 disabled:text-white/60 text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:cursor-not-allowed"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{copy.saveProfile}</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={onUpdateActiveProfile}
+              disabled={!hasActiveSavedProfile}
+              className={`px-2.5 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
+                theme === 'dark'
+                  ? 'border-white/10 text-white/70 hover:bg-white/5'
+                  : 'border-slate-200 text-slate-600 hover:bg-white'
+              }`}
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{copy.updateProfile}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteProfile}
+              disabled={!hasActiveSavedProfile}
+              className={`px-2.5 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
+                theme === 'dark'
+                  ? 'border-white/10 text-white/70 hover:bg-white/5'
+                  : 'border-slate-200 text-slate-600 hover:bg-white'
+              }`}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{copy.deleteProfile}</span>
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-start gap-2.5">
           {stepCircle(1)}
           <div className="min-w-0 flex-1 space-y-2">

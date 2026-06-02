@@ -1,5 +1,13 @@
 import React from 'react';
-import { AvatarConfig, CameraCalibrationProfile, RigParams, PresetAvatar, TrackingMode, SidebarTab } from '../types';
+import {
+  AvatarConfig,
+  CameraCalibrationProfile,
+  NamedCameraCalibrationProfile,
+  RigParams,
+  PresetAvatar,
+  TrackingMode,
+  SidebarTab,
+} from '../types';
 import { Palette } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
@@ -27,10 +35,16 @@ export interface RightSidebarProps {
   setScreenBuster: (val: boolean) => void;
   cameraDevices: MediaDeviceInfo[];
   cameraCalibration: CameraCalibrationProfile;
+  cameraCalibrationProfiles: NamedCameraCalibrationProfile[];
+  activeCameraCalibrationProfileId: string | null;
   setCameraCalibration: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
   refreshCameraDevices: () => void | Promise<void>;
   onCalibrateCameraNeutral: () => void;
   onResetCameraCalibration: () => void;
+  onApplyCameraCalibrationProfile: (id: string) => void;
+  onSaveCameraCalibrationProfile: (name: string) => void;
+  onUpdateCameraCalibrationProfile: () => void;
+  onDeleteCameraCalibrationProfile: (id: string) => void;
   avatarSvgRef: React.RefObject<SVGSVGElement | null>;
   aiPrompt: string;
   setAiPrompt: (v: string) => void;
@@ -104,10 +118,16 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
             setScreenBuster={props.setScreenBuster}
             cameraDevices={props.cameraDevices}
             cameraCalibration={props.cameraCalibration}
+            cameraCalibrationProfiles={props.cameraCalibrationProfiles}
+            activeCameraCalibrationProfileId={props.activeCameraCalibrationProfileId}
             setCameraCalibration={props.setCameraCalibration}
             refreshCameraDevices={props.refreshCameraDevices}
             onCalibrateCameraNeutral={props.onCalibrateCameraNeutral}
             onResetCameraCalibration={props.onResetCameraCalibration}
+            onApplyCameraCalibrationProfile={props.onApplyCameraCalibrationProfile}
+            onSaveCameraCalibrationProfile={props.onSaveCameraCalibrationProfile}
+            onUpdateCameraCalibrationProfile={props.onUpdateCameraCalibrationProfile}
+            onDeleteCameraCalibrationProfile={props.onDeleteCameraCalibrationProfile}
           />
         )}
         {activeSidebarTab === 'ai' && (

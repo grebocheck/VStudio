@@ -259,9 +259,15 @@ export default function App() {
           onScreenBuster={onScreenBuster}
           setScreenBuster={setScreenBuster}
           cameraCalibration={cameraCalibration.profile}
+          cameraCalibrationProfiles={cameraCalibration.profiles}
+          activeCameraCalibrationProfileId={cameraCalibration.activeProfileId}
           setCameraCalibration={cameraCalibration.setProfile}
           calibrateCameraNeutral={cameraCalibration.calibrateNeutral}
           onResetCameraCalibration={cameraCalibration.resetProfile}
+          onApplyCameraCalibrationProfile={cameraCalibration.applyProfile}
+          onSaveCameraCalibrationProfile={cameraCalibration.saveProfile}
+          onUpdateCameraCalibrationProfile={cameraCalibration.updateActiveProfile}
+          onDeleteCameraCalibrationProfile={cameraCalibration.deleteProfile}
           mic={mic}
           face={face}
           customPresets={store.customPresets}

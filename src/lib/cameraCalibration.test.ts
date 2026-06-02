@@ -3,6 +3,7 @@ import {
   DEFAULT_CAMERA_CALIBRATION,
   cameraResponseFromSmoothing,
   sanitizeCameraCalibration,
+  sanitizeNamedCameraCalibrationProfiles,
   withNeutralCameraOffset,
 } from './cameraCalibration';
 
@@ -46,5 +47,23 @@ describe('camera calibration profile', () => {
     expect(profile.yawOffset).toBe(8);
     expect(profile.pitchOffset).toBe(-3);
     expect(profile.rollOffset).toBe(2);
+  });
+
+  it('sanitizes named tracking profiles from local storage', () => {
+    const profiles = sanitizeNamedCameraCalibrationProfiles([
+      {
+        id: 'desk',
+        name: '  Desk   setup  ',
+        profile: { ...DEFAULT_CAMERA_CALIBRATION, smoothing: 999 },
+      },
+      { id: 'desk', name: 'Duplicate', profile: DEFAULT_CAMERA_CALIBRATION },
+      { id: '', name: 'No id', profile: DEFAULT_CAMERA_CALIBRATION },
+      null,
+    ]);
+
+    expect(profiles).toHaveLength(1);
+    expect(profiles[0].id).toBe('desk');
+    expect(profiles[0].name).toBe('Desk setup');
+    expect(profiles[0].profile.smoothing).toBe(100);
   });
 });

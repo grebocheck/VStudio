@@ -129,6 +129,10 @@ export const uk = {
     'retro-pip_name': 'Піп (1930s Rubber Hose)',
     'retro-pip_lore':
       'Класичний чорно-білий мультиплікаційний герой епохи 1930-х. Він постійно весело пружинить і коливається під уявні джазові синкопи, носить стильний круглий фрак та робить комічні очі!',
+
+    'kitsune-oracle_name': 'Акарі (Kitsune Oracle)',
+    'kitsune-oracle_lore':
+      'Оракул у масці кіцуне, яка стрімить нічний фольклор, затишні стратегічні ігри та спокійні ворожіння з неонової храмової студії. Золоті акценти й лисича маска роблять кожну сцену церемонною.',
   },
   rightSidebar: {
     params: 'Параметри: ',
@@ -221,6 +225,8 @@ export const uk = {
       horns: 'Затишні ріжки чорного демона',
       glasses: 'Розумні окуляри в оправі',
       neko: 'Кокетливі котячі Неко-вушка',
+      angelHalo: 'Мʼякий ангельський німб',
+      foxMask: 'Бічна маска кіцуне',
     },
     backdropOptions: {
       gaming: '🎮 Неонова кімната геймера',
@@ -275,6 +281,20 @@ export const uk = {
       note: 'Експорт використовує прозорий canvas 800×800 і прибирає студійне тло.',
       notReady: 'SVG аватара ще не змонтовано.',
       failed: 'Не вдалося експортувати аватар.',
+    },
+    telegramStickers: {
+      title: 'Telegram TGS стікерпак',
+      sub: 'Згенеруйте нативний векторний стікерпак із цієї модельки аватара. Кожен стікер прозорий, без фону, зациклений і прив’язаний до стрім-емоції.',
+      format: 'Формат',
+      canvas: 'Полотно',
+      animation: 'Рух',
+      background: 'Фон',
+      transparent: 'Прозорий',
+      download: 'Завантажити TGS pack',
+      exporting: 'Збірка TGS...',
+      note: 'ZIP містить окремі .tgs файли та manifest. Завантажуйте .tgs через @Stickers. Ліміт Telegram: {max} на стікер.',
+      ready: 'Пак готовий: {count} стікерів, найбільший .tgs {size}.',
+      failed: 'Не вдалося експортувати Telegram стікерпак.',
     },
     recording: {
       title: 'Запис кліпу аватара',
@@ -333,6 +353,14 @@ export const uk = {
       defaultDevice: 'Камера за замовчуванням',
       savedDeviceMissing: 'Збережена камера недоступна',
       cameraFallback: 'Камера',
+      savedProfiles: 'Збережені профілі трекінгу',
+      profileLimit: 12,
+      unsavedProfile: 'Поточні незбережені налаштування',
+      noSavedProfiles: 'Профілі ще не збережені',
+      profileNamePlaceholder: 'Назва профілю, напр. Робочий стіл',
+      saveProfile: 'Зберегти',
+      updateProfile: 'Оновити',
+      deleteProfile: 'Видалити',
       tuning: 'Відгук трекінгу',
       headSensitivity: 'Чутливість голови',
       expressionSensitivity: 'Чутливість міміки',

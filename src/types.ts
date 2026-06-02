@@ -36,6 +36,12 @@ export interface CameraCalibrationProfile {
   rollOffset: number;
 }
 
+export interface NamedCameraCalibrationProfile {
+  id: string;
+  name: string;
+  profile: CameraCalibrationProfile;
+}
+
 export interface AvatarConfig {
   skinColor: string;
   eyeColor: string;

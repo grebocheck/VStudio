@@ -1,5 +1,5 @@
 import React from 'react';
-import { CameraCalibrationProfile, RigParams, TrackingMode } from '../types';
+import { CameraCalibrationProfile, NamedCameraCalibrationProfile, RigParams, TrackingMode } from '../types';
 import { Camera, RotateCcw, Smile, HelpCircle, Eye } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
@@ -18,10 +18,16 @@ interface RiggingSliderPanelProps {
   setScreenBuster: (val: boolean) => void;
   cameraDevices: MediaDeviceInfo[];
   cameraCalibration: CameraCalibrationProfile;
+  cameraCalibrationProfiles: NamedCameraCalibrationProfile[];
+  activeCameraCalibrationProfileId: string | null;
   setCameraCalibration: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
   refreshCameraDevices: () => void | Promise<void>;
   onCalibrateCameraNeutral: () => void;
   onResetCameraCalibration: () => void;
+  onApplyCameraCalibrationProfile: (id: string) => void;
+  onSaveCameraCalibrationProfile: (name: string) => void;
+  onUpdateCameraCalibrationProfile: () => void;
+  onDeleteCameraCalibrationProfile: (id: string) => void;
 }
 
 export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
@@ -37,10 +43,16 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
   setScreenBuster,
   cameraDevices,
   cameraCalibration,
+  cameraCalibrationProfiles,
+  activeCameraCalibrationProfileId,
   setCameraCalibration,
   refreshCameraDevices,
   onCalibrateCameraNeutral,
   onResetCameraCalibration,
+  onApplyCameraCalibrationProfile,
+  onSaveCameraCalibrationProfile,
+  onUpdateCameraCalibrationProfile,
+  onDeleteCameraCalibrationProfile,
 }) => {
   const { t, language } = useI18n();
   const { theme } = useTheme();
@@ -279,10 +291,16 @@ export const RiggingSliderPanel: React.FC<RiggingSliderPanelProps> = ({
         setTrackingMode={setTrackingMode}
         devices={cameraDevices}
         profile={cameraCalibration}
+        profiles={cameraCalibrationProfiles}
+        activeProfileId={activeCameraCalibrationProfileId}
         setProfile={setCameraCalibration}
         onRefreshDevices={refreshCameraDevices}
         onCalibrateNeutral={onCalibrateCameraNeutral}
         onResetProfile={onResetCameraCalibration}
+        onApplyProfile={onApplyCameraCalibrationProfile}
+        onSaveProfile={onSaveCameraCalibrationProfile}
+        onUpdateActiveProfile={onUpdateCameraCalibrationProfile}
+        onDeleteProfile={onDeleteCameraCalibrationProfile}
       />
 
       {/* Manual Rigging Sliders */}

@@ -2,6 +2,7 @@ import React from 'react';
 import { AvatarConfig } from '../../types';
 import { AvatarExportPanel } from '../AvatarExportPanel';
 import { AvatarRecorderPanel } from '../AvatarRecorderPanel';
+import { TelegramStickerPackPanel } from '../TelegramStickerPackPanel';
 import { Tv } from 'lucide-react';
 import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme/ThemeContext';
@@ -136,6 +137,8 @@ export const ObsTab: React.FC<ObsTabProps> = ({ config, setConfig, avatarSvgRef,
       </div>
 
       <AvatarExportPanel sourceRef={avatarSvgRef} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
+
+      <TelegramStickerPackPanel config={config} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
 
       <AvatarRecorderPanel sourceRef={avatarSvgRef} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
 

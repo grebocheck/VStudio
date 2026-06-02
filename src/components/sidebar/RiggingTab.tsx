@@ -1,5 +1,5 @@
 import React from 'react';
-import { CameraCalibrationProfile, RigParams, TrackingMode } from '../../types';
+import { CameraCalibrationProfile, NamedCameraCalibrationProfile, RigParams, TrackingMode } from '../../types';
 import { RiggingSliderPanel } from '../RiggingSliderPanel';
 import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme/ThemeContext';
@@ -16,10 +16,16 @@ export interface RiggingTabProps {
   setScreenBuster: (val: boolean) => void;
   cameraDevices: MediaDeviceInfo[];
   cameraCalibration: CameraCalibrationProfile;
+  cameraCalibrationProfiles: NamedCameraCalibrationProfile[];
+  activeCameraCalibrationProfileId: string | null;
   setCameraCalibration: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
   refreshCameraDevices: () => void | Promise<void>;
   onCalibrateCameraNeutral: () => void;
   onResetCameraCalibration: () => void;
+  onApplyCameraCalibrationProfile: (id: string) => void;
+  onSaveCameraCalibrationProfile: (name: string) => void;
+  onUpdateCameraCalibrationProfile: () => void;
+  onDeleteCameraCalibrationProfile: (id: string) => void;
 }
 
 export const RiggingTab: React.FC<RiggingTabProps> = ({
@@ -34,10 +40,16 @@ export const RiggingTab: React.FC<RiggingTabProps> = ({
   setScreenBuster,
   cameraDevices,
   cameraCalibration,
+  cameraCalibrationProfiles,
+  activeCameraCalibrationProfileId,
   setCameraCalibration,
   refreshCameraDevices,
   onCalibrateCameraNeutral,
   onResetCameraCalibration,
+  onApplyCameraCalibrationProfile,
+  onSaveCameraCalibrationProfile,
+  onUpdateCameraCalibrationProfile,
+  onDeleteCameraCalibrationProfile,
 }) => {
   const { t } = useI18n();
   const { theme } = useTheme();
@@ -65,10 +77,16 @@ export const RiggingTab: React.FC<RiggingTabProps> = ({
         setScreenBuster={setScreenBuster}
         cameraDevices={cameraDevices}
         cameraCalibration={cameraCalibration}
+        cameraCalibrationProfiles={cameraCalibrationProfiles}
+        activeCameraCalibrationProfileId={activeCameraCalibrationProfileId}
         setCameraCalibration={setCameraCalibration}
         refreshCameraDevices={refreshCameraDevices}
         onCalibrateCameraNeutral={onCalibrateCameraNeutral}
         onResetCameraCalibration={onResetCameraCalibration}
+        onApplyCameraCalibrationProfile={onApplyCameraCalibrationProfile}
+        onSaveCameraCalibrationProfile={onSaveCameraCalibrationProfile}
+        onUpdateCameraCalibrationProfile={onUpdateCameraCalibrationProfile}
+        onDeleteCameraCalibrationProfile={onDeleteCameraCalibrationProfile}
       />
     </div>
   );

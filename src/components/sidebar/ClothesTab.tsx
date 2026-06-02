@@ -90,6 +90,8 @@ export const ClothesTab: React.FC<ClothesTabProps> = ({ config, setConfig }) => 
             <option value="horns">{t.rightSidebar.decorOptions.horns}</option>
             <option value="glasses">{t.rightSidebar.decorOptions.glasses}</option>
             <option value="neko-ears">{t.rightSidebar.decorOptions.neko}</option>
+            <option value="angel-halo">{t.rightSidebar.decorOptions.angelHalo}</option>
+            <option value="fox-mask">{t.rightSidebar.decorOptions.foxMask}</option>
           </select>
         </div>
 

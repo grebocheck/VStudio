@@ -1,9 +1,11 @@
-import { CameraCalibrationProfile, RigParams } from '../types';
+import { CameraCalibrationProfile, NamedCameraCalibrationProfile, RigParams } from '../types';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const finiteNumber = (value: unknown, fallback: number, min: number, max: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? clamp(value, min, max) : fallback;
+
+const MAX_SAVED_PROFILES = 12;
 
 export const DEFAULT_CAMERA_CALIBRATION: CameraCalibrationProfile = {
   deviceId: '',
@@ -14,6 +16,17 @@ export const DEFAULT_CAMERA_CALIBRATION: CameraCalibrationProfile = {
   pitchOffset: 0,
   rollOffset: 0,
 };
+
+export function sanitizeCameraCalibrationProfileName(input: unknown, fallback = 'Camera profile'): string {
+  if (typeof input !== 'string') return fallback;
+  const trimmed = input.trim().replace(/\s+/g, ' ').slice(0, 48);
+  return trimmed || fallback;
+}
+
+export function createCameraCalibrationProfileId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return `camera-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 export function sanitizeCameraCalibration(input: unknown): CameraCalibrationProfile {
   if (!input || typeof input !== 'object') return DEFAULT_CAMERA_CALIBRATION;
@@ -34,6 +47,31 @@ export function sanitizeCameraCalibration(input: unknown): CameraCalibrationProf
     pitchOffset: finiteNumber(raw.pitchOffset, DEFAULT_CAMERA_CALIBRATION.pitchOffset, -20, 20),
     rollOffset: finiteNumber(raw.rollOffset, DEFAULT_CAMERA_CALIBRATION.rollOffset, -15, 15),
   };
+}
+
+export function sanitizeNamedCameraCalibrationProfiles(input: unknown): NamedCameraCalibrationProfile[] {
+  if (!Array.isArray(input)) return [];
+
+  const seen = new Set<string>();
+  const profiles: NamedCameraCalibrationProfile[] = [];
+
+  for (const item of input) {
+    if (!item || typeof item !== 'object') continue;
+    const raw = item as Record<string, unknown>;
+    const id = typeof raw.id === 'string' ? raw.id.trim().slice(0, 80) : '';
+    if (!id || seen.has(id)) continue;
+
+    profiles.push({
+      id,
+      name: sanitizeCameraCalibrationProfileName(raw.name),
+      profile: sanitizeCameraCalibration(raw.profile),
+    });
+    seen.add(id);
+
+    if (profiles.length >= MAX_SAVED_PROFILES) break;
+  }
+
+  return profiles;
 }
 
 export function cameraResponseFromSmoothing(smoothing: number): number {

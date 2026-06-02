@@ -1,6 +1,14 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { INITIAL_RIG, PRESETS } from '../presets';
-import { AvatarConfig, CameraCalibrationProfile, PresetAvatar, RigParams, SidebarTab, TrackingMode } from '../types';
+import {
+  AvatarConfig,
+  CameraCalibrationProfile,
+  NamedCameraCalibrationProfile,
+  PresetAvatar,
+  RigParams,
+  SidebarTab,
+  TrackingMode,
+} from '../types';
 import type { FaceTracking } from '../hooks/useFaceTracking';
 import type { MicRefs } from '../hooks/useMicrophone';
 import { useAiGenerate } from '../hooks/useAiGenerate';
@@ -23,9 +31,15 @@ interface LiveRigWorkspaceProps {
   onScreenBuster: boolean;
   setScreenBuster: (active: boolean) => void;
   cameraCalibration: CameraCalibrationProfile;
+  cameraCalibrationProfiles: NamedCameraCalibrationProfile[];
+  activeCameraCalibrationProfileId: string | null;
   setCameraCalibration: React.Dispatch<React.SetStateAction<CameraCalibrationProfile>>;
   calibrateCameraNeutral: (rig: Pick<RigParams, 'angleX' | 'angleY' | 'angleZ'>) => void;
   onResetCameraCalibration: () => void;
+  onApplyCameraCalibrationProfile: (id: string) => void;
+  onSaveCameraCalibrationProfile: (name: string) => void;
+  onUpdateCameraCalibrationProfile: () => void;
+  onDeleteCameraCalibrationProfile: (id: string) => void;
   mic: MicRefs;
   face: FaceTracking;
   customPresets: PresetAvatar[];
@@ -51,9 +65,15 @@ export const LiveRigWorkspace: React.FC<LiveRigWorkspaceProps> = ({
   onScreenBuster,
   setScreenBuster,
   cameraCalibration,
+  cameraCalibrationProfiles,
+  activeCameraCalibrationProfileId,
   setCameraCalibration,
   calibrateCameraNeutral,
   onResetCameraCalibration,
+  onApplyCameraCalibrationProfile,
+  onSaveCameraCalibrationProfile,
+  onUpdateCameraCalibrationProfile,
+  onDeleteCameraCalibrationProfile,
   mic,
   face,
   customPresets,
@@ -137,10 +157,16 @@ export const LiveRigWorkspace: React.FC<LiveRigWorkspaceProps> = ({
         setScreenBuster={setScreenBuster}
         cameraDevices={face.devices}
         cameraCalibration={cameraCalibration}
+        cameraCalibrationProfiles={cameraCalibrationProfiles}
+        activeCameraCalibrationProfileId={activeCameraCalibrationProfileId}
         setCameraCalibration={setCameraCalibration}
         refreshCameraDevices={face.refreshDevices}
         onCalibrateCameraNeutral={handleCalibrateCameraNeutral}
         onResetCameraCalibration={onResetCameraCalibration}
+        onApplyCameraCalibrationProfile={onApplyCameraCalibrationProfile}
+        onSaveCameraCalibrationProfile={onSaveCameraCalibrationProfile}
+        onUpdateCameraCalibrationProfile={onUpdateCameraCalibrationProfile}
+        onDeleteCameraCalibrationProfile={onDeleteCameraCalibrationProfile}
         avatarSvgRef={avatarSvgRef}
         aiPrompt={ai.prompt}
         setAiPrompt={ai.setPrompt}

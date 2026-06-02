@@ -128,6 +128,10 @@ export const en = {
     'retro-pip_name': 'Pip (1930s Rubber Hose)',
     'retro-pip_lore':
       'A classic black-and-white cartoon hero of the 1930s. He constantly bounces and sways to imaginary jazz syncopations, wears a dapper round tailcoat, and makes comically big eyes!',
+
+    'kitsune-oracle_name': 'Akari (Kitsune Oracle)',
+    'kitsune-oracle_lore':
+      'A fox-mask oracle who streams late-night folklore, cozy strategy games, and quiet fortune readings from a neon shrine studio. Her golden accents and kitsune mask make every scene feel ceremonial.',
   },
   rightSidebar: {
     params: 'Parameters: ',
@@ -220,6 +224,8 @@ export const en = {
       horns: 'Playful Demon Horns',
       glasses: 'Smart Wire-rim Glasses',
       neko: 'Kawaii Neko Cat-ears',
+      angelHalo: 'Soft Angel Halo',
+      foxMask: 'Side Kitsune Fox Mask',
     },
     backdropOptions: {
       gaming: '🎮 Neon Gaming Room',
@@ -275,6 +281,20 @@ export const en = {
       note: 'Exports use an 800×800 transparent canvas and omit the studio backdrop.',
       notReady: 'Avatar SVG is not mounted yet.',
       failed: 'Avatar export failed.',
+    },
+    telegramStickers: {
+      title: 'Telegram TGS Sticker Pack',
+      sub: 'Generate a native vector sticker pack from this avatar model. Every sticker is transparent, background-free, looped, and mapped to a stream emotion.',
+      format: 'Format',
+      canvas: 'Canvas',
+      animation: 'Motion',
+      background: 'Background',
+      transparent: 'Transparent',
+      download: 'Download TGS pack',
+      exporting: 'Building TGS...',
+      note: 'ZIP contains individual .tgs files plus a manifest. Upload the .tgs files with @Stickers. Telegram limit: {max} per sticker.',
+      ready: 'Pack ready: {count} stickers, largest .tgs {size}.',
+      failed: 'Telegram sticker pack export failed.',
     },
     recording: {
       title: 'Avatar Clip Recorder',
@@ -332,6 +352,14 @@ export const en = {
       defaultDevice: 'Default camera',
       savedDeviceMissing: 'Saved camera unavailable',
       cameraFallback: 'Camera',
+      savedProfiles: 'Saved tracking profiles',
+      profileLimit: 12,
+      unsavedProfile: 'Unsaved current settings',
+      noSavedProfiles: 'No saved profiles yet',
+      profileNamePlaceholder: 'Profile name, e.g. Desk setup',
+      saveProfile: 'Save',
+      updateProfile: 'Update',
+      deleteProfile: 'Delete',
       tuning: 'Tracking response',
       headSensitivity: 'Head sensitivity',
       expressionSensitivity: 'Expression sensitivity',
