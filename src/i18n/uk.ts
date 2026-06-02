@@ -51,6 +51,7 @@ export const uk = {
       metadata: '📝 Біографія та Лоре',
       rigging: '⚙️ Ріггінг та Калібрування',
       ai: '✨ ШІ Генератор Образів',
+      stickers: '🪄 Telegram Стікери',
       obs: '📺 Інтеграція з OBS',
     },
     quickModes: 'ШВИДКІ РЕЖИМИ:',
@@ -290,10 +291,18 @@ export const uk = {
       animation: 'Рух',
       background: 'Фон',
       transparent: 'Прозорий',
+      engine: 'Рушій геометрії',
+      engineProcedural: 'Процедурний',
+      engineVector: 'Векторний з аватара',
+      engineHint:
+        'Векторний режим конвертує справжній SVG аватара у Lottie (максимум деталізації). Свічення/блюр Telegram не підтримує — їх відкинуто.',
       download: 'Завантажити TGS pack',
       exporting: 'Збірка TGS...',
       note: 'ZIP містить окремі .tgs файли та manifest. Завантажуйте .tgs через @Stickers. Ліміт Telegram: {max} на стікер.',
+      validated:
+        'Preflight-перевірки тримають тільки TGS-вектор: прозоре полотно, замкнена 3-секундна петля, без зображень, масок, тексту, ефектів і фону.',
       ready: 'Пак готовий: {count} стікерів, найбільший .tgs {size}.',
+      validationWarnings: '{count} попереджень валідації записано в manifest.',
       failed: 'Не вдалося експортувати Telegram стікерпак.',
     },
     recording: {

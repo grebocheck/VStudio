@@ -1,5 +1,5 @@
 import React from 'react';
-import { BadgeCheck, Download, Package, Sparkles } from 'lucide-react';
+import { BadgeCheck, Download, Package, ShieldCheck, Sparkles, TriangleAlert } from 'lucide-react';
 import { AvatarConfig } from '../types';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
@@ -12,6 +12,9 @@ import {
   TELEGRAM_STICKER_SIZE,
   TELEGRAM_STICKER_SPECS,
 } from '../lib/telegramStickers';
+import { buildTelegramStickerLottieFromAvatar } from '../lib/telegram/buildFromSvg';
+
+type StickerEngine = 'procedural' | 'vector';
 
 interface TelegramStickerPackPanelProps {
   config: AvatarConfig;
@@ -29,17 +32,24 @@ export const TelegramStickerPackPanel: React.FC<TelegramStickerPackPanelProps> =
   const copy = t.rightSidebar.telegramStickers;
   const [isExporting, setIsExporting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [lastExport, setLastExport] = React.useState<{ count: number; maxSize: number } | null>(null);
+  const [engine, setEngine] = React.useState<StickerEngine>('vector');
+  const [lastExport, setLastExport] = React.useState<{ count: number; maxSize: number; warnings: number } | null>(null);
 
   const exportPack = async () => {
     setError(null);
     setIsExporting(true);
     try {
-      const pack = await createTelegramStickerPack(config, fileBaseName);
+      const pack = await createTelegramStickerPack(
+        config,
+        fileBaseName,
+        undefined,
+        engine === 'vector' ? buildTelegramStickerLottieFromAvatar : undefined,
+      );
       downloadBlob(pack.zipBlob, pack.fileName);
       setLastExport({
         count: pack.manifest.stickers.length,
         maxSize: Math.max(...pack.manifest.stickers.map((sticker) => sticker.sizeBytes)),
+        warnings: pack.manifest.stickers.reduce((sum, sticker) => sum + sticker.validation.warningCount, 0),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : copy.failed);
@@ -113,6 +123,45 @@ export const TelegramStickerPackPanel: React.FC<TelegramStickerPackPanelProps> =
         ))}
       </div>
 
+      <p
+        className={`rounded-sm border px-3 py-2 text-[9px] leading-relaxed flex items-start gap-1.5 ${
+          theme === 'dark'
+            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+        }`}
+      >
+        <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+        <span>{copy.validated}</span>
+      </p>
+
+      <div>
+        <span className="text-[9px] uppercase font-mono tracking-wider text-slate-400 dark:text-white/40 block mb-1.5">
+          {copy.engine}
+        </span>
+        <div className="grid grid-cols-2 gap-1.5">
+          {(['vector', 'procedural'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setEngine(mode)}
+              aria-pressed={engine === mode}
+              className={`py-2 rounded-sm border text-[10px] font-bold transition-all cursor-pointer ${
+                engine === mode
+                  ? 'bg-sky-600/20 border-sky-500/60 text-sky-600 dark:text-sky-300'
+                  : theme === 'dark'
+                    ? 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+              }`}
+            >
+              {mode === 'vector' ? copy.engineVector : copy.engineProcedural}
+            </button>
+          ))}
+        </div>
+        {engine === 'vector' && (
+          <p className="text-[9px] text-slate-500 dark:text-white/45 mt-1.5 leading-relaxed">{copy.engineHint}</p>
+        )}
+      </div>
+
       <button
         type="button"
         onClick={() => void exportPack()}
@@ -128,15 +177,22 @@ export const TelegramStickerPackPanel: React.FC<TelegramStickerPackPanelProps> =
       </p>
 
       {lastExport && (
-        <p
-          className="rounded-sm border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-[10px] text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5"
-          role="status"
-        >
-          <BadgeCheck className="w-3.5 h-3.5" />
-          <span>
-            {copy.ready.replace('{count}', String(lastExport.count)).replace('{size}', formatBytes(lastExport.maxSize))}
-          </span>
-        </p>
+        <div className="space-y-1.5" role="status">
+          <p className="rounded-sm border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-[10px] text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+            <BadgeCheck className="w-3.5 h-3.5" />
+            <span>
+              {copy.ready
+                .replace('{count}', String(lastExport.count))
+                .replace('{size}', formatBytes(lastExport.maxSize))}
+            </span>
+          </p>
+          {lastExport.warnings > 0 && (
+            <p className="rounded-sm border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[10px] text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+              <TriangleAlert className="w-3.5 h-3.5" />
+              <span>{copy.validationWarnings.replace('{count}', String(lastExport.warnings))}</span>
+            </p>
+          )}
+        </div>
       )}
 
       {error && (

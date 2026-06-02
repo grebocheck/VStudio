@@ -56,6 +56,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarProps> = ({
             { id: 'metadata', label: t.leftSidebar.tabs.metadata },
             { id: 'rigging', label: t.leftSidebar.tabs.rigging },
             { id: 'ai', label: t.leftSidebar.tabs.ai },
+            { id: 'stickers', label: t.leftSidebar.tabs.stickers },
             { id: 'obs', label: t.leftSidebar.tabs.obs },
           ].map((tab) => (
             <button

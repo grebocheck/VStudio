@@ -19,7 +19,7 @@ export type Emotion =
 
 export type TrackingMode = 'manual' | 'mouse' | 'mic' | 'auto' | 'camera';
 
-export type SidebarTab = 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'obs';
+export type SidebarTab = 'presets' | 'hair' | 'face' | 'clothes' | 'metadata' | 'rigging' | 'ai' | 'stickers' | 'obs';
 
 export interface CameraCalibrationProfile {
   /** Empty string means browser/default camera. */

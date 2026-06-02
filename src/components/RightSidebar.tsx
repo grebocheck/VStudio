@@ -18,6 +18,7 @@ import { ClothesTab } from './sidebar/ClothesTab';
 import { MetadataTab } from './sidebar/MetadataTab';
 import { RiggingTab } from './sidebar/RiggingTab';
 import { AiTab } from './sidebar/AiTab';
+import { StickersTab } from './sidebar/StickersTab';
 import { ObsTab } from './sidebar/ObsTab';
 
 export interface RightSidebarProps {
@@ -139,6 +140,7 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
             handleAiGenerate={props.handleAiGenerate}
           />
         )}
+        {activeSidebarTab === 'stickers' && <StickersTab config={config} />}
         {activeSidebarTab === 'obs' && (
           <ObsTab
             config={config}

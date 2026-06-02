@@ -51,6 +51,7 @@ export const en = {
       metadata: '📝 Biography & Lore',
       rigging: '⚙️ Rigging & Calibration',
       ai: '✨ AI Glyph-Generator',
+      stickers: '🪄 Telegram Stickers',
       obs: '📺 OBS Integration',
     },
     quickModes: 'QUICK MODES:',
@@ -290,10 +291,18 @@ export const en = {
       animation: 'Motion',
       background: 'Background',
       transparent: 'Transparent',
+      engine: 'Geometry engine',
+      engineProcedural: 'Procedural',
+      engineVector: 'Vector from avatar',
+      engineHint:
+        'Vector mode converts the real avatar SVG into Lottie (maximum detail). Telegram cannot render glow/blur, so those are dropped.',
       download: 'Download TGS pack',
       exporting: 'Building TGS...',
       note: 'ZIP contains individual .tgs files plus a manifest. Upload the .tgs files with @Stickers. Telegram limit: {max} per sticker.',
+      validated:
+        'Preflight checks enforce TGS vector shapes only: transparent canvas, closed 3-second loop, no images, masks, text, effects, or background.',
       ready: 'Pack ready: {count} stickers, largest .tgs {size}.',
+      validationWarnings: '{count} validation warnings were recorded in the manifest.',
       failed: 'Telegram sticker pack export failed.',
     },
     recording: {

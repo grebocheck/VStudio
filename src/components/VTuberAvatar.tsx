@@ -256,7 +256,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
             />
           </g>
 
-          <EmotionOverlays emotion={effectiveEmotion} />
+          <g data-rig-node="overlay">
+            <EmotionOverlays emotion={effectiveEmotion} />
+          </g>
         </g>
 
         {onScreenBuster && <AvatarDebugOverlay frame={frame} />}
