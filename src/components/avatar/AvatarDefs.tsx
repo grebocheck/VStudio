@@ -3,9 +3,9 @@ import { AvatarConfig } from '../../types';
 
 type HairGradient = AvatarConfig['hairGradient'];
 
-export const getHairFillColor = (hairGradient: HairGradient, hairColor: string) => {
+export const getHairFillColor = (hairGradient: HairGradient, hairColor: string, isFront = false) => {
   if (!hairGradient || hairGradient === 'none') return hairColor;
-  return 'url(#hair-gradient-id)';
+  return isFront ? 'url(#front-hair-gradient-id)' : 'url(#hair-gradient-id)';
 };
 
 interface AvatarDefsProps {
@@ -48,26 +48,50 @@ export const AvatarDefs: React.FC<AvatarDefsProps> = ({ hairColor, hairGradient,
 
       {/* 5. Hair Gradient (Original) */}
       {hairGradient && hairGradient !== 'none' && (
-        <linearGradient id="hair-gradient-id" x1="0" y1="0" x2="0" y2="1">
-          {hairGradient === 'linear' && (
-            <>
-              <stop offset="0%" stopColor={hairColor} />
-              <stop offset="100%" stopColor={hairHighlightColor} />
-            </>
-          )}
-          {hairGradient === 'sunset' && (
-            <>
-              <stop offset="0%" stopColor={hairColor} />
-              <stop offset="100%" stopColor="#ef4444" />
-            </>
-          )}
-          {hairGradient === 'indigo-fade' && (
-            <>
-              <stop offset="0%" stopColor={hairColor} />
-              <stop offset="100%" stopColor="#6366f1" />
-            </>
-          )}
-        </linearGradient>
+        <>
+          <linearGradient id="hair-gradient-id" x1="0" y1="0" x2="0" y2="1">
+            {hairGradient === 'linear' && (
+              <>
+                <stop offset="0%" stopColor={hairColor} />
+                <stop offset="100%" stopColor={hairHighlightColor} />
+              </>
+            )}
+            {hairGradient === 'sunset' && (
+              <>
+                <stop offset="0%" stopColor={hairColor} />
+                <stop offset="100%" stopColor="#ef4444" />
+              </>
+            )}
+            {hairGradient === 'indigo-fade' && (
+              <>
+                <stop offset="0%" stopColor={hairColor} />
+                <stop offset="100%" stopColor="#6366f1" />
+              </>
+            )}
+          </linearGradient>
+
+          {/* 6. Front Hair Gradient (userSpaceOnUse to align across split paths without seams) */}
+          <linearGradient id="front-hair-gradient-id" gradientUnits="userSpaceOnUse" x1="200" y1="45" x2="200" y2="250">
+            {hairGradient === 'linear' && (
+              <>
+                <stop offset="0%" stopColor={hairColor} />
+                <stop offset="100%" stopColor={hairHighlightColor} />
+              </>
+            )}
+            {hairGradient === 'sunset' && (
+              <>
+                <stop offset="0%" stopColor={hairColor} />
+                <stop offset="100%" stopColor="#ef4444" />
+              </>
+            )}
+            {hairGradient === 'indigo-fade' && (
+              <>
+                <stop offset="0%" stopColor={hairColor} />
+                <stop offset="100%" stopColor="#6366f1" />
+              </>
+            )}
+          </linearGradient>
+        </>
       )}
     </defs>
   );

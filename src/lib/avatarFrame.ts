@@ -74,10 +74,8 @@ export function calculateAvatarFrameStyles(config: AvatarFrameConfig, rig: RigPa
     faceTransform: `translate(${facesTranslateX}px, ${facesTranslateY}px)`,
     facesTranslateX,
     facesTranslateY,
-    frontHairShadowTransform: `translateX(${facesTranslateX * FRAME.ACCESSORY_FOLLOW + physicsSwayX * FRAME.ACCESSORY_SWAY + FRAME.FRONT_HAIR_SHADOW_OFFSET_X}px) translateY(${FRAME.FRONT_HAIR_SHADOW_OFFSET_Y}px) rotate(${
-      physicsSwayX * FRAME.HAIR_ROTATE
-    }deg)`,
-    frontHairTransform: `translateX(${facesTranslateX * FRAME.ACCESSORY_FOLLOW + physicsSwayX * FRAME.ACCESSORY_SWAY}px) rotate(${physicsSwayX * FRAME.HAIR_ROTATE}deg)`,
+    frontHairShadowTransform: `translateX(${outlineTranslateX + FRAME.FRONT_HAIR_SHADOW_OFFSET_X}px) translateY(${FRAME.FRONT_HAIR_SHADOW_OFFSET_Y}px)`,
+    frontHairTransform: `translateX(${outlineTranslateX}px)`,
     headOutlineTransform: `translateX(${outlineTranslateX}px)`,
     headRotation,
     headTransform: headTranslate,

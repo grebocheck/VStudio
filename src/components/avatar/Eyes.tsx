@@ -14,10 +14,10 @@ export const EyebrowSVG: React.FC<{
   const isAnime = artStyle === 'anime';
   const strokeWidth = isAnime
     ? style === 'thick'
-      ? 3.5
+      ? 2.2
       : style === 'thin'
-        ? 1.2
-        : 1.8
+        ? 0.8
+        : 1.2
     : style === 'thick'
       ? 6
       : style === 'thin'
@@ -27,13 +27,13 @@ export const EyebrowSVG: React.FC<{
   const opacity = style === 'sad' ? 0.9 : 1.0;
 
   let d = isAnime
-    ? 'M138 144 C148 139, 163 139, 174 144' // sleeker anime arch
+    ? 'M138 128 C148 123, 163 123, 174 128' // sleeker anime arch shifted up
     : 'M140 145 C150 140, 165 140, 175 147'; // normal
 
   if (style === 'sad') {
-    d = isAnime ? 'M136 150 C144 146, 162 142, 174 143' : 'M135 152 C145 148, 165 142, 175 142'; // curve goes upwards towards center
+    d = isAnime ? 'M136 132 C144 128, 162 125, 174 126' : 'M135 152 C145 148, 165 142, 175 142'; // curve goes upwards towards center shifted up
   } else if (style === 'thick' || style === 'thin') {
-    d = isAnime ? 'M137 143 Q155 137, 173 143' : 'M138 144 Q155 138, 173 145';
+    d = isAnime ? 'M137 127 Q155 121, 173 127' : 'M138 144 Q155 138, 173 145';
   }
 
   return (
@@ -86,6 +86,13 @@ export const EyeSVG: React.FC<{
   const py = pupilY * (artStyle === 'anime' ? 3.8 : 2.5);
 
   const isAnime = artStyle === 'anime';
+
+  const defaultShape = {
+    eyeSlitPath: `M ${cx + 22} ${cy + 4} C ${cx + 14} ${cy - 22}, ${cx - 14} ${cy - 22}, ${cx - 26} ${cy + 2} C ${cx - 14} ${cy + 16}, ${cx + 14} ${cy + 16}, ${cx + 22} ${cy + 4} Z`,
+    lashPath: `M ${cx + 22} ${cy + 4} C ${cx + 14} ${cy - 22}, ${cx - 14} ${cy - 22}, ${cx - 26} ${cy + 2} L ${cx - 38} ${cy - 2} L ${cx - 35} ${cy - 5} L ${cx - 36} ${cy - 10} C ${cx - 30} ${cy - 18}, ${cx - 20} ${cy - 26}, ${cx - 8} ${cy - 26} C ${cx + 4} ${cy - 26}, ${cx + 16} ${cy - 15}, ${cx + 22} ${cy + 4} Z`,
+    lowerLidPath: `M ${cx - 16} ${cy + 14} C ${cx - 6} ${cy + 17}, ${cx + 6} ${cy + 17}, ${cx + 14} ${cy + 12} M ${cx - 12} ${cy + 15} L ${cx - 16} ${cy + 20}`,
+    creasePath: `M ${cx - 16} ${cy - 26} C ${cx - 4} ${cy - 30}, ${cx + 12} ${cy - 30}, ${cx + 18} ${cy - 24}`,
+  };
 
   // Handle high-expressiveness Custom Emotions first
   if (activeEmotion === 'relaxed') {
@@ -211,7 +218,7 @@ export const EyeSVG: React.FC<{
 
           {/* Double eyelid crease line */}
           <path
-            d={`M ${cx - 20} ${cy - 19} Q ${cx - 2} ${cy - 23}, ${cx + 18} ${cy - 19}`}
+            d={defaultShape.creasePath}
             stroke="rgba(30, 25, 22, 0.45)"
             strokeWidth="1.5"
             fill="none"
@@ -220,24 +227,26 @@ export const EyeSVG: React.FC<{
 
           {/* Eyelash drop shadow on sclera */}
           <path
-            d={`M ${cx + 17} ${cy - 20} Q ${cx - 6} ${cy - 22}, ${cx - 21} ${cy - 14}`}
-            stroke="rgba(28,21,18,0.38)"
-            strokeWidth="1.2"
+            d={defaultShape.eyeSlitPath}
             fill="none"
+            stroke="rgba(28,21,18,0.3)"
+            strokeWidth="6"
             strokeLinecap="round"
+            style={{ transform: 'translate(0px, 3px)' }}
+            clipPath={`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`}
           />
 
-          {/* Sclera / Eyeball White: slightly larger/wider to represent wide-eyed shock, volumetric shading */}
-          <ellipse cx={cx} cy={cy - 4} rx={23} ry={17.5} fill="url(#eye-sclera)" />
+          {/* Sclera / Eyeball White */}
+          <path d={defaultShape.eyeSlitPath} fill="url(#eye-sclera)" />
 
-          {/* Top ambient occlusion shadow on eyeball */}
-          <path d={`M ${cx - 23} ${cy - 4} A 23 17.5 0 0 0 ${cx + 23} ${cy - 4} Z`} fill="rgba(15, 23, 42, 0.08)" />
+          {/* Top ambient occlusion shadow perfectly conforming to the eye slit */}
+          <path d={defaultShape.eyeSlitPath} fill={`url(#anime-sclera-shadow-${isLeft ? 'l' : 'r'})`} />
 
           {/* Masked Iris rendering with shivering translation */}
           <g clipPath={`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`}>
             <defs>
               <clipPath id={`anime-eye-clip-shocked-${isLeft ? 'l' : 'r'}`}>
-                <ellipse cx={cx} cy={cy - 4} rx={23} ry={17.5} />
+                <path d={defaultShape.eyeSlitPath} />
               </clipPath>
             </defs>
 
@@ -323,26 +332,10 @@ export const EyeSVG: React.FC<{
           </g>
 
           {/* Bold upper feline eyelash wing sweep */}
-          <path
-            d={`M ${cx + 23} ${cy - 5} 
-               C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7}
-               Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6}
-               Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8}
-               C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`}
-            fill="#1c1917"
-            stroke="#1c1917"
-            strokeWidth="0.8"
-            strokeLinejoin="round"
-          />
+          <path d={defaultShape.lashPath} fill="#1c1917" stroke="none" />
 
           {/* Lower eyelid line sweep */}
-          <path
-            d={`M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`}
-            stroke="#1c1917"
-            strokeWidth="3"
-            fill="none"
-            strokeLinecap="round"
-          />
+          <path d={defaultShape.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
         </g>
       );
     } else {
@@ -407,13 +400,13 @@ export const EyeSVG: React.FC<{
     return (
       <g transform={transformEye}>
         {/* Bashful shy looking away down/center */}
-        <ellipse cx={cx} cy={cy} rx="21.5" ry="17" fill="#ffffff" />
+        <path d={defaultShape.eyeSlitPath} fill="#ffffff" />
 
         {/* Big bright cute anime iris gazing nervously inwards/down */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
           <defs>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
-              <ellipse cx={cx} cy={cy} rx="21.5" ry="17" />
+              <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
           {/* Shift gaze strongly inwards/downward */}
@@ -436,19 +429,16 @@ export const EyeSVG: React.FC<{
 
         {/* Upper eyelid crease */}
         <path
-          d={`M ${cx - 18} ${cy - 17} Q ${cx} ${cy - 21}, ${cx + 18} ${cy - 17}`}
+          d={defaultShape.creasePath}
           stroke="rgba(30, 25, 22, 0.35)"
           strokeWidth="1.5"
           fill="none"
-        />
-        {/* Long elegant lash sweep */}
-        <path
-          d={`M ${cx - 23} ${cy - 4} C ${cx - 14} ${cy - 20}, ${cx + 12} ${cy - 20}, ${cx + 23} ${cy - 4}`}
-          stroke="#1c1917"
-          strokeWidth="3.2"
-          fill="none"
           strokeLinecap="round"
         />
+        {/* Long elegant lash sweep */}
+        <path d={defaultShape.lashPath} fill="#1c1917" stroke="none" />
+        {/* Lower eyelid sweep */}
+        <path d={defaultShape.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       </g>
     );
   }
@@ -508,7 +498,7 @@ export const EyeSVG: React.FC<{
       <g transform={transformEye}>
         {/* Double eyelid crease line */}
         <path
-          d={`M ${cx - 20} ${cy - 19} Q ${cx - 2} ${cy - 23}, ${cx + 18} ${cy - 19}`}
+          d={defaultShape.creasePath}
           stroke="rgba(30, 25, 22, 0.45)"
           strokeWidth="1.5"
           fill="none"
@@ -516,10 +506,10 @@ export const EyeSVG: React.FC<{
         />
 
         {/* Eyeball White */}
-        <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} fill="#ffffff" />
+        <path d={defaultShape.eyeSlitPath} fill="#ffffff" />
 
         {/* Ambient occlusion shadow */}
-        <path d={`M ${cx - 22.5} ${cy - 4} A 22.5 16.2 0 0 0 ${cx + 22.5} ${cy - 4} Z`} fill="rgba(15, 23, 42, 0.08)" />
+        <path d={defaultShape.eyeSlitPath} fill="rgba(15, 23, 42, 0.08)" />
 
         {/* Masked Iris */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
@@ -530,7 +520,7 @@ export const EyeSVG: React.FC<{
               <stop offset="100%" stopColor="#fda4af" /> {/* Light bright pink */}
             </linearGradient>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
-              <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} />
+              <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
 
@@ -559,26 +549,10 @@ export const EyeSVG: React.FC<{
         </g>
 
         {/* Eyelash sweep */}
-        <path
-          d={`M ${cx + 23} ${cy - 5} 
-             C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7}
-             Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6}
-             Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8}
-             C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`}
-          fill="#1c1917"
-          stroke="#1c1917"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
+        <path d={defaultShape.lashPath} fill="#1c1917" stroke="none" />
 
         {/* Lower eyelid sweep */}
-        <path
-          d={`M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`}
-          stroke="#1c1917"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={defaultShape.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       </g>
     );
   }
@@ -588,7 +562,7 @@ export const EyeSVG: React.FC<{
       <g transform={transformEye}>
         {/* Double eyelid crease line */}
         <path
-          d={`M ${cx - 20} ${cy - 19} Q ${cx - 2} ${cy - 23}, ${cx + 18} ${cy - 19}`}
+          d={defaultShape.creasePath}
           stroke="rgba(30, 25, 22, 0.45)"
           strokeWidth="1.5"
           fill="none"
@@ -596,16 +570,16 @@ export const EyeSVG: React.FC<{
         />
 
         {/* Eyeball White */}
-        <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} fill="#ffffff" />
+        <path d={defaultShape.eyeSlitPath} fill="#ffffff" />
 
         {/* Ambient occlusion shadow */}
-        <path d={`M ${cx - 22.5} ${cy - 4} A 22.5 16.2 0 0 0 ${cx + 22.5} ${cy - 4} Z`} fill="rgba(15, 23, 42, 0.08)" />
+        <path d={defaultShape.eyeSlitPath} fill="rgba(15, 23, 42, 0.08)" />
 
         {/* Masked Iris */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
           <defs>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
-              <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} />
+              <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
 
@@ -643,26 +617,10 @@ export const EyeSVG: React.FC<{
         </g>
 
         {/* Eyelash sweep */}
-        <path
-          d={`M ${cx + 23} ${cy - 5} 
-             C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7}
-             Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6}
-             Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8}
-             C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`}
-          fill="#1c1917"
-          stroke="#1c1917"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
+        <path d={defaultShape.lashPath} fill="#1c1917" stroke="none" />
 
         {/* Lower eyelid sweep */}
-        <path
-          d={`M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`}
-          stroke="#1c1917"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={defaultShape.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       </g>
     );
   }
@@ -672,7 +630,7 @@ export const EyeSVG: React.FC<{
       <g transform={transformEye}>
         {/* Double eyelid crease line */}
         <path
-          d={`M ${cx - 20} ${cy - 19} Q ${cx - 2} ${cy - 23}, ${cx + 18} ${cy - 19}`}
+          d={defaultShape.creasePath}
           stroke="rgba(30, 25, 22, 0.45)"
           strokeWidth="1.5"
           fill="none"
@@ -680,16 +638,16 @@ export const EyeSVG: React.FC<{
         />
 
         {/* Eyeball White */}
-        <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} fill="#dbeafe" />
+        <path d={defaultShape.eyeSlitPath} fill="#dbeafe" />
 
         {/* Ambient occlusion shadow */}
-        <path d={`M ${cx - 22.5} ${cy - 4} A 22.5 16.2 0 0 0 ${cx + 22.5} ${cy - 4} Z`} fill="rgba(15, 23, 42, 0.2)" />
+        <path d={defaultShape.eyeSlitPath} fill="rgba(15, 23, 42, 0.2)" />
 
         {/* Masked Iris */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
           <defs>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
-              <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} />
+              <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
 
@@ -716,26 +674,10 @@ export const EyeSVG: React.FC<{
         </g>
 
         {/* Eyelash sweep */}
-        <path
-          d={`M ${cx + 23} ${cy - 5} 
-             C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7}
-             Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6}
-             Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8}
-             C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`}
-          fill="#1c1917"
-          stroke="#1c1917"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
+        <path d={defaultShape.lashPath} fill="#1c1917" stroke="none" />
 
         {/* Lower eyelid sweep */}
-        <path
-          d={`M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`}
-          stroke="#1c1917"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={defaultShape.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
 
         {/* Depressed gloom drop shadow lines directly over the eye */}
         <line x1={cx - 15} y1={cy - 20} x2={cx - 12} y2={cy + 15} stroke="rgba(49, 46, 129, 0.45)" strokeWidth="1.5" />
@@ -800,45 +742,35 @@ export const EyeSVG: React.FC<{
       switch (eyeShape) {
         case 'almond':
           return {
-            scleraRx: 24,
-            scleraRy: 14,
-            scleraCy: cy - 2,
-            lashPath: `M ${cx + 25} ${cy - 2} C ${cx + 10} ${cy - 18}, ${cx - 15} ${cy - 18}, ${cx - 26} ${cy - 4} Q ${cx - 30} ${cy - 8}, ${cx - 30} ${cy - 4} Q ${cx - 26} ${cy + 2}, ${cx - 22} ${cy - 5} C ${cx - 12} ${cy - 14}, ${cx + 10} ${cy - 14}, ${cx + 23} ${cy} Z`,
-            lowerLidPath: `M ${cx - 18} ${cy + 9} Q ${cx} ${cy + 13}, ${cx + 18} ${cy + 9}`,
+            eyeSlitPath: `M ${cx + 25} ${cy + 2} C ${cx + 15} ${cy - 18}, ${cx - 15} ${cy - 18}, ${cx - 27} ${cy + 1} C ${cx - 15} ${cy + 12}, ${cx + 15} ${cy + 12}, ${cx + 25} ${cy + 2} Z`,
+            lashPath: `M ${cx + 25} ${cy + 2} C ${cx + 15} ${cy - 18}, ${cx - 15} ${cy - 18}, ${cx - 27} ${cy + 1} L ${cx - 41} ${cy - 4} C ${cx - 34} ${cy - 12}, ${cx - 24} ${cy - 22}, ${cx - 10} ${cy - 22} C ${cx + 4} ${cy - 22}, ${cx + 18} ${cy - 12}, ${cx + 25} ${cy + 2} Z`,
+            lowerLidPath: `M ${cx - 20} ${cy + 10} C ${cx - 10} ${cy + 12}, ${cx + 10} ${cy + 12}, ${cx + 18} ${cy + 8} M ${cx - 15} ${cy + 11} L ${cx - 18} ${cy + 15}`,
+            creasePath: `M ${cx - 18} ${cy - 22} C ${cx - 5} ${cy - 26}, ${cx + 12} ${cy - 26}, ${cx + 21} ${cy - 20}`,
           };
         case 'droopy':
           return {
-            scleraRx: 22,
-            scleraRy: 17,
-            scleraCy: cy - 2,
-            lashPath: `M ${cx + 22} ${cy - 6} C ${cx + 8} ${cy - 20}, ${cx - 16} ${cy - 18}, ${cx - 28} ${cy + 2} Q ${cx - 32} ${cy - 2}, ${cx - 30} ${cy + 4} Q ${cx - 26} ${cy + 6}, ${cx - 24} ${cy} C ${cx - 14} ${cy - 16}, ${cx + 8} ${cy - 16}, ${cx + 20} ${cy - 4} Z`,
-            lowerLidPath: `M ${cx - 20} ${cy + 13} Q ${cx} ${cy + 17}, ${cx + 15} ${cy + 11}`,
+            eyeSlitPath: `M ${cx + 22} ${cy - 2} C ${cx + 12} ${cy - 20}, ${cx - 12} ${cy - 18}, ${cx - 24} ${cy + 4} C ${cx - 12} ${cy + 18}, ${cx + 12} ${cy + 14}, ${cx + 22} ${cy - 2} Z`,
+            lashPath: `M ${cx + 22} ${cy - 2} C ${cx + 12} ${cy - 20}, ${cx - 12} ${cy - 18}, ${cx - 24} ${cy + 4} L ${cx - 30} ${cy + 11} L ${cx - 28} ${cy + 5} L ${cx - 32} ${cy + 1} C ${cx - 27} ${cy - 11}, ${cx - 20} ${cy - 24}, ${cx - 8} ${cy - 24} C ${cx + 4} ${cy - 24}, ${cx + 16} ${cy - 15}, ${cx + 22} ${cy - 2} Z`,
+            lowerLidPath: `M ${cx - 18} ${cy + 14} C ${cx - 8} ${cy + 17}, ${cx + 8} ${cy + 13}, ${cx + 14} ${cy + 7} M ${cx - 14} ${cy + 15} L ${cx - 17} ${cy + 20}`,
+            creasePath: `M ${cx - 16} ${cy - 23} C ${cx - 4} ${cy - 27}, ${cx + 11} ${cy - 25}, ${cx + 17} ${cy - 18}`,
           };
         case 'sharp':
           return {
-            scleraRx: 21,
-            scleraRy: 14,
-            scleraCy: cy - 5,
-            lashPath: `M ${cx + 20} ${cy - 8} L ${cx - 25} ${cy - 8} L ${cx - 28} ${cy - 14} L ${cx - 32} ${cy - 6} L ${cx - 26} ${cy - 2} L ${cx - 20} ${cy - 6} L ${cx + 18} ${cy - 6} Z`,
-            lowerLidPath: `M ${cx - 14} ${cy + 8} L ${cx + 14} ${cy + 6}`,
+            eyeSlitPath: `M ${cx + 22} ${cy + 2} C ${cx + 10} ${cy - 17}, ${cx - 12} ${cy - 18}, ${cx - 26} ${cy - 1} C ${cx - 12} ${cy + 12}, ${cx + 12} ${cy + 13}, ${cx + 22} ${cy + 2} Z`,
+            lashPath: `M ${cx + 22} ${cy + 2} C ${cx + 10} ${cy - 17}, ${cx - 12} ${cy - 18}, ${cx - 26} ${cy - 1} L ${cx - 36} ${cy - 7} C ${cx - 29} ${cy - 11}, ${cx - 20} ${cy - 20.5}, ${cx - 8} ${cy - 20.5} C ${cx + 4} ${cy - 20.5}, ${cx + 16} ${cy - 12}, ${cx + 22} ${cy + 2} Z`,
+            lowerLidPath: `M ${cx - 18} ${cy + 10} C ${cx - 8} ${cy + 13}, ${cx + 8} ${cy + 13}, ${cx + 14} ${cy + 8} M ${cx - 14} ${cy + 11} L ${cx - 17} ${cy + 15}`,
+            creasePath: `M ${cx - 16} ${cy - 22} C ${cx - 4} ${cy - 25}, ${cx + 10} ${cy - 24}, ${cx + 18} ${cy - 18}`,
           };
         case 'cat-eye':
           return {
-            scleraRx: 21,
-            scleraRy: 16,
-            scleraCy: cy - 5,
-            lashPath: `M ${cx + 20} ${cy - 4} C ${cx + 8} ${cy - 20}, ${cx - 15} ${cy - 16}, ${cx - 22} ${cy - 12} Q ${cx - 32} ${cy - 22}, ${cx - 35} ${cy - 14} Q ${cx - 28} ${cy - 10}, ${cx - 22} ${cy - 6} C ${cx - 15} ${cy - 12}, ${cx + 8} ${cy - 16}, ${cx + 18} ${cy - 2} Z`,
-            lowerLidPath: `M ${cx - 14} ${cy + 10} Q ${cx + 2} ${cy + 14}, ${cx + 18} ${cy + 6}`,
+            eyeSlitPath: `M ${cx + 22} ${cy + 4} C ${cx + 13} ${cy - 23}, ${cx - 13} ${cy - 23}, ${cx - 25} ${cy - 2} C ${cx - 13} ${cy + 15}, ${cx + 13} ${cy + 15}, ${cx + 22} ${cy + 4} Z`,
+            lashPath: `M ${cx + 22} ${cy + 4} C ${cx + 13} ${cy - 23}, ${cx - 13} ${cy - 23}, ${cx - 25} ${cy - 2} L ${cx - 36} ${cy - 15} L ${cx - 31} ${cy - 8} L ${cx - 35} ${cy - 4} C ${cx - 29} ${cy - 14}, ${cx - 20} ${cy - 27}, ${cx - 8} ${cy - 27} C ${cx + 4} ${cy - 27}, ${cx + 16} ${cy - 15}, ${cx + 22} ${cy + 4} Z`,
+            lowerLidPath: `M ${cx - 18} ${cy + 11} C ${cx - 8} ${cy + 14}, ${cx + 8} ${cy + 14}, ${cx + 14} ${cy + 9} M ${cx - 14} ${cy + 12} L ${cx - 17} ${cy + 17}`,
+            creasePath: `M ${cx - 15} ${cy - 27} C ${cx - 3} ${cy - 31}, ${cx + 11} ${cy - 31}, ${cx + 17} ${cy - 25}`,
           };
         case 'default':
         default:
-          return {
-            scleraRx: 22.5,
-            scleraRy: 16.2,
-            scleraCy: cy - 4,
-            lashPath: `M ${cx + 23} ${cy - 5} C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7} Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6} Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8} C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`,
-            lowerLidPath: `M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`,
-          };
+          return defaultShape;
       }
     };
     const shapeData = getEyeShapeData();
@@ -853,46 +785,44 @@ export const EyeSVG: React.FC<{
             <stop offset="75%" stopColor="#ffffff" stopOpacity="0.0" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0.55" />
           </linearGradient>
+
+          <linearGradient id={`anime-sclera-shadow-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(15, 23, 42, 0.4)" />
+            <stop offset="35%" stopColor="rgba(15, 23, 42, 0.0)" />
+          </linearGradient>
         </defs>
 
         {/* Double eyelid crease line */}
         <path
-          d={`M ${cx - 20} ${cy - 19} Q ${cx - 2} ${cy - 23}, ${cx + 18} ${cy - 19}`}
+          d={shapeData.creasePath}
           stroke="rgba(30, 25, 22, 0.45)"
           strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
         />
 
-        {/* Eyelash drop shadow on sclera */}
+        {/* Eyelash drop shadow on sclera - calculated via the exact eye slit curve offset */}
         <path
-          d={`M ${cx + 17} ${cy - 20} Q ${cx - 6} ${cy - 22}, ${cx - 21} ${cy - 14}`}
-          stroke="rgba(28,21,18,0.38)"
-          strokeWidth="1.2"
+          d={shapeData.eyeSlitPath}
           fill="none"
+          stroke="rgba(28,21,18,0.3)"
+          strokeWidth="6"
           strokeLinecap="round"
+          style={{ transform: 'translate(0px, 3px)' }}
+          clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}
         />
 
-        {/* Sclera / Eyeball White: adjusted size and offset to stay cleanly enclosed, with volumetric shading */}
-        <ellipse
-          cx={cx}
-          cy={shapeData.scleraCy}
-          rx={shapeData.scleraRx}
-          ry={shapeData.scleraRy}
-          fill="url(#eye-sclera)"
-        />
+        {/* Sclera / Eyeball White: Perfectly matching the eye slit! */}
+        <path d={shapeData.eyeSlitPath} fill="url(#eye-sclera)" />
 
-        {/* Top ambient occlusion shadow on eyeball */}
-        <path
-          d={`M ${cx - shapeData.scleraRx} ${shapeData.scleraCy} A ${shapeData.scleraRx} ${shapeData.scleraRy} 0 0 0 ${cx + shapeData.scleraRx} ${shapeData.scleraCy} Z`}
-          fill="rgba(15, 23, 42, 0.08)"
-        />
+        {/* Top ambient occlusion shadow perfectly conforming to the eye slit */}
+        <path d={shapeData.eyeSlitPath} fill={`url(#anime-sclera-shadow-${isLeft ? 'l' : 'r'})`} />
 
-        {/* Masked Iris rendering to keep drawing inside the sclera circle */}
+        {/* Masked Iris rendering perfectly bounded by the eye slit path */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}>
           <defs>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}`}>
-              <ellipse cx={cx} cy={shapeData.scleraCy} rx={shapeData.scleraRx} ry={shapeData.scleraRy} />
+              <path d={shapeData.eyeSlitPath} />
             </clipPath>
           </defs>
 
@@ -1013,25 +943,11 @@ export const EyeSVG: React.FC<{
           <circle cx={cx + px - 7} cy={cy + py + 6.5} r="1.6" fill="#ffffff" opacity="0.65" />
         </g>
 
-        {/* Bold upper feline eyelash wing sweep (Perfect outer-sweeping layout due to mirroring!) */}
-        <path d={shapeData.lashPath} fill="#1c1917" stroke="#1c1917" strokeWidth="0.8" strokeLinejoin="round" />
-
-        {/* Outer mini eyelash barb detail */}
-        {eyeShape === 'default' && (
-          <path d={`M ${cx - 26} ${cy - 3} Q ${cx - 32} ${cy + 1}, ${cx - 29} ${cy - 1} Z`} fill="#1c1917" />
-        )}
+        {/* Bold upper feline eyelash wing sweep (Now a filled compound path!) */}
+        <path d={shapeData.lashPath} fill="#1c1917" stroke="none" />
 
         {/* Lower eyelid line sweep - perfectly frames the bottom of the sclera */}
-        <path d={shapeData.lowerLidPath} stroke="#1c1917" strokeWidth="3" fill="none" strokeLinecap="round" />
-
-        {/* Adorable little bottom side lash flick */}
-        <path
-          d={`M ${cx - 11} ${cy + 12} Q ${cx - 16} ${cy + 14}, ${cx - 15} ${cy + 11}`}
-          stroke="#1c1917"
-          strokeWidth="1.8"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={shapeData.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       </g>
     );
   }

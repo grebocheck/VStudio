@@ -81,6 +81,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
 
   const effectiveEmotion = rigActiveEmotion && rigActiveEmotion !== 'none' ? rigActiveEmotion : activeEmotion;
   const hairFillColor = getHairFillColor(hairGradient, hairColor);
+  const frontHairFillColor = getHairFillColor(hairGradient, hairColor, true);
   const frame = calculateAvatarFrameStyles(config, rig);
   const { headRotation, physicsSwayX, physicsSwayY } = frame;
 
@@ -177,22 +178,6 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
           )}
 
           <g
-            data-rig-node="front-hair"
-            style={{
-              transform: frame.frontHairTransform,
-              transformOrigin: '200px 140px',
-            }}
-          >
-            <FrontHairComponent
-              bangStyle={hairStyleBang}
-              color={hairFillColor}
-              highlightColor={hairHighlightColor}
-              angleY={angleY}
-              artStyle={artStyle}
-            />
-          </g>
-
-          <g
             id="parallax-facial-features"
             data-rig-node="face"
             style={{
@@ -243,6 +228,23 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               hasFangs={hasFangs}
               artStyle={artStyle}
               tongueOut={tongueOut}
+              faceShape={faceShape}
+            />
+          </g>
+
+          <g
+            data-rig-node="front-hair"
+            style={{
+              transform: frame.frontHairTransform,
+              transformOrigin: '200px 140px',
+            }}
+          >
+            <FrontHairComponent
+              bangStyle={hairStyleBang}
+              color={frontHairFillColor}
+              highlightColor={hairHighlightColor}
+              angleY={angleY}
+              artStyle={artStyle}
             />
           </g>
 

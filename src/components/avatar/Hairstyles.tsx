@@ -404,13 +404,13 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-classic">
           <path
             d="M106 130 
-               L115 161 L125 161
-               L135 165 L145 158
-               L160 167 L175 161
-               L190 168 L200 159 L210 168
-               L225 161 L240 167
-               L255 158 L265 165
-               L275 156 L285 161
+               L115 149 L125 149
+               L135 153 L145 146
+               L160 155 L175 149
+               L190 156 L200 147 L210 156
+               L225 149 L240 155
+               L255 146 L265 153
+               L275 144 L285 149
                L294 130 Z"
             fill={color}
           />
@@ -423,10 +423,10 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-side">
           <path
             d="M106 130 
-               C115 155, 130 165, 150 162
-               C180 157, 210 185, 235 185
-               C260 185, 280 160, 294 130
-               L260 135 C220 140, 185 130, 155 132 Z"
+               C115 137, 130 147, 150 144
+               C180 139, 210 165, 235 165
+               C260 165, 280 142, 294 130
+               L260 125 C220 128, 185 120, 155 122 Z"
             fill={color}
           />
           <path d="M106 130 C100 160, 105 210, 118 240 L126 215 Q115 170, 124 133 Z" fill={color} />
@@ -438,10 +438,10 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-center-part">
           <path
             d="M106 130 
-               C120 138, 140 148, 155 175 L165 160
-               C180 150, 190 150, 200 150
-               C210 150, 220 150, 235 160 L245 175
-               C260 148, 280 138, 294 130 Z"
+               C120 128, 140 136, 155 160 L165 147
+               C180 138, 190 138, 200 138
+               C210 138, 220 138, 235 147 L245 160
+               C260 136, 280 128, 294 130 Z"
             fill={color}
           />
           <path d="M106 130 C95 160, 112 210, 125 245 L135 220 Q120 170, 124 135 Z" fill={color} />
@@ -453,11 +453,11 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-short">
           <path
             d="M106 130 
-               L120 155 L130 150
-               L145 158 L155 150
-               L175 160 L185 150 L200 162 L215 150
-               L225 160 L235 150 L255 158
-               L270 150 L280 155
+               L120 145 L130 140
+               L145 148 L155 140
+               L175 150 L185 140 L200 152 L215 140
+               L225 150 L235 140 L255 148
+               L270 140 L280 145
                L294 130 Z"
             fill={color}
           />
@@ -470,7 +470,7 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-hime">
           <path
             d="M106 130 
-               L108 158
+               L108 148
                H 292
                L294 130 Z"
             fill={color}
@@ -484,13 +484,13 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-spiky">
           <path
             d="M106 130 
-               L115 168 L124 145
-               L138 174 L146 148
-               L162 180 L172 152
-               L185 178 L195 140 L205 178
-               L218 152 L228 180
-               L244 148 L252 174
-               L266 145 L275 168
+               L115 152 L124 133
+               L138 158 L146 135
+               L162 164 L172 138
+               L185 162 L195 128 L205 162
+               L218 138 L228 164
+               L244 135 L252 158
+               L266 133 L275 152
                L294 130 Z"
             fill={color}
           />
@@ -503,12 +503,12 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-curly-bangs">
           <path
             d="M106 130
-               C112 165, 137 172, 142 162
-               C147 152, 153 168, 168 178
-               C183 188, 197 165, 200 165
-               C203 165, 217 188, 232 178
-               C247 168, 253 152, 258 162
-               C263 172, 288 165, 294 130 Z"
+               C112 147, 137 154, 142 144
+               C147 134, 153 150, 168 160
+               C183 170, 197 147, 200 147
+               C203 147, 217 170, 232 160
+               C247 150, 253 134, 258 144
+               C263 154, 288 147, 294 130 Z"
             fill={color}
           />
           <path d="M106 130 Q90 160, 102 205 Q115 220, 122 195 Q110 175, 118 135 Z" fill={color} />
@@ -520,15 +520,15 @@ export const FrontHairComponent: React.FC<{
         <g id="bangs-cross-bangs">
           <path
             d="M106 130
-               L138 180 L146 170 L158 145
-               L178 185 L182 175 C190 165, 210 165, 218 175 L222 185
-               L242 145 L254 170 L262 180
+               L138 162 L146 152 L158 127
+               L178 167 L182 157 C190 147, 210 147, 218 157 L222 167
+               L242 127 L254 152 L262 162
                L294 130 Z"
             fill={color}
           />
-          <path d="M192 120 L212 182 L198 182 L185 140 Z" fill={color} opacity="0.95" />
+          <path d="M192 120 L212 164 L198 164 L185 140 Z" fill={color} opacity="0.95" />
           <path
-            d="M208 120 L188 182 L202 182 L215 140 Z"
+            d="M208 120 L188 164 L202 164 L215 140 Z"
             fill={color}
             opacity="0.95"
             stroke={highlightColor}
@@ -544,13 +544,13 @@ export const FrontHairComponent: React.FC<{
           {/* Layered choppy bangs with jagged edges */}
           <path
             d="M106 130
-               L118 170 L128 155
-               L140 175 L150 158
-               L165 180 L172 160
-               L185 178 L195 148 L205 178
-               L228 160 L235 180
-               L250 158 L260 175
-               L272 155 L282 170
+               L118 155 L128 140
+               L140 160 L150 143
+               L165 165 L172 145
+               L185 163 L195 133 L205 163
+               L228 145 L235 165
+               L250 143 L260 160
+               L272 140 L282 155
                L294 130 Z"
             fill={color}
           />
@@ -558,8 +558,8 @@ export const FrontHairComponent: React.FC<{
           <path d="M106 130 Q88 175, 100 240 L112 215 Q98 170, 118 135 Z" fill={color} />
           <path d="M294 130 Q312 175, 300 240 L288 215 Q302 170, 282 135 Z" fill={color} />
           {/* Secondary choppy texture layer */}
-          <path d="M115 155 L128 175 L135 162" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
-          <path d="M265 155 L272 175 L280 162" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+          <path d="M115 140 L128 160 L135 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+          <path d="M265 140 L272 160 L280 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
         </g>
       )}
 
@@ -568,12 +568,12 @@ export const FrontHairComponent: React.FC<{
           {/* Soft curtain bangs parted in the center, flowing to the sides */}
           <path
             d="M106 130
-               C118 145, 135 158, 155 172
-               C170 180, 185 168, 195 155
-               C198 150, 200 148, 200 148
-               C200 148, 202 150, 205 155
-               C215 168, 230 180, 245 172
-               C265 158, 282 145, 294 130 Z"
+               C118 133, 135 146, 155 160
+               C170 168, 185 156, 195 143
+               C198 138, 200 136, 200 136
+               C200 136, 202 138, 205 143
+               C215 156, 230 168, 245 160
+               C265 146, 282 133, 294 130 Z"
             fill={color}
           />
           {/* Side face-framing curtains */}
@@ -581,7 +581,7 @@ export const FrontHairComponent: React.FC<{
           <path d="M294 130 C305 165, 300 210, 288 245 L278 220 Q292 175, 280 135 Z" fill={color} />
           {/* Soft highlight curves */}
           <path
-            d="M140 145 Q165 165, 190 155"
+            d="M140 133 Q165 153, 190 143"
             stroke={highlightColor}
             strokeWidth="2"
             fill="none"
@@ -589,7 +589,7 @@ export const FrontHairComponent: React.FC<{
             strokeLinecap="round"
           />
           <path
-            d="M260 145 Q235 165, 210 155"
+            d="M260 133 Q235 153, 210 143"
             stroke={highlightColor}
             strokeWidth="2"
             fill="none"

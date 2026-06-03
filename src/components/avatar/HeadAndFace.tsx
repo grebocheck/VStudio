@@ -12,21 +12,21 @@ export const HeadBase: React.FC<{
   const getAnimeFacePath = () => {
     switch (faceShape) {
       case 'sharp':
-        // V-shaped jaw, standard shonen/shojo
-        return 'M 136 130 C 120 160, 126 195, 142 215 C 160 235, 185 255, 200 258 C 215 255, 240 235, 258 215 C 274 195, 280 160, 264 130 C 255 110, 145 110, 136 130 Z';
+        // V-shaped jaw, standard shonen/shojo (more compact chin)
+        return 'M 136 130 C 122 160, 128 190, 144 210 C 160 225, 185 238, 200 242 C 215 238, 240 225, 256 210 C 272 190, 278 160, 264 130 C 255 110, 145 110, 136 130 Z';
       case 'round':
-        // Softer moe cheeks
-        return 'M 130 130 C 105 165, 115 205, 140 225 C 160 240, 180 248, 200 248 C 220 248, 240 240, 260 225 C 285 205, 295 165, 270 130 C 255 110, 145 110, 130 130 Z';
+        // Softer moe cheeks (cute compact chin)
+        return 'M 130 130 C 110 165, 118 195, 142 212 C 160 224, 180 234, 200 234 C 220 234, 240 224, 258 212 C 282 195, 290 165, 270 130 C 255 110, 145 110, 130 130 Z';
       case 'chubby':
-        // Wider, fuller cheeks
-        return 'M 125 130 C 95 170, 110 215, 140 230 C 165 245, 180 250, 200 250 C 220 250, 235 245, 260 230 C 290 215, 305 170, 275 130 C 260 110, 140 110, 125 130 Z';
+        // Wider, fuller cheeks (cute chubby chin)
+        return 'M 125 130 C 100 168, 112 205, 140 218 C 165 230, 180 236, 200 236 C 220 236, 235 230, 260 218 C 288 205, 300 168, 275 130 C 260 110, 140 110, 125 130 Z';
       case 'mature':
-        // Longer face, prominent cheekbones
-        return 'M 138 130 C 120 165, 130 205, 145 225 C 160 245, 185 260, 200 262 C 215 260, 240 245, 255 225 C 270 205, 280 165, 262 130 C 255 110, 145 110, 138 130 Z';
+        // Longer face, prominent cheekbones (elegant but not alien-long chin)
+        return 'M 138 130 C 122 162, 130 195, 146 215 C 160 232, 185 245, 200 248 C 215 245, 240 232, 254 215 C 270 195, 278 162, 262 130 C 255 110, 145 110, 138 130 Z';
       case 'default':
       default:
-        // Original standard anime face
-        return 'M 134 130 C 114 158, 120 195, 138 214 C 152 228, 180 244, 200 248 C 220 244, 248 228, 262 214 C 280 195, 286 158, 266 130 C 255 110, 145 110, 134 130 Z';
+        // Original standard anime face (refined proportions with shorter chin)
+        return 'M 134 130 C 118 158, 124 190, 142 208 C 156 220, 180 232, 200 236 C 220 232, 244 220, 258 208 C 276 190, 282 158, 266 130 C 255 110, 145 110, 134 130 Z';
     }
   };
 
@@ -169,8 +169,14 @@ export const Live2DMouth: React.FC<{
   hasFangs?: boolean;
   artStyle?: 'classic' | 'anime' | 'retro';
   tongueOut?: number;
-}> = ({ openAmount, form, hasFangs = false, artStyle = 'classic', tongueOut = 0 }) => {
-  const mouthY = 208;
+  faceShape?: 'default' | 'sharp' | 'round' | 'chubby' | 'mature';
+}> = ({ openAmount, form, hasFangs = false, artStyle = 'classic', tongueOut = 0, faceShape = 'default' }) => {
+  let mouthYOffset = 0;
+  if (faceShape === 'mature') mouthYOffset = 6;
+  else if (faceShape === 'sharp') mouthYOffset = 3;
+  else if (faceShape === 'chubby' || faceShape === 'round') mouthYOffset = -2;
+
+  const mouthY = 208 + mouthYOffset;
   const mouthX = 200;
   const width = artStyle === 'retro' ? 22 : 15;
   const curveYOffset = form * (artStyle === 'retro' ? 6 : 4);
