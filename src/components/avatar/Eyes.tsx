@@ -60,6 +60,7 @@ export const EyeSVG: React.FC<{
   artStyle?: 'classic' | 'anime' | 'retro';
   activeEmotion?: Emotion;
   eyeShape?: 'default' | 'almond' | 'droopy' | 'sharp' | 'cat-eye';
+  breath?: number;
 }> = ({
   eyeColor,
   pupilStyle,
@@ -71,6 +72,7 @@ export const EyeSVG: React.FC<{
   artStyle = 'classic',
   activeEmotion = 'none',
   eyeShape = 'default',
+  breath = 0,
 }) => {
   // Center coordinates: Symmetrical local coordinates where both eyes are defined at 156.
   // The right eye utilizes scale(-1, 1) translate(-400, 0) to align itself perfectly at 244.
@@ -86,6 +88,14 @@ export const EyeSVG: React.FC<{
   const py = pupilY * (artStyle === 'anime' ? 3.8 : 2.5);
 
   const isAnime = artStyle === 'anime';
+
+  const isSparklyStyle =
+    pupilStyle === 'star' || pupilStyle === 'heart' || pupilStyle === 'flower' || pupilStyle === 'diamond';
+  const sparkleRotation = isSparklyStyle ? Math.sin(breath * Math.PI * 2) * 6 : 0;
+  const sparkleScale = isSparklyStyle ? 1.0 + Math.sin(breath * Math.PI * 2) * 0.05 : 1.0;
+  const pupilTransform = isSparklyStyle
+    ? `translate(${cx + px}, ${cy + py}) rotate(${sparkleRotation}) scale(${sparkleScale}) translate(${-(cx + px)}, ${-(cy + py)})`
+    : undefined;
 
   const defaultShape = {
     eyeSlitPath: `M ${cx + 22} ${cy + 4} C ${cx + 14} ${cy - 22}, ${cx - 14} ${cy - 22}, ${cx - 26} ${cy + 2} C ${cx - 14} ${cy + 16}, ${cx + 14} ${cy + 16}, ${cx + 22} ${cy + 4} Z`,
@@ -316,15 +326,15 @@ export const EyeSVG: React.FC<{
 
             {/* Specifications glints & specular sparkles - slightly smaller but still vibrant */}
             <circle
-              cx={cx + px + shakeOffsetX - 4}
-              cy={cy + py + shakeOffsetY - 5}
+              cx={cx + px * 0.4 + shakeOffsetX - 4}
+              cy={cy + py * 0.4 + shakeOffsetY - 5}
               r="3.8"
               fill="#ffffff"
               opacity="0.96"
             />
             <circle
-              cx={cx + px + shakeOffsetX + 4}
-              cy={cy + py + shakeOffsetY + 3}
+              cx={cx + px * -0.2 + shakeOffsetX + 4}
+              cy={cy + py * -0.2 + shakeOffsetY + 3}
               r="2.2"
               fill="#ffffff"
               opacity="0.88"
@@ -414,8 +424,8 @@ export const EyeSVG: React.FC<{
           <ellipse cx={cx + px + (isLeft ? 5 : -5)} cy={cy + py + 4} rx="7.5" ry="8.5" fill="#1c1917" />
 
           {/* Double sparkling reflection points */}
-          <circle cx={cx + px + (isLeft ? 1 : -9)} cy={cy + py + 1} r="3" fill="#ffffff" />
-          <circle cx={cx + px + (isLeft ? 7 : -3)} cy={cy + py + 8} r="1.5" fill="#ffffff" />
+          <circle cx={cx + px * 0.4 + (isLeft ? 1 : -9)} cy={cy + py * 0.4 + 1} r="3" fill="#ffffff" />
+          <circle cx={cx + px * -0.2 + (isLeft ? 7 : -3)} cy={cy + py * -0.2 + 8} r="1.5" fill="#ffffff" />
         </g>
 
         {/* Cute shy horizontal hatching blush right next to / over the cheeks */}
@@ -544,8 +554,8 @@ export const EyeSVG: React.FC<{
           />
 
           {/* Sparkly overlay glints */}
-          <circle cx={cx + px - 8} cy={cy + py - 8} r="3" fill="#ffffff" />
-          <circle cx={cx + px + 8} cy={cy + py + 8} r="2.5" fill="#ffffff" />
+          <circle cx={cx + px * 0.4 - 8} cy={cy + py * 0.4 - 8} r="3" fill="#ffffff" />
+          <circle cx={cx + px * -0.2 + 8} cy={cy + py * -0.2 + 8} r="2.5" fill="#ffffff" />
         </g>
 
         {/* Eyelash sweep */}
@@ -610,10 +620,10 @@ export const EyeSVG: React.FC<{
           />
 
           {/* Specks of dust/magical stars */}
-          <circle cx={cx + px - 7} cy={cy + py - 7} r="1.5" fill="#ffffff" />
-          <circle cx={cx + px + 7} cy={cy + py - 7} r="1" fill="#ffffff" />
-          <circle cx={cx + px - 7} cy={cy + py + 7} r="1" fill="#ffffff" />
-          <circle cx={cx + px + 7} cy={cy + py + 7} r="2" fill="#ffffff" />
+          <circle cx={cx + px * 0.4 - 7} cy={cy + py * 0.4 - 7} r="1.5" fill="#ffffff" />
+          <circle cx={cx + px * -0.2 + 7} cy={cy + py * -0.2 - 7} r="1" fill="#ffffff" />
+          <circle cx={cx + px * 0.4 - 7} cy={cy + py * 0.4 + 7} r="1" fill="#ffffff" />
+          <circle cx={cx + px * -0.2 + 7} cy={cy + py * -0.2 + 7} r="2" fill="#ffffff" />
         </g>
 
         {/* Eyelash sweep */}
@@ -670,7 +680,7 @@ export const EyeSVG: React.FC<{
           />
 
           {/* Almost no sparkle / dead stare */}
-          <circle cx={cx + px - 5} cy={cy + py - 6} r="1.5" fill="#ffffff" opacity="0.2" />
+          <circle cx={cx + px * 0.4 - 5} cy={cy + py * 0.4 - 6} r="1.5" fill="#ffffff" opacity="0.2" />
         </g>
 
         {/* Eyelash sweep */}
@@ -818,6 +828,19 @@ export const EyeSVG: React.FC<{
         {/* Top ambient occlusion shadow perfectly conforming to the eye slit */}
         <path d={shapeData.eyeSlitPath} fill={`url(#anime-sclera-shadow-${isLeft ? 'l' : 'r'})`} />
 
+        {/* Dynamic Eyelid Ambient Shadow */}
+        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}>
+          <path
+            d={`M ${cx - 30} ${cy - 30} 
+                L ${cx + 30} ${cy - 30} 
+                L ${cx + 30} ${cy - 12 + (1 - blink) * 20} 
+                Q ${cx} ${cy - 4 + (1 - blink) * 20}, ${cx - 30} ${cy - 12 + (1 - blink) * 20} 
+                Z`}
+            fill="rgba(15, 23, 42, 0.22)"
+            style={{ mixBlendMode: 'multiply' }}
+          />
+        </g>
+
         {/* Masked Iris rendering perfectly bounded by the eye slit path */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}>
           <defs>
@@ -848,83 +871,85 @@ export const EyeSVG: React.FC<{
           <ellipse cx={cx + px} cy={cy + py} rx="12" ry="14.5" fill="rgba(0,0,0,0.15)" />
 
           {/* Specialized beautiful pupil configurations (slit, round, heart, star) */}
-          {pupilStyle === 'slit' ? (
-            <path
-              d={`M ${cx + px} ${cy + py - 13.5} 
-                 Q ${cx + px - 3} ${cy + py}, ${cx + px} ${cy + py + 13.5} 
-                 Q ${cx + px + 3} ${cy + py}, ${cx + px} ${cy + py - 13.5}`}
-              fill={pupilColor}
-            />
-          ) : pupilStyle === 'round' ? (
-            <ellipse cx={cx + px} cy={cy + py} rx="5.5" ry="11" fill={pupilColor} />
-          ) : pupilStyle === 'star' ? (
-            <path
-              d={`M ${cx + px} ${cy + py - 9.5} 
-                 L ${cx + px + 3} ${cy + py - 3} 
-                 L ${cx + px + 9.5} ${cy + py} 
-                 L ${cx + px + 3} ${cy + py + 3} 
-                 L ${cx + px} ${cy + py + 9.5} 
-                 L ${cx + px - 3} ${cy + py + 3} 
-                 L ${cx + px - 9.5} ${cy + py} 
-                 L ${cx + px - 3} ${cy + py - 3} Z`}
-              fill={pupilColor}
-            />
-          ) : pupilStyle === 'heart' ? (
-            // Heart pupil: adorable heart curves
-            <path
-              d={`M ${cx + px} ${cy + py + 6}
-                 C ${cx + px - 7.5} ${cy + py}, ${cx + px - 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py - 4.5}
-                 C ${cx + px + 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py + 6} Z`}
-              fill={pupilColor}
-            />
-          ) : pupilStyle === 'diamond' ? (
-            // Diamond pupil: crystalline rhombus with inner glow
-            <>
+          <g transform={pupilTransform}>
+            {pupilStyle === 'slit' ? (
               <path
-                d={`M ${cx + px} ${cy + py - 11}
-                   L ${cx + px + 7} ${cy + py}
-                   L ${cx + px} ${cy + py + 11}
-                   L ${cx + px - 7} ${cy + py} Z`}
+                d={`M ${cx + px} ${cy + py - 13.5} 
+                   Q ${cx + px - 3} ${cy + py}, ${cx + px} ${cy + py + 13.5} 
+                   Q ${cx + px + 3} ${cy + py}, ${cx + px} ${cy + py - 13.5}`}
                 fill={pupilColor}
               />
+            ) : pupilStyle === 'round' ? (
+              <ellipse cx={cx + px} cy={cy + py} rx="5.5" ry="11" fill={pupilColor} />
+            ) : pupilStyle === 'star' ? (
               <path
-                d={`M ${cx + px} ${cy + py - 6}
-                   L ${cx + px + 3.5} ${cy + py}
-                   L ${cx + px} ${cy + py + 6}
-                   L ${cx + px - 3.5} ${cy + py} Z`}
-                fill="#ffffff"
-                opacity="0.3"
+                d={`M ${cx + px} ${cy + py - 9.5} 
+                   L ${cx + px + 3} ${cy + py - 3} 
+                   L ${cx + px + 9.5} ${cy + py} 
+                   L ${cx + px + 3} ${cy + py + 3} 
+                   L ${cx + px} ${cy + py + 9.5} 
+                   L ${cx + px - 3} ${cy + py + 3} 
+                   L ${cx + px - 9.5} ${cy + py} 
+                   L ${cx + px - 3} ${cy + py - 3} Z`}
+                fill={pupilColor}
               />
-            </>
-          ) : pupilStyle === 'cross' ? (
-            // Cross pupil: gothic/demonic cross shape
-            <path
-              d={`M ${cx + px - 2.5} ${cy + py - 11}
-                 H ${cx + px + 2.5} V ${cy + py - 2.5}
-                 H ${cx + px + 8} V ${cy + py + 2.5}
-                 H ${cx + px + 2.5} V ${cy + py + 11}
-                 H ${cx + px - 2.5} V ${cy + py + 2.5}
-                 H ${cx + px - 8} V ${cy + py - 2.5}
-                 H ${cx + px - 2.5} Z`}
-              fill={pupilColor}
-            />
-          ) : pupilStyle === 'flower' ? (
-            // Flower pupil: sakura/lotus petal arrangement
-            <g>
-              {[0, 72, 144, 216, 288].map((angle) => (
-                <ellipse
-                  key={angle}
-                  cx={cx + px}
-                  cy={cy + py - 6}
-                  rx="3"
-                  ry="6"
+            ) : pupilStyle === 'heart' ? (
+              // Heart pupil: adorable heart curves
+              <path
+                d={`M ${cx + px} ${cy + py + 6}
+                   C ${cx + px - 7.5} ${cy + py}, ${cx + px - 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py - 4.5}
+                   C ${cx + px + 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py + 6} Z`}
+                fill={pupilColor}
+              />
+            ) : pupilStyle === 'diamond' ? (
+              // Diamond pupil: crystalline rhombus with inner glow
+              <>
+                <path
+                  d={`M ${cx + px} ${cy + py - 11}
+                     L ${cx + px + 7} ${cy + py}
+                     L ${cx + px} ${cy + py + 11}
+                     L ${cx + px - 7} ${cy + py} Z`}
                   fill={pupilColor}
-                  transform={`rotate(${angle}, ${cx + px}, ${cy + py})`}
                 />
-              ))}
-              <circle cx={cx + px} cy={cy + py} r="3" fill={pupilColor} />
-            </g>
-          ) : null}
+                <path
+                  d={`M ${cx + px} ${cy + py - 6}
+                     L ${cx + px + 3.5} ${cy + py}
+                     L ${cx + px} ${cy + py + 6}
+                     L ${cx + px - 3.5} ${cy + py} Z`}
+                  fill="#ffffff"
+                  opacity="0.3"
+                />
+              </>
+            ) : pupilStyle === 'cross' ? (
+              // Cross pupil: gothic/demonic cross shape
+              <path
+                d={`M ${cx + px - 2.5} ${cy + py - 11}
+                   H ${cx + px + 2.5} V ${cy + py - 2.5}
+                   H ${cx + px + 8} V ${cy + py + 2.5}
+                   H ${cx + px + 2.5} V ${cy + py + 11}
+                   H ${cx + px - 2.5} V ${cy + py + 2.5}
+                   H ${cx + px - 8} V ${cy + py - 2.5}
+                   H ${cx + px - 2.5} Z`}
+                fill={pupilColor}
+              />
+            ) : pupilStyle === 'flower' ? (
+              // Flower pupil: sakura/lotus petal arrangement
+              <g>
+                {[0, 72, 144, 216, 288].map((angle) => (
+                  <ellipse
+                    key={angle}
+                    cx={cx + px}
+                    cy={cy + py - 6}
+                    rx="3"
+                    ry="6"
+                    fill={pupilColor}
+                    transform={`rotate(${angle}, ${cx + px}, ${cy + py})`}
+                  />
+                ))}
+                <circle cx={cx + px} cy={cy + py} r="3" fill={pupilColor} />
+              </g>
+            ) : null}
+          </g>
 
           {/* Glowing bottom crescent highlight (glass reflections) */}
           <path
@@ -938,9 +963,9 @@ export const EyeSVG: React.FC<{
           <ellipse cx={cx + px} cy={cy + py + 11} rx="8" ry="3.2" fill="rgba(255,255,255,0.22)" />
 
           {/* Multiple glassy glints & specular sparkles (vital for high-quality anime feel) */}
-          <circle cx={cx + px - 5.5} cy={cy + py - 6.5} r="5.2" fill="#ffffff" opacity="0.96" />
-          <circle cx={cx + px + 6.5} cy={cy + py + 5} r="3.2" fill="#ffffff" opacity="0.88" />
-          <circle cx={cx + px - 7} cy={cy + py + 6.5} r="1.6" fill="#ffffff" opacity="0.65" />
+          <circle cx={cx + px * 0.4 - 5.5} cy={cy + py * 0.4 - 6.5} r="5.2" fill="#ffffff" opacity="0.96" />
+          <circle cx={cx + px * -0.2 + 6.5} cy={cy + py * -0.2 + 5} r="3.2" fill="#ffffff" opacity="0.88" />
+          <circle cx={cx + px * 0.4 - 7} cy={cy + py * 0.4 + 6.5} r="1.6" fill="#ffffff" opacity="0.65" />
         </g>
 
         {/* Bold upper feline eyelash wing sweep (Now a filled compound path!) */}
@@ -969,6 +994,17 @@ export const EyeSVG: React.FC<{
           </clipPath>
         </defs>
 
+        {/* Dynamic Eyelid Ambient Shadow for classic style */}
+        <path
+          d={`M ${cx - 25} ${cy - 20} 
+              L ${cx + 25} ${cy - 20} 
+              L ${cx + 25} ${cy - 4 + (1 - blink) * 12} 
+              Q ${cx} ${cy + (1 - blink) * 12}, ${cx - 25} ${cy - 4 + (1 - blink) * 12} 
+              Z`}
+          fill="rgba(15, 23, 42, 0.18)"
+          style={{ mixBlendMode: 'multiply' }}
+        />
+
         {/* Iris */}
         <circle cx={cx + px} cy={cy + py} r={11} fill={eyeColor} />
 
@@ -976,62 +1012,64 @@ export const EyeSVG: React.FC<{
         <circle cx={cx + px} cy={cy + py} r={8} fill="rgba(0,0,0,0.18)" />
 
         {/* Pupil according to selection */}
-        {pupilStyle === 'slit' ? (
-          <path
-            d={`M ${cx + px} ${cy + py - 7} Q ${cx + px - 2} ${cy + py}, ${cx + px} ${cy + py + 7} Q ${cx + px + 2} ${cy + py}, ${cx + px} ${cy + py - 7}`}
-            fill={pupilColor}
-          />
-        ) : pupilStyle === 'star' ? (
-          <path
-            d={`M ${cx + px} ${cy + py - 5} L ${cx + px + 1.5} ${cy + py - 1.5} L ${cx + px + 5} ${cy + py} L ${cx + px + 1.5} ${cy + py + 1.5} L ${cx + px} ${cy + py + 5} L ${cx + px - 1.5} ${cy + py + 1.5} L ${cx + px - 5} ${cy + py} L ${cx + px - 1.5} ${cy + py - 1.5} Z`}
-            fill={pupilColor}
-          />
-        ) : pupilStyle === 'heart' ? (
-          <path
-            d={`M ${cx + px} ${cy + py + 3.5} C ${cx + px - 4} ${cy + py}, ${cx + px - 5} ${cy + py - 3.5}, ${cx + px} ${cy + py - 2} C ${cx + px + 5} ${cy + py - 3.5}, ${cx + px + 4} ${cy + py}, ${cx + px} ${cy + py + 3.5} Z`}
-            fill={pupilColor}
-          />
-        ) : pupilStyle === 'diamond' ? (
-          <path
-            d={`M ${cx + px} ${cy + py - 5}
-               L ${cx + px + 4} ${cy + py}
-               L ${cx + px} ${cy + py + 5}
-               L ${cx + px - 4} ${cy + py} Z`}
-            fill={pupilColor}
-          />
-        ) : pupilStyle === 'cross' ? (
-          <path
-            d={`M ${cx + px - 1.5} ${cy + py - 5}
-               H ${cx + px + 1.5} V ${cy + py - 1.5}
-               H ${cx + px + 5} V ${cy + py + 1.5}
-               H ${cx + px + 1.5} V ${cy + py + 5}
-               H ${cx + px - 1.5} V ${cy + py + 1.5}
-               H ${cx + px - 5} V ${cy + py - 1.5}
-               H ${cx + px - 1.5} Z`}
-            fill={pupilColor}
-          />
-        ) : pupilStyle === 'flower' ? (
-          <g>
-            {[0, 72, 144, 216, 288].map((angle) => (
-              <ellipse
-                key={angle}
-                cx={cx + px}
-                cy={cy + py - 3}
-                rx="1.8"
-                ry="3.5"
-                fill={pupilColor}
-                transform={`rotate(${angle}, ${cx + px}, ${cy + py})`}
-              />
-            ))}
-            <circle cx={cx + px} cy={cy + py} r="1.8" fill={pupilColor} />
-          </g>
-        ) : pupilStyle === 'none' ? null : (
-          <circle cx={cx + px} cy={cy + py} r={4.5} fill={pupilColor} />
-        )}
+        <g transform={pupilTransform}>
+          {pupilStyle === 'slit' ? (
+            <path
+              d={`M ${cx + px} ${cy + py - 7} Q ${cx + px - 2} ${cy + py}, ${cx + px} ${cy + py + 7} Q ${cx + px + 2} ${cy + py}, ${cx + px} ${cy + py - 7}`}
+              fill={pupilColor}
+            />
+          ) : pupilStyle === 'star' ? (
+            <path
+              d={`M ${cx + px} ${cy + py - 5} L ${cx + px + 1.5} ${cy + py - 1.5} L ${cx + px + 5} ${cy + py} L ${cx + px + 1.5} ${cy + py + 1.5} L ${cx + px} ${cy + py + 5} L ${cx + px - 1.5} ${cy + py + 1.5} L ${cx + px - 5} ${cy + py} L ${cx + px - 1.5} ${cy + py - 1.5} Z`}
+              fill={pupilColor}
+            />
+          ) : pupilStyle === 'heart' ? (
+            <path
+              d={`M ${cx + px} ${cy + py + 3.5} C ${cx + px - 4} ${cy + py}, ${cx + px - 5} ${cy + py - 3.5}, ${cx + px} ${cy + py - 2} C ${cx + px + 5} ${cy + py - 3.5}, ${cx + px + 4} ${cy + py}, ${cx + px} ${cy + py + 3.5} Z`}
+              fill={pupilColor}
+            />
+          ) : pupilStyle === 'diamond' ? (
+            <path
+              d={`M ${cx + px} ${cy + py - 5}
+                 L ${cx + px + 4} ${cy + py}
+                 L ${cx + px} ${cy + py + 5}
+                 L ${cx + px - 4} ${cy + py} Z`}
+              fill={pupilColor}
+            />
+          ) : pupilStyle === 'cross' ? (
+            <path
+              d={`M ${cx + px - 1.5} ${cy + py - 5}
+                 H ${cx + px + 1.5} V ${cy + py - 1.5}
+                 H ${cx + px + 5} V ${cy + py + 1.5}
+                 H ${cx + px + 1.5} V ${cy + py + 5}
+                 H ${cx + px - 1.5} V ${cy + py + 1.5}
+                 H ${cx + px - 5} V ${cy + py - 1.5}
+                 H ${cx + px - 1.5} Z`}
+              fill={pupilColor}
+            />
+          ) : pupilStyle === 'flower' ? (
+            <g>
+              {[0, 72, 144, 216, 288].map((angle) => (
+                <ellipse
+                  key={angle}
+                  cx={cx + px}
+                  cy={cy + py - 3}
+                  rx="1.8"
+                  ry="3.5"
+                  fill={pupilColor}
+                  transform={`rotate(${angle}, ${cx + px}, ${cy + py})`}
+                />
+              ))}
+              <circle cx={cx + px} cy={cy + py} r="1.8" fill={pupilColor} />
+            </g>
+          ) : pupilStyle === 'none' ? null : (
+            <circle cx={cx + px} cy={cy + py} r={4.5} fill={pupilColor} />
+          )}
+        </g>
 
         {/* Double bright specular dots */}
-        <circle cx={cx + px - 3.5} cy={cy + py - 3.5} r="3" fill="#ffffff" opacity="0.95" />
-        <circle cx={cx + px + 4} cy={cy + py + 3} r="1.5" fill="#ffffff" opacity="0.8" />
+        <circle cx={cx + px * 0.4 - 3.5} cy={cy + py * 0.4 - 3.5} r="3" fill="#ffffff" opacity="0.95" />
+        <circle cx={cx + px * -0.2 + 4} cy={cy + py * -0.2 + 3} r="1.5" fill="#ffffff" opacity="0.8" />
       </g>
 
       {/* Styled top eyelash brow border */}

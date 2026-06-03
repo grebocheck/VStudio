@@ -26,6 +26,8 @@ export const NeckAndShoulders: React.FC<{
   shoulderWidth?: number;
   clothingPrint?: 'none' | 'cat' | 'star' | 'heart' | 'cyber' | 'cross';
   artStyle?: 'classic' | 'anime' | 'retro';
+  angleX?: number;
+  angleY?: number;
 }> = ({
   skinColor,
   clothingStyle,
@@ -38,8 +40,12 @@ export const NeckAndShoulders: React.FC<{
   shoulderWidth = 1.0,
   clothingPrint = 'none',
   artStyle = 'classic',
+  angleX = 0,
+  angleY = 0,
 }) => {
   const neckShadow = 'rgba(0,0,0,0.15)';
+  const shadowOffsetX = -angleX * 0.45;
+  const shadowOffsetY = -angleY * 0.3;
 
   const nw = neckWidth;
   const nh = neckHeight;
@@ -65,11 +71,31 @@ export const NeckAndShoulders: React.FC<{
         fill={skinColor}
       />
 
-      {/* Fitted neck shadow */}
-      <path
-        d={`M${neckTopL} ${neckYTop} L${200 - 19 * nw} ${240 + nh * 8} C190 ${245 + nh * 10}, 210 ${245 + nh * 10}, ${200 + 19 * nw} ${240 + nh * 8} L${neckTopR} ${neckYTop} Z`}
-        fill={neckShadow}
-      />
+      {/* Dynamic Head-Neck Shadow */}
+      <g clipPath="url(#neck-clip)">
+        <defs>
+          <clipPath id="neck-clip">
+            <path
+              d={`M${neckTopL} ${neckYTop} L${neckBottomL} ${neckYBottom} L${neckBottomR} ${neckYBottom} L${neckTopR} ${neckYTop} Z`}
+            />
+          </clipPath>
+        </defs>
+
+        <path
+          d={`M${neckTopL - 10} ${neckYTop - 5} 
+              L${neckTopL - 5} ${245 + nh * 8} 
+              C${190 + shadowOffsetX} ${250 + nh * 10 + shadowOffsetY}, 
+               ${210 + shadowOffsetX} ${250 + nh * 10 + shadowOffsetY}, 
+               ${neckTopR + 5} ${245 + nh * 8} 
+              L${neckTopR + 10} ${neckYTop - 5} Z`}
+          fill="rgba(15, 23, 42, 0.22)"
+          style={{
+            transform: `translate(${shadowOffsetX}px, ${shadowOffsetY}px)`,
+            transformOrigin: '200px 195px',
+            mixBlendMode: 'multiply',
+          }}
+        />
+      </g>
 
       {/* Kyoto Animation/DxD sharp anime neck shadow */}
       {artStyle === 'anime' && (
@@ -617,6 +643,26 @@ export const NeckAndShoulders: React.FC<{
             )}
           </g>
         )}
+
+        {/* Shoulder Rim Lights */}
+        <path
+          d="M 0 395 C 45 365, 105 315, 125 280"
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          opacity="0.25"
+          filter="url(#rim-blur)"
+        />
+        <path
+          d="M 400 395 C 355 365, 295 315, 275 280"
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          opacity="0.18"
+          filter="url(#rim-blur)"
+        />
       </g>
     </g>
   );

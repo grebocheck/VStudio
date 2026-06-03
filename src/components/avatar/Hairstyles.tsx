@@ -149,8 +149,24 @@ export const HairComponent: React.FC<{
             />
           </g>
 
-          <circle cx="104" cy="132" r="6" fill={highlightColor} />
-          <circle cx="296" cy="132" r="6" fill={highlightColor} />
+          <g
+            style={{
+              transform: `rotate(${hairSwayX * 0.8}deg)`,
+              transformOrigin: '104px 132px',
+              transition: 'transform 0.1s ease-out',
+            }}
+          >
+            <circle cx="104" cy="132" r="6" fill={highlightColor} />
+          </g>
+          <g
+            style={{
+              transform: `rotate(${-hairSwayX * 0.8}deg)`,
+              transformOrigin: '296px 132px',
+              transition: 'transform 0.1s ease-out',
+            }}
+          >
+            <circle cx="296" cy="132" r="6" fill={highlightColor} />
+          </g>
         </g>
       )}
 
@@ -205,8 +221,24 @@ export const HairComponent: React.FC<{
             }}
           />
 
-          <circle cx="104" cy="132" r="6" fill={highlightColor} />
-          <circle cx="296" cy="132" r="6" fill={highlightColor} />
+          <g
+            style={{
+              transform: `rotate(${hairSwayX * 0.8}deg)`,
+              transformOrigin: '104px 132px',
+              transition: 'transform 0.1s ease-out',
+            }}
+          >
+            <circle cx="104" cy="132" r="6" fill={highlightColor} />
+          </g>
+          <g
+            style={{
+              transform: `rotate(${-hairSwayX * 0.8}deg)`,
+              transformOrigin: '296px 132px',
+              transition: 'transform 0.1s ease-out',
+            }}
+          >
+            <circle cx="296" cy="132" r="6" fill={highlightColor} />
+          </g>
         </g>
       )}
 
@@ -292,8 +324,16 @@ export const HairComponent: React.FC<{
             </>
           )}
           {/* Hair tie / ribbon */}
-          <circle cx="215" cy="105" r="8" fill={highlightColor} />
-          <circle cx="215" cy="105" r="5" fill={color} />
+          <g
+            style={{
+              transform: `rotate(${hairSwayX * 0.8}deg)`,
+              transformOrigin: '215px 105px',
+              transition: 'transform 0.1s ease-out',
+            }}
+          >
+            <circle cx="215" cy="105" r="8" fill={highlightColor} />
+            <circle cx="215" cy="105" r="5" fill={color} />
+          </g>
         </g>
       )}
 
@@ -346,20 +386,44 @@ export const FrontHairComponent: React.FC<{
   highlightColor: string;
   angleY: number;
   artStyle?: 'classic' | 'anime' | 'retro';
-}> = ({ bangStyle, color, highlightColor, angleY, artStyle = 'classic' }) => {
+  hairSwayX?: number;
+  hairSwayY?: number;
+  breath?: number;
+}> = ({ bangStyle, color, highlightColor, angleY, artStyle = 'classic', hairSwayX = 0, hairSwayY = 0, breath = 0 }) => {
   const offset = angleY * 0.15;
   const isAnime = artStyle === 'anime';
+
+  // Hair styling parameters for multi-layered sway & ahoge
+  const leftLockStyle = {
+    transform: `rotate(${hairSwayX * 0.4}deg) translateX(${hairSwayX * 1.3}px)`,
+    transformOrigin: '106px 130px',
+    transition: 'transform 0.1s ease-out',
+  };
+  const rightLockStyle = {
+    transform: `rotate(${hairSwayX * 0.4}deg) translateX(${hairSwayX * 1.3}px)`,
+    transformOrigin: '294px 130px',
+    transition: 'transform 0.1s ease-out',
+  };
+  const centerBangsTransform = `translateX(${hairSwayX * 0.4}px)`;
+  const ahogeRotation = hairSwayX * 0.8 + Math.sin(breath * Math.PI * 2) * 2.5;
+  const ahogeStyle = {
+    transform: `rotate(${ahogeRotation}deg)`,
+    transformOrigin: '200px 80px',
+    transition: 'transform 0.08s ease-out',
+  };
 
   return (
     <g id="front-hair" style={{ transform: `translateY(${offset}px)` }}>
       {/* Cowlick strand (Ahoge) */}
       {isAnime && (
-        <path
-          d="M200 80 C190 30, 150 25, 140 30 C165 42, 192 50, 203 76 Z"
-          fill={color}
-          stroke="rgba(0,0,0,0.15)"
-          strokeWidth="1.2"
-        />
+        <g style={ahogeStyle}>
+          <path
+            d="M200 80 C190 30, 150 25, 140 30 C165 42, 192 50, 203 76 Z"
+            fill={color}
+            stroke="rgba(0,0,0,0.15)"
+            strokeWidth="1.2"
+          />
+        </g>
       )}
 
       {/* Solid capping head shell */}
@@ -402,200 +466,260 @@ export const FrontHairComponent: React.FC<{
       {/* Bangs selection patterns */}
       {bangStyle === 'classic' && (
         <g id="bangs-classic">
-          <path
-            d="M106 130 
-               L115 149 L125 149
-               L135 153 L145 146
-               L160 155 L175 149
-               L190 156 L200 147 L210 156
-               L225 149 L240 155
-               L255 146 L265 153
-               L275 144 L285 149
-               L294 130 Z"
-            fill={color}
-          />
-          <path d="M106 130 C100 160, 110 210, 122 230 L132 210 Q118 160, 120 135 Z" fill={color} />
-          <path d="M294 130 C300 160, 290 210, 278 230 L268 210 Q282 160, 280 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130 
+                 L115 149 L125 149
+                 L135 153 L145 146
+                 L160 155 L175 149
+                 L190 156 L200 147 L210 156
+                 L225 149 L240 155
+                 L255 146 L265 153
+                 L275 144 L285 149
+                 L294 130 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 C100 160, 110 210, 122 230 L132 210 Q118 160, 120 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C300 160, 290 210, 278 230 L268 210 Q282 160, 280 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'side' && (
         <g id="bangs-side">
-          <path
-            d="M106 130 
-               C115 137, 130 147, 150 144
-               C180 139, 210 165, 235 165
-               C260 165, 280 142, 294 130
-               L260 125 C220 128, 185 120, 155 122 Z"
-            fill={color}
-          />
-          <path d="M106 130 C100 160, 105 210, 118 240 L126 215 Q115 170, 124 133 Z" fill={color} />
-          <path d="M294 130 C300 170, 285 220, 280 250 L270 215 Q282 170, 280 133 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130 
+                 C115 137, 130 147, 150 144
+                 C180 139, 210 165, 235 165
+                 C260 165, 280 142, 294 130
+                 L260 125 C220 128, 185 120, 155 122 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 C100 160, 105 210, 118 240 L126 215 Q115 170, 124 133 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C300 170, 285 220, 280 250 L270 215 Q282 170, 280 133 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'center-part' && (
         <g id="bangs-center-part">
-          <path
-            d="M106 130 
-               C120 128, 140 136, 155 160 L165 147
-               C180 138, 190 138, 200 138
-               C210 138, 220 138, 235 147 L245 160
-               C260 136, 280 128, 294 130 Z"
-            fill={color}
-          />
-          <path d="M106 130 C95 160, 112 210, 125 245 L135 220 Q120 170, 124 135 Z" fill={color} />
-          <path d="M294 130 C305 160, 288 210, 275 245 L265 220 Q280 170, 276 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130 
+                 C120 128, 140 136, 155 160 L165 147
+                 C180 138, 190 138, 200 138
+                 C210 138, 220 138, 235 147 L245 160
+                 C260 136, 280 128, 294 130 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 C95 160, 112 210, 125 245 L135 220 Q120 170, 124 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C305 160, 288 210, 275 245 L265 220 Q280 170, 276 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'short' && (
         <g id="bangs-short">
-          <path
-            d="M106 130 
-               L120 145 L130 140
-               L145 148 L155 140
-               L175 150 L185 140 L200 152 L215 140
-               L225 150 L235 140 L255 148
-               L270 140 L280 145
-               L294 130 Z"
-            fill={color}
-          />
-          <path d="M106 130 C100 150, 108 180, 115 200 L123 185 Q115 150, 118 135 Z" fill={color} />
-          <path d="M294 130 C300 150, 292 180, 285 200 L277 185 Q285 150, 282 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130 
+                 L120 145 L130 140
+                 L145 148 L155 140
+                 L175 150 L185 140 L200 152 L215 140
+                 L225 150 L235 140 L255 148
+                 L270 140 L280 145
+                 L294 130 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 C100 150, 108 180, 115 200 L123 185 Q115 150, 118 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C300 150, 292 180, 285 200 L277 185 Q285 150, 282 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'hime' && (
         <g id="bangs-hime">
-          <path
-            d="M106 130 
-               L108 148
-               H 292
-               L294 130 Z"
-            fill={color}
-          />
-          <path d="M105 130 L107 225 L118 225 L116 135 Z" fill={color} />
-          <path d="M295 130 L293 225 L282 225 L284 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130 
+                 L108 148
+                 H 292
+                 L294 130 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M105 130 L107 225 L118 225 L116 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M295 130 L293 225 L282 225 L284 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'spiky' && (
         <g id="bangs-spiky">
-          <path
-            d="M106 130 
-               L115 152 L124 133
-               L138 158 L146 135
-               L162 164 L172 138
-               L185 162 L195 128 L205 162
-               L218 138 L228 164
-               L244 135 L252 158
-               L266 133 L275 152
-               L294 130 Z"
-            fill={color}
-          />
-          <path d="M106 130 Q92 170, 110 215 L120 195 Q108 160, 118 135 Z" fill={color} />
-          <path d="M294 130 Q308 170, 290 215 L280 195 Q292 160, 282 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130 
+                 L115 152 L124 133
+                 L138 158 L146 135
+                 L162 164 L172 138
+                 L185 162 L195 128 L205 162
+                 L218 138 L228 164
+                 L244 135 L252 158
+                 L266 133 L275 152
+                 L294 130 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 Q92 170, 110 215 L120 195 Q108 160, 118 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 Q308 170, 290 215 L280 195 Q292 160, 282 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'curly-bangs' && (
         <g id="bangs-curly-bangs">
-          <path
-            d="M106 130
-               C112 147, 137 154, 142 144
-               C147 134, 153 150, 168 160
-               C183 170, 197 147, 200 147
-               C203 147, 217 170, 232 160
-               C247 150, 253 134, 258 144
-               C263 154, 288 147, 294 130 Z"
-            fill={color}
-          />
-          <path d="M106 130 Q90 160, 102 205 Q115 220, 122 195 Q110 175, 118 135 Z" fill={color} />
-          <path d="M294 130 Q310 160, 298 205 Q285 220, 278 195 Q290 175, 282 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130
+                 C112 147, 137 154, 142 144
+                 C147 134, 153 150, 168 160
+                 C183 170, 197 147, 200 147
+                 C203 147, 217 170, 232 160
+                 C247 150, 253 134, 258 144
+                 C263 154, 288 147, 294 130 Z"
+              fill={color}
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 Q90 160, 102 205 Q115 220, 122 195 Q110 175, 118 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 Q310 160, 298 205 Q285 220, 278 195 Q290 175, 282 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'cross-bangs' && (
         <g id="bangs-cross-bangs">
-          <path
-            d="M106 130
-               L138 162 L146 152 L158 127
-               L178 167 L182 157 C190 147, 210 147, 218 157 L222 167
-               L242 127 L254 152 L262 162
-               L294 130 Z"
-            fill={color}
-          />
-          <path d="M192 120 L212 164 L198 164 L185 140 Z" fill={color} opacity="0.95" />
-          <path
-            d="M208 120 L188 164 L202 164 L215 140 Z"
-            fill={color}
-            opacity="0.95"
-            stroke={highlightColor}
-            strokeWidth="1"
-          />
-          <path d="M106 130 Q88 170, 115 225 L125 195 Q106 160, 118 135 Z" fill={color} />
-          <path d="M294 130 Q312 170, 285 225 L275 195 Q294 160, 282 135 Z" fill={color} />
+          <g style={{ transform: centerBangsTransform }}>
+            <path
+              d="M106 130
+                 L138 162 L146 152 L158 127
+                 L178 167 L182 157 C190 147, 210 147, 218 157 L222 167
+                 L242 127 L254 152 L262 162
+                 L294 130 Z"
+              fill={color}
+            />
+            <path d="M192 120 L212 164 L198 164 L185 140 Z" fill={color} opacity="0.95" />
+            <path
+              d="M208 120 L188 164 L202 164 L215 140 Z"
+              fill={color}
+              opacity="0.95"
+              stroke={highlightColor}
+              strokeWidth="1"
+            />
+          </g>
+          <g style={leftLockStyle}>
+            <path d="M106 130 Q88 170, 115 225 L125 195 Q106 160, 118 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 Q312 170, 285 225 L275 195 Q294 160, 282 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'wolf-cut' && (
         <g id="bangs-wolf-cut">
-          {/* Layered choppy bangs with jagged edges */}
-          <path
-            d="M106 130
-               L118 155 L128 140
-               L140 160 L150 143
-               L165 165 L172 145
-               L185 163 L195 133 L205 163
-               L228 145 L235 165
-               L250 143 L260 160
-               L272 140 L282 155
-               L294 130 Z"
-            fill={color}
-          />
-          {/* Side face-framing layers (longer pieces) */}
-          <path d="M106 130 Q88 175, 100 240 L112 215 Q98 170, 118 135 Z" fill={color} />
-          <path d="M294 130 Q312 175, 300 240 L288 215 Q302 170, 282 135 Z" fill={color} />
-          {/* Secondary choppy texture layer */}
-          <path d="M115 140 L128 160 L135 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
-          <path d="M265 140 L272 160 L280 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+          <g style={{ transform: centerBangsTransform }}>
+            {/* Layered choppy bangs with jagged edges */}
+            <path
+              d="M106 130
+                 L118 155 L128 140
+                 L140 160 L150 143
+                 L165 165 L172 145
+                 L185 163 L195 133 L205 163
+                 L228 145 L235 165
+                 L250 143 L260 160
+                 L272 140 L282 155
+                 L294 130 Z"
+              fill={color}
+            />
+            {/* Secondary choppy texture layer */}
+            <path d="M115 140 L128 160 L135 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+            <path d="M265 140 L272 160 L280 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+          </g>
+          <g style={leftLockStyle}>
+            {/* Side face-framing layers (longer pieces) */}
+            <path d="M106 130 Q88 175, 100 240 L112 215 Q98 170, 118 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 Q312 175, 300 240 L288 215 Q302 170, 282 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
       {bangStyle === 'curtain-bangs' && (
         <g id="bangs-curtain">
-          {/* Soft curtain bangs parted in the center, flowing to the sides */}
-          <path
-            d="M106 130
-               C118 133, 135 146, 155 160
-               C170 168, 185 156, 195 143
-               C198 138, 200 136, 200 136
-               C200 136, 202 138, 205 143
-               C215 156, 230 168, 245 160
-               C265 146, 282 133, 294 130 Z"
-            fill={color}
-          />
-          {/* Side face-framing curtains */}
-          <path d="M106 130 C95 165, 100 210, 112 245 L122 220 Q108 175, 120 135 Z" fill={color} />
-          <path d="M294 130 C305 165, 300 210, 288 245 L278 220 Q292 175, 280 135 Z" fill={color} />
-          {/* Soft highlight curves */}
-          <path
-            d="M140 133 Q165 153, 190 143"
-            stroke={highlightColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.45"
-            strokeLinecap="round"
-          />
-          <path
-            d="M260 133 Q235 153, 210 143"
-            stroke={highlightColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.45"
-            strokeLinecap="round"
-          />
+          <g style={{ transform: centerBangsTransform }}>
+            {/* Soft curtain bangs parted in the center, flowing to the sides */}
+            <path
+              d="M106 130
+                 C118 133, 135 146, 155 160
+                 C170 168, 185 156, 195 143
+                 C198 138, 200 136, 200 136
+                 C200 136, 202 138, 205 143
+                 C215 156, 230 168, 245 160
+                 C265 146, 282 133, 294 130 Z"
+              fill={color}
+            />
+            {/* Soft highlight curves */}
+            <path
+              d="M140 133 Q165 153, 190 143"
+              stroke={highlightColor}
+              strokeWidth="2"
+              fill="none"
+              opacity="0.45"
+              strokeLinecap="round"
+            />
+            <path
+              d="M260 133 Q235 153, 210 143"
+              stroke={highlightColor}
+              strokeWidth="2"
+              fill="none"
+              opacity="0.45"
+              strokeLinecap="round"
+            />
+          </g>
+          <g style={leftLockStyle}>
+            {/* Side face-framing curtains */}
+            <path d="M106 130 C95 165, 100 210, 112 245 L122 220 Q108 175, 120 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C305 165, 300 210, 288 245 L278 220 Q292 175, 280 135 Z" fill={color} />
+          </g>
         </g>
       )}
 
@@ -631,6 +755,27 @@ export const FrontHairComponent: React.FC<{
           opacity="0.55"
         />
       )}
+
+      {/* Front Hair Rim Light (Left) */}
+      <path
+        d="M102 140 C100 45, 200 45, 200 45"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="5"
+        strokeLinecap="round"
+        opacity="0.28"
+        filter="url(#rim-blur)"
+      />
+      {/* Front Hair Rim Light (Right) */}
+      <path
+        d="M200 45 C200 45, 300 45, 298 140"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="5"
+        strokeLinecap="round"
+        opacity="0.18"
+        filter="url(#rim-blur)"
+      />
     </g>
   );
 };

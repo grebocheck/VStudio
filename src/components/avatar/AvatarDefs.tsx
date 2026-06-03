@@ -26,6 +26,11 @@ export const AvatarDefs: React.FC<AvatarDefsProps> = ({ hairColor, hairGradient,
         <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000000" floodOpacity="0.35" />
       </filter>
 
+      {/* Rim light blur filter */}
+      <filter id="rim-blur" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur stdDeviation="2.5" />
+      </filter>
+
       {/* 2. Face Shading (Inner Volume for Skin) */}
       <radialGradient id="face-shading" cx="50%" cy="40%" r="60%">
         <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />

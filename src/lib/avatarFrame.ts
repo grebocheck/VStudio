@@ -52,7 +52,11 @@ export function calculateAvatarFrameStyles(config: AvatarFrameConfig, rig: RigPa
   const floatingAccessory =
     config.accessoryStyle === 'neko-ears' ||
     config.accessoryStyle === 'horns' ||
-    config.accessoryStyle === 'angel-halo';
+    config.accessoryStyle === 'angel-halo' ||
+    config.accessoryStyle === 'bunny-ears' ||
+    config.accessoryStyle === 'witch-hat' ||
+    config.accessoryStyle === 'crown' ||
+    config.accessoryStyle === 'fox-mask';
 
   return {
     accessoryTransform: `translateX(${

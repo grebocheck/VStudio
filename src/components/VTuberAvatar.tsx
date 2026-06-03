@@ -135,6 +135,8 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
             shoulderWidth={shoulderWidth}
             clothingPrint={clothingPrint}
             artStyle={artStyle}
+            angleX={rig.angleX}
+            angleY={rig.angleY}
           />
         </g>
 
@@ -173,6 +175,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
                 highlightColor="none"
                 angleY={angleY}
                 artStyle={artStyle}
+                hairSwayX={physicsSwayX}
+                hairSwayY={physicsSwayY}
+                breath={breath}
               />
             </g>
           )}
@@ -209,6 +214,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               artStyle={artStyle}
               activeEmotion={effectiveEmotion}
               eyeShape={eyeShape}
+              breath={breath}
             />
             <EyeSVG
               eyeColor={eyeColor}
@@ -221,6 +227,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               artStyle={artStyle}
               activeEmotion={effectiveEmotion}
               eyeShape={eyeShape}
+              breath={breath}
             />
             <Live2DMouth
               openAmount={mouthOpen}
@@ -245,6 +252,9 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               highlightColor={hairHighlightColor}
               angleY={angleY}
               artStyle={artStyle}
+              hairSwayX={physicsSwayX}
+              hairSwayY={physicsSwayY}
+              breath={breath}
             />
           </g>
 

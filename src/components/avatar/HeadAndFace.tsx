@@ -181,11 +181,25 @@ export const Live2DMouth: React.FC<{
   const width = artStyle === 'retro' ? 22 : 15;
   const curveYOffset = form * (artStyle === 'retro' ? 6 : 4);
 
+  // Feature 10: Vowel-like mouth shape adjustments based on openAmount and form
+  let widthScale = 1.0;
+  let heightScale = 1.0;
+
+  if (form > 0) {
+    widthScale += form * 0.22; // Wide smile (I, E shapes)
+    heightScale -= form * 0.08; // Flatter profile
+  } else {
+    widthScale += form * 0.28; // Narrow pucker (U, O shapes)
+    heightScale -= form * 0.15; // Taller profile
+  }
+
+  const finalWidth = width * widthScale;
+
   if (openAmount < 0.08) {
     if (artStyle === 'retro') {
-      const startX = mouthX - width;
+      const startX = mouthX - finalWidth;
       const startY = mouthY - curveYOffset * 0.2;
-      const endX = mouthX + width;
+      const endX = mouthX + finalWidth;
       const endY = mouthY - curveYOffset * 0.2;
       const controlY = mouthY + 10 + curveYOffset;
 
@@ -227,9 +241,9 @@ export const Live2DMouth: React.FC<{
       );
     }
 
-    const startX = mouthX - width;
+    const startX = mouthX - finalWidth;
     const startY = mouthY - curveYOffset * 0.2;
-    const endX = mouthX + width;
+    const endX = mouthX + finalWidth;
     const endY = mouthY - curveYOffset * 0.2;
     const controlY = mouthY + curveYOffset;
 
@@ -258,14 +272,15 @@ export const Live2DMouth: React.FC<{
     );
   } else {
     // Open Mouth
-    const h = openAmount * (artStyle === 'retro' ? 14 : 11);
+    const baseH = openAmount * (artStyle === 'retro' ? 14 : 11);
+    const finalH = baseH * heightScale;
 
     if (artStyle === 'retro') {
       return (
         <g id="retro-mouth-open">
           <path
-            d={`M ${mouthX - width} ${mouthY - 2} 
-                C ${mouthX - width - 4} ${mouthY + h + 8}, ${mouthX + width + 4} ${mouthY + h + 8}, ${mouthX + width} ${mouthY - 2} 
+            d={`M ${mouthX - finalWidth} ${mouthY - 2} 
+                C ${mouthX - finalWidth - 4} ${mouthY + finalH + 8}, ${mouthX + finalWidth + 4} ${mouthY + finalH + 8}, ${mouthX + finalWidth} ${mouthY - 2} 
                 Z`}
             fill="#1c1917"
             stroke="#1c1917"
@@ -273,9 +288,9 @@ export const Live2DMouth: React.FC<{
             strokeLinejoin="round"
           />
           <path
-            d={`M ${mouthX - width * 0.5} ${mouthY + h * 0.5} 
-                C ${mouthX - 5} ${mouthY + h * 0.2}, ${mouthX + width * 0.5} ${mouthY + h * 0.5}, ${mouthX + width * 0.5} ${mouthY + h + 4} 
-                C ${mouthX} ${mouthY + h + 7}, ${mouthX - width * 0.5} ${mouthY + h + 6}, ${mouthX - width * 0.5} ${mouthY + h * 0.5} Z`}
+            d={`M ${mouthX - finalWidth * 0.5} ${mouthY + finalH * 0.5} 
+                C ${mouthX - 5} ${mouthY + finalH * 0.2}, ${mouthX + finalWidth * 0.5} ${mouthY + finalH * 0.5}, ${mouthX + finalWidth * 0.5} ${mouthY + finalH + 4} 
+                C ${mouthX} ${mouthY + finalH + 7}, ${mouthX - finalWidth * 0.5} ${mouthY + finalH + 6}, ${mouthX - finalWidth * 0.5} ${mouthY + finalH * 0.5} Z`}
             fill="#ff758f"
           />
         </g>
@@ -285,64 +300,107 @@ export const Live2DMouth: React.FC<{
     const lipTopStartY = mouthY - curveYOffset * 0.3;
     const lipTopEndY = mouthY - curveYOffset * 0.3;
     const lipTopControlY = mouthY + curveYOffset * 0.6 - 1;
-    const cavityDepthY = mouthY + h + 3;
+    const cavityDepthY = mouthY + finalH + 3;
+
+    // Feature 11: Tongue wiggle translation offsets
+    const tongueWiggleX = Math.sin(Date.now() * 0.015) * 1.5;
+    const tongueWiggleY = Math.cos(Date.now() * 0.02) * 0.5;
 
     return (
       <g>
         <path
-          d={`M ${mouthX - width} ${lipTopStartY} 
-              Q ${mouthX} ${lipTopControlY}, ${mouthX + width} ${lipTopEndY} 
-              Q ${mouthX} ${cavityDepthY}, ${mouthX - width} ${lipTopStartY} Z`}
+          d={`M ${mouthX - finalWidth} ${lipTopStartY} 
+              Q ${mouthX} ${lipTopControlY}, ${mouthX + finalWidth} ${lipTopEndY} 
+              Q ${mouthX} ${cavityDepthY}, ${mouthX - finalWidth} ${lipTopStartY} Z`}
           fill="#a81a32"
           stroke="#1c1917"
           strokeWidth={artStyle === 'anime' ? '1.8' : '2'}
           strokeLinejoin="round"
         />
 
-        <path
-          d={`M ${mouthX - width * 0.6} ${mouthY + h * 0.4} 
-              C ${mouthX - 4} ${mouthY + h * 0.3}, ${mouthX + width * 0.7} ${mouthY + h * 0.5}, ${mouthX + width * 0.5} ${mouthY + h + 1}
-              C ${mouthX} ${mouthY + h + 2}, ${mouthX - width * 0.6} ${mouthY + h + 1}, ${mouthX - width * 0.6} ${mouthY + h * 0.4} Z`}
-          fill="#ff8da1"
-          opacity="0.9"
-        />
+        {/* Clip path to bound internal teeth & tongue */}
+        <g clipPath="url(#mouth-cavity-clip)">
+          <defs>
+            <clipPath id="mouth-cavity-clip">
+              <path
+                d={`M ${mouthX - finalWidth} ${lipTopStartY} 
+                    Q ${mouthX} ${lipTopControlY}, ${mouthX + finalWidth} ${lipTopEndY} 
+                    Q ${mouthX} ${cavityDepthY}, ${mouthX - finalWidth} ${lipTopStartY} Z`}
+              />
+            </clipPath>
+          </defs>
 
-        <path
-          d={`M ${mouthX - width * 0.8} ${lipTopStartY + 1} 
-              Q ${mouthX} ${lipTopControlY + 1.2}, ${mouthX + width * 0.8} ${lipTopEndY + 1} 
-              L ${mouthX + width * 0.7} ${lipTopControlY + h * 0.25 + 2}
-              L ${mouthX - width * 0.7} ${lipTopControlY + h * 0.25 + 2} Z`}
-          fill="#ffffff"
-        />
+          {/* Detailed upper teeth with a center notch */}
+          <path
+            d={`M ${mouthX - finalWidth * 0.8} ${lipTopStartY + 1.2} 
+                Q ${mouthX} ${lipTopControlY + 1.8}, ${mouthX + finalWidth * 0.8} ${lipTopEndY + 1.2} 
+                Q ${mouthX + finalWidth * 0.65} ${lipTopControlY + finalH * 0.3 + 1}, ${mouthX} ${lipTopControlY + finalH * 0.35 + 1}
+                Q ${mouthX - finalWidth * 0.65} ${lipTopControlY + finalH * 0.3 + 1}, ${mouthX - finalWidth * 0.8} ${lipTopStartY + 1.2} Z`}
+            fill="#ffffff"
+            stroke="#1c1917"
+            strokeWidth="0.6"
+          />
 
-        {hasFangs && (
-          <g id="vampire-fangs">
+          {/* Vampire Fangs option inside clip */}
+          {hasFangs && (
+            <g id="vampire-fangs">
+              <path
+                d={`M ${mouthX - finalWidth * 0.55} ${lipTopStartY + 2}
+                    L ${mouthX - finalWidth * 0.4} ${lipTopStartY + finalH * 0.4 + 5.5}
+                    L ${mouthX - finalWidth * 0.25} ${lipTopStartY + 2} Z`}
+                fill="#ffffff"
+                stroke="#1c1917"
+                strokeWidth="0.8"
+                strokeLinejoin="round"
+              />
+              <path
+                d={`M ${mouthX + finalWidth * 0.25} ${lipTopStartY + 2}
+                    L ${mouthX + finalWidth * 0.4} ${lipTopStartY + finalH * 0.4 + 5.5}
+                    L ${mouthX + finalWidth * 0.55} ${lipTopStartY + 2} Z`}
+                fill="#ffffff"
+                stroke="#1c1917"
+                strokeWidth="0.8"
+                strokeLinejoin="round"
+              />
+            </g>
+          )}
+
+          {/* Wiggling pink tongue with center crease */}
+          <g transform={`translate(${tongueWiggleX}, ${tongueWiggleY})`}>
             <path
-              d={`M ${mouthX - width * 0.55} ${lipTopStartY + 2}
-                  L ${mouthX - width * 0.4} ${lipTopStartY + h * 0.4 + 5.5}
-                  L ${mouthX - width * 0.25} ${lipTopStartY + 2} Z`}
-              fill="#ffffff"
-              stroke="#1c1917"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
+              d={`M ${mouthX - finalWidth * 0.5} ${mouthY + finalH * 0.5}
+                  C ${mouthX - finalWidth * 0.4} ${mouthY + finalH * 0.4}, ${mouthX + finalWidth * 0.5} ${mouthY + finalH * 0.5}, ${mouthX + finalWidth * 0.4} ${cavityDepthY - 1.5}
+                  C ${mouthX} ${cavityDepthY}, ${mouthX - finalWidth * 0.5} ${cavityDepthY - 1.5}, ${mouthX - finalWidth * 0.5} ${mouthY + finalH * 0.5} Z`}
+              fill="#ff8da1"
             />
             <path
-              d={`M ${mouthX + width * 0.25} ${lipTopStartY + 2}
-                  L ${mouthX + width * 0.4} ${lipTopStartY + h * 0.4 + 5.5}
-                  L ${mouthX + width * 0.55} ${lipTopStartY + 2} Z`}
-              fill="#ffffff"
-              stroke="#1c1917"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
+              d={`M ${mouthX} ${mouthY + finalH * 0.6} 
+                  Q ${mouthX + 0.5} ${mouthY + finalH * 0.8}, ${mouthX} ${cavityDepthY - 3}`}
+              stroke="#e11d48"
+              strokeWidth="1.2"
+              fill="none"
+              strokeLinecap="round"
+              opacity="0.85"
             />
           </g>
-        )}
 
+          {/* Detailed lower teeth */}
+          <path
+            d={`M ${mouthX - finalWidth * 0.6} ${cavityDepthY - 1} 
+                Q ${mouthX} ${cavityDepthY - finalH * 0.25 - 1.5}, ${mouthX + finalWidth * 0.6} ${cavityDepthY - 1} 
+                Z`}
+            fill="#ffffff"
+            stroke="#1c1917"
+            strokeWidth="0.5"
+          />
+        </g>
+
+        {/* External Tongue Out */}
         {tongueOut > 0.15 && (
           <path
-            d={`M ${mouthX - 8} ${lipTopStartY + h * 0.3}
-                Q ${mouthX} ${lipTopStartY + h + 7 + tongueOut * 13}, ${mouthX + 8} ${lipTopStartY + h * 0.3}
-                C ${mouthX + 5} ${lipTopStartY + h + 2}, ${mouthX - 5} ${lipTopStartY + h + 2}, ${mouthX - 8} ${lipTopStartY + h * 0.3} Z`}
+            d={`M ${mouthX - 8} ${lipTopStartY + finalH * 0.3}
+                Q ${mouthX} ${lipTopStartY + finalH + 7 + tongueOut * 13}, ${mouthX + 8} ${lipTopStartY + finalH * 0.3}
+                C ${mouthX + 5} ${lipTopStartY + finalH + 2}, ${mouthX - 5} ${lipTopStartY + finalH + 2}, ${mouthX - 8} ${lipTopStartY + finalH * 0.3} Z`}
             fill="#fb7185"
             stroke="#1c1917"
             strokeWidth={artStyle === 'anime' ? '1.6' : '2'}
