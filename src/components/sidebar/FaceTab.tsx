@@ -46,6 +46,44 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
 
         <div className="space-y-1">
           <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {isEn ? 'Face Shape Geometry' : 'Геометрія Форми Обличчя'}
+          </label>
+          <select
+            value={config.faceShape || 'default'}
+            onChange={(e) => setConfig((prev) => ({ ...prev, faceShape: e.target.value as any }))}
+            className={`w-full text-xs font-semibold p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark' ? 'bg-[#0a0a0c] text-white border-white/10' : 'bg-white text-slate-800 border-slate-200'
+            }`}
+          >
+            <option value="default">{isEn ? 'Default (Classic V-shape)' : 'Стандартна (V-подібна)'}</option>
+            <option value="sharp">{isEn ? 'Sharp (Shonen / Shojo)' : 'Гостра (Сьонен / Сьодзьо)'}</option>
+            <option value="round">{isEn ? 'Round (Moe / Soft)' : "Кругла (Моє / М'яка)"}</option>
+            <option value="chubby">{isEn ? 'Chubby (Full Cheeks)' : 'Пухкі щічки (Ширша)'}</option>
+            <option value="mature">{isEn ? 'Mature (Seinen / Long)' : 'Доросла (Подовжена)'}</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {isEn ? 'Eye Eyelash Shape' : 'Форма Очей та Вій'}
+          </label>
+          <select
+            value={config.eyeShape || 'default'}
+            onChange={(e) => setConfig((prev) => ({ ...prev, eyeShape: e.target.value as any }))}
+            className={`w-full text-xs font-semibold p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark' ? 'bg-[#0a0a0c] text-white border-white/10' : 'bg-white text-slate-800 border-slate-200'
+            }`}
+          >
+            <option value="default">{isEn ? 'Default (Standard Anime)' : 'Стандартна (Аніме)'}</option>
+            <option value="almond">{isEn ? 'Almond (Wide / Symmetrical)' : 'Мигдалеподібна (Широка)'}</option>
+            <option value="droopy">{isEn ? 'Droopy (Soft / Shy)' : 'Опущена (Скромна)'}</option>
+            <option value="sharp">{isEn ? 'Sharp (Tsundere / Flat Top)' : 'Гостра (Цундере / Пряма)'}</option>
+            <option value="cat-eye">{isEn ? 'Cat-Eye (Feline / Winged)' : 'Котяча (Виразні куточки)'}</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
             {isEn ? 'Blush Opacity & Makeup Accent' : 'Стиль Макіяжу / Рум’янцю (Blush)'}
           </label>
           <div
@@ -110,6 +148,9 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
             <option value="star">{t.rightSidebar.pupilOptions.star}</option>
             <option value="heart">{t.rightSidebar.pupilOptions.heart}</option>
             <option value="slit">{t.rightSidebar.pupilOptions.slit}</option>
+            <option value="diamond">{isEn ? 'Crystal Diamond 💎' : 'Кришталевий Діамант 💎'}</option>
+            <option value="cross">{isEn ? 'Gothic Cross ✙' : 'Готичний Хрест ✙'}</option>
+            <option value="flower">{isEn ? 'Sakura Flower 🌸' : 'Квітка Сакури 🌸'}</option>
           </select>
         </div>
 
@@ -129,6 +170,7 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
             <option value="normal">{t.rightSidebar.eyebrowOptions.normal}</option>
             <option value="thin">{t.rightSidebar.eyebrowOptions.thin}</option>
             <option value="thick">{t.rightSidebar.eyebrowOptions.thick}</option>
+            <option value="sad">{isEn ? 'Sad / Worried' : 'Сумні / Хвилюючі'}</option>
             <option value="none">{t.rightSidebar.eyebrowOptions.none}</option>
           </select>
         </div>

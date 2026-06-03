@@ -111,11 +111,11 @@ const FRAME_COUNT = TELEGRAM_STICKER_FPS * TELEGRAM_STICKER_DURATION_SECONDS;
 const BASE_SIZE = 400;
 const SCALE = TELEGRAM_STICKER_SIZE / BASE_SIZE;
 const CURVE_BOUNDS_MARGIN = 88;
-// Gradient fills/strokes (gf/gs) are supported by rlottie, so the avatar's
-// gradients survive into stickers. Merges, trim paths, repeaters and rounded
-// corners stay forbidden — rlottie handles them poorly.
-const FORBIDDEN_SHAPE_TYPES = new Set(['mm', 'tm', 'rp', 'sr']);
-const ALLOWED_SHAPE_TYPES = new Set(['el', 'fl', 'gf', 'gs', 'gr', 'rc', 'sh', 'st', 'tr']);
+// Telegram's Bodymovin-TG guidance forbids gradient strokes, merge paths,
+// trim paths, repeaters and star shapes. Gradient fills are kept because the
+// converter emits them as plain `gf` shape items.
+const FORBIDDEN_SHAPE_TYPES = new Set(['gs', 'mm', 'tm', 'rp', 'sr']);
+const ALLOWED_SHAPE_TYPES = new Set(['el', 'fl', 'gf', 'gr', 'rc', 'sh', 'st', 'tr']);
 
 const px = (value: number) => Math.round(value * SCALE * 100) / 100;
 const scaledPoint = ([x, y]: Vec2): Vec2 => [px(x), px(y)];

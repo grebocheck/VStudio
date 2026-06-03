@@ -9,7 +9,7 @@ with **camera face-tracking**, **microphone mouth-sync**, **mouse tracking**, or
 
 ## Features
 
-- **Avatar builder** — hairstyles, eyes/pupils, eyebrows, outfits, accessories, blush, fangs, ears, body proportions, art styles (classic / anime / retro).
+- **Avatar builder** — hairstyles (including wolf-cut, hime, twintails), eyes/pupils (diamond, cross, flower, slit), eyebrows, outfits (idol-stage, witch-robe, cyber-armor), accessories (crown, witch-hat, bunny-ears), blush, fangs, ears, body proportions, art styles (classic / anime / retro).
 - **Live rigging** — MediaPipe FaceLandmarker drives head yaw/pitch/roll, blinks, gaze, mouth, eyebrows, and a 16-state emotion classifier with hysteresis.
 - **Tracking modes** — `camera`, `mic` (amplitude → mouth flap), `mouse`, and `auto` (AFK idle motion). Camera device selection, neutral-pose calibration, sensitivity, and smoothing are saved locally.
 - **AI styling** — describe a character in natural language; a server-side Gemini call returns a full avatar config (validated + clamped before applying).

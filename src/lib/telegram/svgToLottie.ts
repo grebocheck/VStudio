@@ -7,11 +7,12 @@
 // 512×512 sticker canvas.
 //
 // Telegram TGS cannot represent SVG filters, masks or clip paths, so callers are
-// expected to drop those nodes before/while walking. Gradients resolve to a
-// representative solid colour.
+// expected to drop those nodes before/while walking. Gradients are converted to
+// Lottie gradient fills where possible.
 import { px, scaledPoint, TELEGRAM_STICKER_FPS, TELEGRAM_STICKER_SIZE, FRAME_COUNT } from './core';
 import { group, layer } from './lottie';
 import { TELEGRAM_EMOTION_ANIMATION_PRESETS } from './presets';
+import { buildEmotionOverlayLayers } from './shapes';
 import type {
   LottieValue,
   Vec2,
@@ -120,7 +121,7 @@ const DEG2RAD = Math.PI / 180;
 export function parseTransform(value: string | null | undefined): Matrix {
   if (!value) return IDENTITY_MATRIX;
   let result = IDENTITY_MATRIX;
-  const re = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g;
+  const re = /(matrix|translateX|translateY|translate|scaleX|scaleY|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(value)) !== null) {
     const fn = m[1];
@@ -131,8 +132,16 @@ export function parseTransform(value: string | null | undefined): Matrix {
     let next: Matrix = IDENTITY_MATRIX;
     if (fn === 'matrix' && args.length === 6) {
       next = args as Matrix;
+    } else if (fn === 'translateX') {
+      next = [1, 0, 0, 1, args[0] || 0, 0];
+    } else if (fn === 'translateY') {
+      next = [1, 0, 0, 1, 0, args[0] || 0];
     } else if (fn === 'translate') {
       next = [1, 0, 0, 1, args[0] || 0, args[1] || 0];
+    } else if (fn === 'scaleX') {
+      next = [args[0] ?? 1, 0, 0, 1, 0, 0];
+    } else if (fn === 'scaleY') {
+      next = [1, 0, 0, args[0] ?? 1, 0, 0];
     } else if (fn === 'scale') {
       const sx = args[0] ?? 1;
       next = [sx, 0, 0, args[1] ?? sx, 0, 0];
@@ -157,6 +166,12 @@ export function parseTransform(value: string | null | undefined): Matrix {
   }
   return result;
 }
+
+const cssTransformMatrix = (css: Record<string, string>): Matrix => {
+  const transform = css.transform;
+  if (!transform || transform === 'none') return IDENTITY_MATRIX;
+  return parseTransform(transform);
+};
 
 // ---------------------------------------------------------------------------
 // Path data → Lottie bezier subpaths
@@ -446,12 +461,24 @@ export function polyToShapes(points: Vec2[], closed: boolean, m: Matrix): Lottie
 // ---------------------------------------------------------------------------
 const round01 = (value: number) => Math.round(clamp01(value) * 100);
 
-export function fillItem(color: ParsedColor, opacity: number): LottieValue {
-  return { ty: 'fl', c: { a: 0, k: [...color.rgb, 1] }, o: { a: 0, k: round01(color.alpha * opacity) }, r: 1 };
+export function fillItem(color: ParsedColor, opacity: number, fillRule = 1): LottieValue {
+  return {
+    ty: 'fl',
+    c: { a: 0, k: [...color.rgb, 1] },
+    o: { a: 0, k: round01(color.alpha * opacity) },
+    r: fillRule,
+  };
 }
 
-export function strokeItem(color: ParsedColor, widthPx: number, opacity: number, cap = 2, join = 2): LottieValue {
-  return {
+export function strokeItem(
+  color: ParsedColor,
+  widthPx: number,
+  opacity: number,
+  cap = 2,
+  join = 2,
+  dash?: number[],
+): LottieValue {
+  const item: LottieValue = {
     ty: 'st',
     c: { a: 0, k: [...color.rgb, 1] },
     o: { a: 0, k: round01(color.alpha * opacity) },
@@ -460,6 +487,13 @@ export function strokeItem(color: ParsedColor, widthPx: number, opacity: number,
     lj: join,
     ml: 4,
   };
+  if (dash && dash.length >= 2) {
+    item.d = [
+      { n: 'd', v: { a: 0, k: px(dash[0]) } },
+      { n: 'g', v: { a: 0, k: px(dash[1]) } },
+    ];
+  }
+  return item;
 }
 
 // ---------------------------------------------------------------------------
@@ -630,9 +664,8 @@ function gradientFillItem(def: GradientDef, bbox: BBox, m: Matrix, opacity: numb
 //
 // Filters, masks, clip paths and gradient/pattern defs have no TGS equivalent,
 // so those nodes are skipped (a filtered shape keeps its geometry but loses the
-// blur/glow). Element `transform` attributes are baked into the geometry; CSS
-// `style.transform` driving the live rig is intentionally ignored — sticker
-// motion is supplied by the animation presets at a neutral pose.
+// blur/glow). Element and CSS transforms are baked into the geometry at the
+// neutral export pose; sticker motion is supplied by the animation presets.
 // ---------------------------------------------------------------------------
 const SKIP_TAGS = new Set([
   'defs',
@@ -649,7 +682,15 @@ const SKIP_TAGS = new Set([
 ]);
 const SHAPE_TAGS = new Set(['path', 'ellipse', 'circle', 'rect', 'line', 'polygon', 'polyline']);
 
-const TARGET_NODES = ['back-hair', 'chest', 'head-outline', 'face', 'front-hair', 'accessory', 'overlay'] as const;
+const TARGET_NODES = [
+  'back-hair',
+  'chest',
+  'head-outline',
+  'front-hair-shadow',
+  'face',
+  'front-hair',
+  'accessory',
+] as const;
 export type RigNodeName = (typeof TARGET_NODES)[number];
 
 export interface RigNodeLayer {
@@ -671,6 +712,49 @@ const styleMap = (el: Element): Record<string, string> => {
 const readProp = (el: Element, css: Record<string, string>, name: string): string | null =>
   css[name] ?? el.getAttribute(name);
 
+type PresentationContext = Record<string, string>;
+
+const PRESENTATION_PROPS = [
+  'fill',
+  'fill-opacity',
+  'fill-rule',
+  'stroke',
+  'stroke-opacity',
+  'stroke-width',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'stroke-dasharray',
+] as const;
+
+const ownPresentationProp = (el: Element, css: Record<string, string>, name: string): string | null =>
+  css[name] ?? el.getAttribute(name);
+
+const inheritPresentation = (
+  inherited: PresentationContext,
+  el: Element,
+  css: Record<string, string>,
+): PresentationContext => {
+  let next = inherited;
+  for (const prop of PRESENTATION_PROPS) {
+    const value = ownPresentationProp(el, css, prop);
+    if (value !== null) {
+      if (next === inherited) next = { ...inherited };
+      next[prop] = value;
+    }
+  }
+  return next;
+};
+
+const readPaintProp = (
+  el: Element,
+  css: Record<string, string>,
+  inherited: PresentationContext,
+  name: string,
+): string | null => {
+  const own = ownPresentationProp(el, css, name);
+  return own !== null ? own : (inherited[name] ?? null);
+};
+
 const num = (el: Element, name: string, fallback = 0): number => {
   const raw = el.getAttribute(name);
   const value = raw === null ? NaN : parseFloat(raw);
@@ -689,6 +773,27 @@ const parsePoints = (raw: string | null): Vec2[] => {
 };
 
 const matrixScale = (m: Matrix) => Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2])) || 1;
+
+const lineCap = (value: string | null): number => {
+  if (value === 'butt') return 1;
+  if (value === 'square') return 3;
+  return 2;
+};
+
+const lineJoin = (value: string | null): number => {
+  if (value === 'miter') return 1;
+  if (value === 'bevel') return 3;
+  return 2;
+};
+
+const dashArray = (value: string | null): number[] | undefined => {
+  if (!value || value === 'none') return undefined;
+  const values = value
+    .split(/[\s,]+/)
+    .map((part) => parseFloat(part))
+    .filter((part) => Number.isFinite(part) && part > 0);
+  return values.length >= 2 ? values : undefined;
+};
 
 const shapeElementToShapes = (el: Element, m: Matrix): LottieValue[] => {
   switch (el.tagName.toLowerCase()) {
@@ -722,6 +827,7 @@ const shapeElementToGroup = (
   el: Element,
   m: Matrix,
   inheritedOpacity: number,
+  inheritedPresentation: PresentationContext,
   gradients: Map<string, GradientDef>,
 ): LottieValue | null => {
   const shapes = shapeElementToShapes(el, m);
@@ -732,8 +838,8 @@ const shapeElementToGroup = (
   const items: LottieValue[] = [...shapes];
 
   let painted = false;
-  const fillRaw = readProp(el, css, 'fill');
-  const fillOpacity = parseFloat(readProp(el, css, 'fill-opacity') ?? '1');
+  const fillRaw = readPaintProp(el, css, inheritedPresentation, 'fill');
+  const fillOpacity = parseFloat(readPaintProp(el, css, inheritedPresentation, 'fill-opacity') ?? '1');
   const fillO = opacity * (Number.isNaN(fillOpacity) ? 1 : fillOpacity);
   const fillGradientId = urlRef(fillRaw);
   if (fillGradientId && gradients.has(fillGradientId)) {
@@ -745,16 +851,26 @@ const shapeElementToGroup = (
   } else {
     const fill = parseColor(fillRaw);
     if (fill) {
-      items.push(fillItem(fill, fillO));
+      const rule = readPaintProp(el, css, inheritedPresentation, 'fill-rule') === 'evenodd' ? 2 : 1;
+      items.push(fillItem(fill, fillO, rule));
       painted = true;
     }
   }
 
-  const stroke = parseColor(readProp(el, css, 'stroke'));
+  const stroke = parseColor(readPaintProp(el, css, inheritedPresentation, 'stroke'));
   if (stroke) {
-    const strokeOpacity = parseFloat(readProp(el, css, 'stroke-opacity') ?? '1');
-    const width = parseFloat(readProp(el, css, 'stroke-width') ?? '1') || 1;
-    items.push(strokeItem(stroke, width * matrixScale(m), opacity * (Number.isNaN(strokeOpacity) ? 1 : strokeOpacity)));
+    const strokeOpacity = parseFloat(readPaintProp(el, css, inheritedPresentation, 'stroke-opacity') ?? '1');
+    const width = parseFloat(readPaintProp(el, css, inheritedPresentation, 'stroke-width') ?? '1') || 1;
+    items.push(
+      strokeItem(
+        stroke,
+        width * matrixScale(m),
+        opacity * (Number.isNaN(strokeOpacity) ? 1 : strokeOpacity),
+        lineCap(readPaintProp(el, css, inheritedPresentation, 'stroke-linecap')),
+        lineJoin(readPaintProp(el, css, inheritedPresentation, 'stroke-linejoin')),
+        dashArray(readPaintProp(el, css, inheritedPresentation, 'stroke-dasharray')),
+      ),
+    );
     painted = true;
   }
 
@@ -771,20 +887,32 @@ export function extractRigNodeLayers(svgRoot: Element): RigNodeLayer[] {
   const buckets = new Map<RigNodeName, LottieValue[]>();
   const gradients = parseGradients(svgRoot);
 
-  const visit = (el: Element, matrix: Matrix, node: RigNodeName | null, inheritedOpacity: number) => {
+  const visit = (
+    el: Element,
+    matrix: Matrix,
+    node: RigNodeName | null,
+    inheritedOpacity: number,
+    inheritedPresentation: PresentationContext,
+  ) => {
     const tag = el.tagName.toLowerCase();
     if (SKIP_TAGS.has(tag)) return;
     const css = styleMap(el);
     if (readProp(el, css, 'display') === 'none') return;
+    if (readProp(el, css, 'visibility') === 'hidden') return;
 
     const declared = el.getAttribute('data-rig-node');
     const target = (TARGET_NODES as readonly string[]).includes(declared ?? '') ? (declared as RigNodeName) : node;
-    const localMatrix = multiplyMatrix(matrix, parseTransform(el.getAttribute('transform')));
+    const localMatrix = multiplyMatrix(
+      multiplyMatrix(matrix, parseTransform(el.getAttribute('transform'))),
+      cssTransformMatrix(css),
+    );
     const opacity = inheritedOpacity * (parseFloat(readProp(el, css, 'opacity') ?? '1') || 1);
+    if (opacity <= 0) return;
+    const presentation = inheritPresentation(inheritedPresentation, el, css);
 
     if (SHAPE_TAGS.has(tag)) {
       if (!target) return;
-      const groupItem = shapeElementToGroup(el, localMatrix, opacity, gradients);
+      const groupItem = shapeElementToGroup(el, localMatrix, opacity, presentation, gradients);
       if (groupItem) {
         const arr = buckets.get(target) ?? [];
         if (!buckets.has(target)) buckets.set(target, arr);
@@ -793,10 +921,10 @@ export function extractRigNodeLayers(svgRoot: Element): RigNodeLayer[] {
       return;
     }
 
-    for (const child of Array.from(el.children)) visit(child, localMatrix, target, opacity);
+    for (const child of Array.from(el.children)) visit(child, localMatrix, target, opacity, presentation);
   };
 
-  visit(svgRoot, IDENTITY_MATRIX, null, 1);
+  visit(svgRoot, IDENTITY_MATRIX, null, 1, {});
 
   return TARGET_NODES.filter((node) => (buckets.get(node)?.length ?? 0) > 0).map((node) => ({
     node,
@@ -814,10 +942,10 @@ const NODE_LAYER: Record<
   'back-hair': { name: 'back-hair', pick: (p) => p.hair },
   chest: { name: 'body', pick: (p) => p.body },
   'head-outline': { name: 'head-base', pick: (p) => p.head },
+  'front-hair-shadow': { name: 'front-hair-shadow', pick: (p) => p.hair },
   face: { name: 'face', pick: (p) => p.expression },
   'front-hair': { name: 'front-hair', pick: (p) => p.hair },
   accessory: { name: 'accessory', pick: (p) => p.accessory },
-  overlay: { name: 'overlay', pick: (p) => p.overlay },
 };
 
 /** Wrap extracted rig-node geometry into animated, front-to-back Lottie layers. */
@@ -833,11 +961,13 @@ export function lottieFromRigLayers(
       return layer(idx + 1, cfg.name, rl.items, cfg.pick(preset));
     })
     .filter((item) => Array.isArray(item.shapes) && item.shapes.length > 0);
+  backToFront.push(...buildEmotionOverlayLayers(spec, preset, backToFront.length + 1));
 
   // Lottie paints index 0 on top — emit front-to-back and renumber `ind`.
   const layers = backToFront.reverse().map((item, index) => ({ ...item, ind: index + 1 }));
 
   return {
+    tgs: 1,
     v: '5.7.4',
     fr: TELEGRAM_STICKER_FPS,
     ip: 0,

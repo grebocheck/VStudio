@@ -45,6 +45,11 @@ describe('svgToLottie — transforms', () => {
     expect(applyToPoint(m, [1, 1])).toEqual([12, 22]);
   });
 
+  it('parses CSS-style one-axis transforms used by avatar rig groups', () => {
+    const m = parseTransform('translateX(10px) translateY(5px) scaleY(2) scaleX(-1)');
+    expect(applyToPoint(m, [3, 4])).toEqual([7, 13]);
+  });
+
   it('rotates 90 degrees about a pivot', () => {
     const m = parseTransform('rotate(90 0 0)');
     const [x, y] = applyToPoint(m, [10, 0]);
@@ -150,6 +155,23 @@ describe('svgToLottie — rig-node layer extraction', () => {
     expect(gf).toBeDefined();
     expect(gf?.g?.p).toBe(2);
   });
+
+  it('inherits group presentation props so small line details survive export', () => {
+    const root = parseSvg(`<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <g data-rig-node="face" stroke="#ff4d6d" stroke-width="2.5" stroke-linecap="round" opacity="0.5">
+        <line x1="140" y1="190" x2="148" y2="200"/>
+      </g>
+    </svg>`);
+    const face = extractRigNodeLayers(root).find((l) => l.node === 'face');
+    const stroke = (
+      face?.items[0] as { it: Array<{ ty: string; o?: { k: number }; w?: { k: number }; lc?: number }> }
+    ).it.find((item) => item.ty === 'st');
+
+    expect(face?.items).toHaveLength(1);
+    expect(stroke?.o?.k).toBe(50);
+    expect(stroke?.w?.k).toBe(3.2);
+    expect(stroke?.lc).toBe(2);
+  });
 });
 
 describe('svgToLottie — rig-node layers assemble into a valid sticker', () => {
@@ -160,7 +182,15 @@ describe('svgToLottie — rig-node layers assemble into a valid sticker', () => 
   });
 
   it('produces a front-to-back, Telegram-valid Lottie from rig-node geometry', () => {
-    const nodes: RigNodeName[] = ['back-hair', 'chest', 'head-outline', 'face', 'front-hair', 'accessory'];
+    const nodes: RigNodeName[] = [
+      'back-hair',
+      'chest',
+      'head-outline',
+      'front-hair-shadow',
+      'face',
+      'front-hair',
+      'accessory',
+    ];
     const rigLayers: RigNodeLayer[] = nodes.map((node) => ({ node, items: [blob()] }));
 
     const lottie = lottieFromRigLayers(rigLayers, DEFAULT_CONFIG, TELEGRAM_STICKER_SPECS[0]);
@@ -168,8 +198,10 @@ describe('svgToLottie — rig-node layers assemble into a valid sticker', () => 
     const names = (lottie.layers as Array<{ nm: string }>).map((l) => l.nm);
 
     expect(errors).toEqual([]);
-    expect(names).toHaveLength(6);
+    expect(names).toHaveLength(9);
+    expect(names[0]).toMatch(/^happy-pop/);
     expect(names).toContain('face');
+    expect(names).toContain('front-hair-shadow');
     expect(names[names.length - 1]).toBe('back-hair');
   });
 });

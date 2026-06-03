@@ -133,6 +133,14 @@ export const en = {
     'kitsune-oracle_name': 'Akari (Kitsune Oracle)',
     'kitsune-oracle_lore':
       'A fox-mask oracle who streams late-night folklore, cozy strategy games, and quiet fortune readings from a neon shrine studio. Her golden accents and kitsune mask make every scene feel ceremonial.',
+
+    'sakura-idol_name': 'Sakura (Sakura Idol)',
+    'sakura-idol_lore':
+      'A sparkling virtual stage star with diamond-cut pupils and a flowing pink ponytail. She dreams of winning millions of hearts with her gentle voice and radiant smile. Every one of her streams is a true performance!',
+
+    'midnight-witch_name': 'Morgana (Midnight Witch)',
+    'midnight-witch_lore':
+      'A mysterious midnight witch who streams starlit tarot readings, atmospheric RPGs, and nocturnal music. Her cross-shaped pupils mesmerize, and her mystical robe shimmers with stellar patterns.',
   },
   rightSidebar: {
     params: 'Parameters: ',

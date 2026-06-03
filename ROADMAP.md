@@ -144,7 +144,7 @@
 3. ✅ Адаптив/мобільний: додано явну dismissible desktop-рекомендацію для вузьких екранів; повний mobile layout лишається опційним розширенням.
 4. ✅ Онбординг-тур: first-run dialog із локальним збереженням, клавіатурною навігацією, повторним запуском із toolbar і поясненням пресетів, tracking, кастомізації та OBS.
 5. ✅ Іменовані профілі трекінгу: camera calibration wizard має saved profiles із apply/save/update/delete, localStorage persistence і sanitize для битих даних.
-6. 🟡 Розширення контенту: додано доступ до готових аксесуарів `angel-halo`/`fox-mask` у UI та новий built-in пресет Kitsune Oracle; далі — більше зачісок/одягу й кастомні кольорові градієнти.
+6. ✅ Розширення контенту: розширено кастомізацію (нові зіниці: diamond, cross, flower; нові зачіски: wolf-cut, curtain-bangs, ponytail, bun; нові костюми: idol-stage, witch-robe, crown, witch-hat, bunny-ears) та додано нові showcase-пресети (Sakura Idol, Midnight Witch).
 7. (Опційно) акаунти + хмарне збереження бібліотеки аватарів.
 8. ✅ Реальна телеметрія FPS/перформансу замість захардкоджених значень.
 

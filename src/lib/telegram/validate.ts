@@ -25,6 +25,14 @@ const valuesMatch = (left: unknown, right: unknown) => {
   return leftNumbers.every((value, index) => Math.abs(value - rightNumbers[index]) < 0.001);
 };
 
+const handleIsLinear = (handle: unknown) => {
+  if (!isRecord(handle)) return false;
+  const x = asNumberArray(handle.x);
+  const y = asNumberArray(handle.y);
+  if (!x || !y || x.length !== y.length) return false;
+  return x.every((value, index) => Math.abs(value - y[index]) < 0.001);
+};
+
 const inspectAnimatedLoop = (prop: unknown, path: string, issues: TelegramStickerValidationIssue[]) => {
   if (!isRecord(prop) || prop.a !== 1 || !Array.isArray(prop.k)) return;
   const keys = prop.k.filter(isRecord);
@@ -39,6 +47,15 @@ const inspectAnimatedLoop = (prop: unknown, path: string, issues: TelegramSticke
   }
   const first = keys[0];
   const last = keys[keys.length - 1];
+  const times = keys.map((key) => key.t).filter((value): value is number => typeof value === 'number');
+  if (new Set(times).size !== times.length) {
+    issues.push({
+      severity: 'error',
+      code: 'telegram.keyframe.duplicate_time',
+      message: 'Animated property contains duplicate keyframe times.',
+      path,
+    });
+  }
   if (first.t !== 0 || last.t !== FRAME_COUNT) {
     issues.push({
       severity: 'error',
@@ -55,15 +72,77 @@ const inspectAnimatedLoop = (prop: unknown, path: string, issues: TelegramSticke
       path,
     });
   }
+  keys.forEach((key, index) => {
+    if ('e' in key) {
+      issues.push({
+        severity: 'error',
+        code: 'telegram.keyframe.explicit_end_value',
+        message:
+          'Telegram Bodymovin-TG keyframes should use the next keyframe start value instead of an explicit end value.',
+        path: `${path}.k[${index}]`,
+      });
+    }
+    if (index === keys.length - 1) return;
+    if (!handleIsLinear(key.i) || !handleIsLinear(key.o)) {
+      issues.push({
+        severity: 'error',
+        code: 'telegram.keyframe.bezier_easing',
+        message: 'Telegram animated stickers should use linear keyframe interpolation, not custom Bezier easing.',
+        path: `${path}.k[${index}]`,
+      });
+    }
+  });
+  const finalKey = keys[keys.length - 1];
+  if ('i' in finalKey || 'o' in finalKey) {
+    issues.push({
+      severity: 'error',
+      code: 'telegram.keyframe.final_easing',
+      message: 'Final keyframe should not contain easing handles.',
+      path: `${path}.k[${keys.length - 1}]`,
+    });
+  }
 };
 
-const readShapeBounds = (shape: Record<string, unknown>): Array<[number, number, number, number]> => {
+type Bounds = [number, number, number, number];
+
+const unionBounds = (bounds: Bounds[]): Bounds | null => {
+  if (bounds.length === 0) return null;
+  return bounds.reduce<Bounds>(
+    (acc, current) => [
+      Math.min(acc[0], current[0]),
+      Math.min(acc[1], current[1]),
+      Math.max(acc[2], current[2]),
+      Math.max(acc[3], current[3]),
+    ],
+    [Infinity, Infinity, -Infinity, -Infinity],
+  );
+};
+
+const readShapeBounds = (shape: Record<string, unknown>): Bounds[] => {
   const type = shape.ty;
   if (type === 'sh' && isRecord(shape.ks) && isRecord(shape.ks.k) && Array.isArray(shape.ks.k.v)) {
     const vertices = shape.ks.k.v.filter(Array.isArray) as unknown[][];
     const xs = vertices.map((point) => point[0]).filter((value): value is number => typeof value === 'number');
     const ys = vertices.map((point) => point[1]).filter((value): value is number => typeof value === 'number');
     if (xs.length > 0 && ys.length > 0) return [[Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]];
+  }
+  if (type === 'sh' && isRecord(shape.ks) && Array.isArray(shape.ks.k)) {
+    return shape.ks.k.flatMap((keyframe) => {
+      if (!isRecord(keyframe)) return [];
+      const paths = [
+        ...(Array.isArray(keyframe.s) ? keyframe.s : []),
+        ...(Array.isArray(keyframe.e) ? keyframe.e : []),
+      ];
+      return paths.flatMap((path) => {
+        if (!isRecord(path) || !Array.isArray(path.v)) return [];
+        const vertices = path.v.filter(Array.isArray) as unknown[][];
+        const xs = vertices.map((point) => point[0]).filter((value): value is number => typeof value === 'number');
+        const ys = vertices.map((point) => point[1]).filter((value): value is number => typeof value === 'number');
+        return xs.length > 0 && ys.length > 0
+          ? ([[Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]] as Bounds[])
+          : [];
+      });
+    });
   }
   if ((type === 'el' || type === 'rc') && isRecord(shape.p) && isRecord(shape.s)) {
     const center = asNumberArray(shape.p.k);
@@ -73,6 +152,120 @@ const readShapeBounds = (shape: Record<string, unknown>): Array<[number, number,
     }
   }
   return [];
+};
+
+const collectShapeBounds = (items: unknown): Bounds[] => {
+  if (!Array.isArray(items)) return [];
+  const bounds: Bounds[] = [];
+  for (const item of items) {
+    if (!isRecord(item)) continue;
+    bounds.push(...readShapeBounds(item), ...collectShapeBounds(item.it));
+  }
+  return bounds;
+};
+
+const numericTuple = (value: unknown, fallback: number[]): number[] => {
+  const numbers = asNumberArray(value);
+  return numbers && numbers.length > 0 ? numbers : fallback;
+};
+
+const animatedFrames = (prop: unknown): number[] => {
+  if (!isRecord(prop) || prop.a !== 1 || !Array.isArray(prop.k)) return [];
+  return prop.k
+    .filter(isRecord)
+    .map((key) => key.t)
+    .filter((value): value is number => typeof value === 'number');
+};
+
+const propertyValueAtFrame = (prop: unknown, fallback: number[], frame: number): number[] => {
+  if (!isRecord(prop)) return fallback;
+  if (prop.a !== 1 || !Array.isArray(prop.k)) return numericTuple(prop.k, fallback);
+
+  const keys = prop.k.filter(isRecord).filter((key) => typeof key.t === 'number');
+  if (keys.length === 0) return fallback;
+  if (frame <= (keys[0].t as number)) return numericTuple(keys[0].s, fallback);
+
+  for (let index = 0; index < keys.length - 1; index += 1) {
+    const current = keys[index];
+    const next = keys[index + 1];
+    const startFrame = current.t as number;
+    const endFrame = next.t as number;
+    if (frame < startFrame || frame > endFrame) continue;
+    const start = numericTuple(current.s, fallback);
+    const end = numericTuple(current.e ?? next.s, start);
+    if (frame === startFrame || endFrame === startFrame) return start;
+    const progress = (frame - startFrame) / (endFrame - startFrame);
+    return start.map((value, valueIndex) => value + ((end[valueIndex] ?? value) - value) * progress);
+  }
+
+  return numericTuple(keys[keys.length - 1].s, fallback);
+};
+
+const layerBoundsAtFrame = (bounds: Bounds, ks: Record<string, unknown>, frame: number): Bounds => {
+  const anchor = propertyValueAtFrame(ks.a, [0, 0, 0], frame);
+  const position = propertyValueAtFrame(ks.p, anchor, frame);
+  const scale = propertyValueAtFrame(ks.s, [100, 100, 100], frame);
+  const rotation = propertyValueAtFrame(ks.r, [0], frame)[0] ?? 0;
+  const radians = (rotation * Math.PI) / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  const sx = (scale[0] ?? 100) / 100;
+  const sy = (scale[1] ?? scale[0] ?? 100) / 100;
+
+  const corners = [
+    [bounds[0], bounds[1]],
+    [bounds[2], bounds[1]],
+    [bounds[2], bounds[3]],
+    [bounds[0], bounds[3]],
+  ].map(([x, y]) => {
+    const dx = (x - (anchor[0] ?? 0)) * sx;
+    const dy = (y - (anchor[1] ?? 0)) * sy;
+    return [position[0] + dx * cos - dy * sin, position[1] + dx * sin + dy * cos];
+  });
+
+  return [
+    Math.min(...corners.map(([x]) => x)),
+    Math.min(...corners.map(([, y]) => y)),
+    Math.max(...corners.map(([x]) => x)),
+    Math.max(...corners.map(([, y]) => y)),
+  ];
+};
+
+const inspectLayerAnimatedBounds = (
+  layerValue: Record<string, unknown>,
+  layerPath: string,
+  issues: TelegramStickerValidationIssue[],
+) => {
+  if (!isRecord(layerValue.ks)) return;
+  const staticBounds = unionBounds(collectShapeBounds(layerValue.shapes));
+  if (!staticBounds) return;
+  const frames = Array.from(
+    new Set([
+      0,
+      FRAME_COUNT,
+      ...animatedFrames(layerValue.ks.p),
+      ...animatedFrames(layerValue.ks.s),
+      ...animatedFrames(layerValue.ks.r),
+    ]),
+  ).sort((left, right) => left - right);
+
+  for (const frame of frames) {
+    const bounds = layerBoundsAtFrame(staticBounds, layerValue.ks, frame);
+    if (
+      bounds[0] < -CURVE_BOUNDS_MARGIN ||
+      bounds[1] < -CURVE_BOUNDS_MARGIN ||
+      bounds[2] > TELEGRAM_STICKER_SIZE + CURVE_BOUNDS_MARGIN ||
+      bounds[3] > TELEGRAM_STICKER_SIZE + CURVE_BOUNDS_MARGIN
+    ) {
+      issues.push({
+        severity: 'error',
+        code: 'telegram.bounds.out_of_canvas',
+        message: 'Animated sticker layer leaves the 512x512 canvas.',
+        path: `${layerPath}.frame[${frame}]`,
+      });
+      return;
+    }
+  }
 };
 
 const inspectShapes = (items: unknown, path: string, issues: TelegramStickerValidationIssue[]) => {
@@ -96,20 +289,11 @@ const inspectShapes = (items: unknown, path: string, issues: TelegramStickerVali
         path: shapePath,
       });
     }
-    for (const [x1, y1, x2, y2] of readShapeBounds(item)) {
-      if (
-        x1 < -CURVE_BOUNDS_MARGIN ||
-        y1 < -CURVE_BOUNDS_MARGIN ||
-        x2 > TELEGRAM_STICKER_SIZE + CURVE_BOUNDS_MARGIN ||
-        y2 > TELEGRAM_STICKER_SIZE + CURVE_BOUNDS_MARGIN
-      ) {
-        issues.push({
-          severity: 'warning',
-          code: 'telegram.bounds.loose_shape',
-          message: 'Shape geometry extends far outside the 512x512 sticker canvas.',
-          path: shapePath,
-        });
-      }
+    if (type === 'tr') {
+      inspectAnimatedLoop(item.p, `${shapePath}.p`, issues);
+      inspectAnimatedLoop(item.s, `${shapePath}.s`, issues);
+      inspectAnimatedLoop(item.r, `${shapePath}.r`, issues);
+      inspectAnimatedLoop(item.o, `${shapePath}.o`, issues);
     }
     if (Array.isArray(item.it)) inspectShapes(item.it, shapePath, issues);
   }
@@ -202,6 +386,7 @@ export function validateTelegramStickerLottie(lottie: LottieValue): TelegramStic
       inspectAnimatedLoop(layerValue.ks.o, `${layerPath}.ks.o`, issues);
     }
     inspectShapes(layerValue.shapes, layerPath, issues);
+    inspectLayerAnimatedBounds(layerValue, layerPath, issues);
   }
 
   return issues;

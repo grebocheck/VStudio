@@ -11,7 +11,12 @@ export const NeckAndShoulders: React.FC<{
     | 'druid-cloak'
     | 'sailor-fuku'
     | 'sweater'
-    | 'maid';
+    | 'maid'
+    | 'idol-stage'
+    | 'witch-robe'
+    | 'royal-knight'
+    | 'cyber-ninja'
+    | 'lolita-dress';
   color1: string;
   color2: string;
   angleZ: number;
@@ -397,6 +402,181 @@ export const NeckAndShoulders: React.FC<{
               {/* Tails */}
               <path d="M -3 3 L -9 18 L -3 15 L 0 4 Z" fill="#e11d48" />
               <path d="M 3 3 L 9 18 L 3 15 L 0 4 Z" fill="#e11d48" />
+            </g>
+          </g>
+        )}
+
+        {/* Sparkling Idol Stage Costume */}
+        {clothingStyle === 'idol-stage' && (
+          <g id="torso-idol">
+            {/* Base fabric — gradient from vibrant primary to accent */}
+            <path d="M125 275 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 275 Z" fill={color1} />
+            {/* Glittering ruffle layers */}
+            <path
+              d="M100 330 C130 320, 170 328, 200 318 C230 328, 270 320, 300 330 L310 345 C270 335, 230 343, 200 333 C170 343, 130 335, 90 345 Z"
+              fill={color2}
+              opacity="0.9"
+            />
+            <path
+              d="M85 365 C125 355, 170 363, 200 353 C230 363, 275 355, 315 365 L322 378 C275 370, 230 375, 200 368 C170 375, 125 370, 78 378 Z"
+              fill={color2}
+              opacity="0.85"
+            />
+            {/* Ribbon / bow neckline */}
+            <g transform="translate(200, 292) scale(1.2)">
+              <circle cx="0" cy="0" r="5" fill={color2} />
+              <path d="M 0 0 C -18 -10, -18 10, 0 0 Z" fill={color2} stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
+              <path d="M 0 0 C 18 -10, 18 10, 0 0 Z" fill={color2} stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
+              <path d="M -3 3 L -10 20 L -3 16 L 0 4 Z" fill={color2} />
+              <path d="M 3 3 L 10 20 L 3 16 L 0 4 Z" fill={color2} />
+            </g>
+            {/* Sparkle gems on the bodice */}
+            <circle cx="175" cy="310" r="2.5" fill="#ffffff" opacity="0.9" />
+            <circle cx="225" cy="310" r="2.5" fill="#ffffff" opacity="0.9" />
+            <circle cx="200" cy="305" r="3" fill="#ffffff" opacity="0.85" />
+            {/* Shoulder puff sleeves */}
+            <ellipse cx="118" cy="286" rx="18" ry="12" fill={color2} stroke={color1} strokeWidth="1.5" />
+            <ellipse cx="282" cy="286" rx="18" ry="12" fill={color2} stroke={color1} strokeWidth="1.5" />
+          </g>
+        )}
+
+        {/* Mystical Witch Robe */}
+        {clothingStyle === 'witch-robe' && (
+          <g id="torso-witch">
+            {/* Deep dark robe body */}
+            <path d="M125 275 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 275 Z" fill={color1} />
+            {/* Hood collar (pushed back) */}
+            <path d="M140 268 C155 245, 245 245, 260 268 C275 285, 125 285, 140 268 Z" fill={color1} />
+            <path d="M145 270 C158 252, 242 252, 255 270 C268 282, 132 282, 145 270 Z" fill="rgba(0,0,0,0.25)" />
+            {/* Mystical inner collar glow */}
+            <path d="M160 272 Q200 290, 240 272" stroke={color2} strokeWidth="2" fill="none" opacity="0.8" />
+            {/* Magical star/moon embroidery patterns */}
+            <path
+              d="M200 320 L203 328 L212 328 L205 333 L208 342 L200 337 L192 342 L195 333 L188 328 L197 328 Z"
+              fill={color2}
+              opacity="0.85"
+            />
+            <circle cx="165" cy="345" r="4" fill="none" stroke={color2} strokeWidth="1.5" opacity="0.6" />
+            <path d="M162 345 L168 345 M165 342 L165 348" stroke={color2} strokeWidth="1" opacity="0.5" />
+            <circle cx="235" cy="350" r="3.5" fill="none" stroke={color2} strokeWidth="1.5" opacity="0.6" />
+            {/* Flowing hem with magical particles */}
+            <path
+              d="M80 390 Q140 375, 200 385 Q260 375, 320 390"
+              stroke={color2}
+              strokeWidth="1.5"
+              fill="none"
+              opacity="0.5"
+              strokeDasharray="4 3"
+            />
+            {/* Belt / clasp */}
+            <rect x="180" y="290" width="40" height="8" rx="2" fill={color2} />
+            <circle cx="200" cy="294" r="4" fill={color1} stroke={color2} strokeWidth="1.5" />
+          </g>
+        )}
+
+        {/* Royal Knight option */}
+        {clothingStyle === 'royal-knight' && (
+          <g id="torso-royal-knight">
+            {/* Base tunic */}
+            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            {/* Metallic Pauldrons (Shoulder Armor) */}
+            <path d="M100 280 Q 70 300, 50 340 L 120 330 Z" fill={color2} stroke="rgba(0,0,0,0.3)" strokeWidth="2" />
+            <path d="M300 280 Q 330 300, 350 340 L 280 330 Z" fill={color2} stroke="rgba(0,0,0,0.3)" strokeWidth="2" />
+            <path d="M100 280 Q 70 300, 50 340 L 120 330 Z" fill="url(#anime-iris-overlay-l)" opacity="0.5" />
+            <path d="M300 280 Q 330 300, 350 340 L 280 330 Z" fill="url(#anime-iris-overlay-r)" opacity="0.5" />
+            {/* Chest Plate */}
+            <path
+              d="M150 280 L200 320 L250 280 L230 400 L170 400 Z"
+              fill="#e2e8f0"
+              stroke="rgba(0,0,0,0.2)"
+              strokeWidth="3"
+            />
+            <path d="M150 280 L200 320 L250 280 L230 400 L170 400 Z" fill="url(#anime-iris-overlay-l)" opacity="0.3" />
+            {/* Golden trim & accents */}
+            <path d="M165 280 L200 310 L235 280" stroke="#fbbf24" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M200 320 V400" stroke="#fbbf24" strokeWidth="4" />
+            <circle cx="200" cy="340" r="10" fill="#fbbf24" stroke="rgba(0,0,0,0.2)" strokeWidth="2" />
+            <circle cx="200" cy="340" r="4" fill="#ef4444" />
+            {/* Cape attached to shoulders */}
+            <path d="M 120 330 Q 80 400, 80 400 L 130 400 Z" fill="#991b1b" />
+            <path d="M 280 330 Q 320 400, 320 400 L 270 400 Z" fill="#991b1b" />
+          </g>
+        )}
+
+        {/* Cyber Ninja option */}
+        {clothingStyle === 'cyber-ninja' && (
+          <g id="torso-cyber-ninja">
+            {/* Stealth base suit */}
+            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill="#0f172a" />
+            {/* Tech harness straps */}
+            <path d="M 150 280 L 120 400" stroke="#334155" strokeWidth="12" />
+            <path d="M 250 280 L 280 400" stroke="#334155" strokeWidth="12" />
+            <path d="M 100 320 L 300 340" stroke="#334155" strokeWidth="10" />
+            {/* Glowing neon elements */}
+            <path d="M 150 280 L 120 400" stroke={color2} strokeWidth="3" opacity="0.8" />
+            <path d="M 250 280 L 280 400" stroke={color2} strokeWidth="3" opacity="0.8" />
+            <circle cx="206" cy="330" r="18" fill="#1e293b" stroke="#334155" strokeWidth="4" />
+            <path d="M 195 325 L 217 335 M 195 335 L 217 325" stroke={color2} strokeWidth="3" strokeLinecap="round" />
+            <circle cx="206" cy="330" r="12" fill="none" stroke={color2} strokeWidth="2" strokeDasharray="4 4" />
+            {/* Tactical high collar */}
+            <path
+              d="M 160 270 L 200 300 L 240 270 L 245 250 L 155 250 Z"
+              fill="#1e293b"
+              opacity="0.9"
+              stroke="rgba(0,0,0,0.5)"
+              strokeWidth="2"
+            />
+            {/* Asymmetric shoulder armor */}
+            <path d="M 125 280 L 70 310 L 90 350 L 135 320 Z" fill={color1} />
+            <path d="M 120 295 L 80 320" stroke={color2} strokeWidth="3" />
+          </g>
+        )}
+
+        {/* Lolita Dress option */}
+        {clothingStyle === 'lolita-dress' && (
+          <g id="torso-lolita">
+            {/* Puffy dress base */}
+            <path d="M125 280 C 105 320, 20 350, 0 400 L400 400 C 380 350, 295 320, 275 280 Z" fill={color1} />
+
+            {/* Lace Peter Pan Collar */}
+            <path
+              d="M 160 270 Q 180 310, 200 290 Q 220 310, 240 270"
+              fill="#ffffff"
+              stroke="rgba(0,0,0,0.1)"
+              strokeWidth="2"
+            />
+            <path
+              d="M 160 270 Q 180 310, 200 290 Q 220 310, 240 270"
+              fill="none"
+              stroke={color2}
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+            />
+
+            {/* Ruffled Shoulder Puffs */}
+            <path d="M 130 280 C 100 260, 60 290, 80 340 C 110 330, 130 310, 140 290 Z" fill={color1} />
+            <path d="M 270 280 C 300 260, 340 290, 320 340 C 290 330, 270 310, 260 290 Z" fill={color1} />
+            {/* Shoulder puff highlights */}
+            <path d="M 110 285 Q 90 300, 95 325" stroke="rgba(255,255,255,0.4)" strokeWidth="3" fill="none" />
+            <path d="M 290 285 Q 310 300, 305 325" stroke="rgba(255,255,255,0.4)" strokeWidth="3" fill="none" />
+
+            {/* Center Corset Bodice */}
+            <path d="M 175 290 L 165 400 L 235 400 L 225 290 Z" fill="rgba(0,0,0,0.2)" />
+            {/* Criss-cross ribbons on bodice */}
+            <path
+              d="M 172 310 L 228 330 M 228 310 L 172 330 M 170 350 L 230 370 M 230 350 L 170 370"
+              stroke={color2}
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+
+            {/* Big center ribbon */}
+            <g transform="translate(200, 300)">
+              <path d="M 0 0 C -20 -15, -40 5, 0 10 Z" fill={color2} />
+              <path d="M 0 0 C 20 -15, 40 5, 0 10 Z" fill={color2} />
+              <circle cx="0" cy="5" r="6" fill="#ffffff" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
+              <path d="M -5 8 L -15 35 L -5 32 L 0 10 Z" fill={color2} opacity="0.9" />
+              <path d="M 5 8 L 15 35 L 5 32 L 0 10 Z" fill={color2} opacity="0.9" />
             </g>
           </g>
         )}

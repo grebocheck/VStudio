@@ -60,6 +60,8 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
     clothingPrint = 'none',
     activeEmotion = 'none',
     artStyle = 'classic',
+    faceShape = 'default',
+    eyeShape = 'default',
   } = config;
 
   const {
@@ -150,6 +152,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               blushColor={blushColor}
               earStyle={earStyle}
               artStyle={artStyle}
+              faceShape={faceShape}
             />
             <FaceFlushOverlay emotion={effectiveEmotion} />
           </g>
@@ -220,6 +223,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               pupilY={pupilY}
               artStyle={artStyle}
               activeEmotion={effectiveEmotion}
+              eyeShape={eyeShape}
             />
             <EyeSVG
               eyeColor={eyeColor}
@@ -231,6 +235,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               pupilY={pupilY}
               artStyle={artStyle}
               activeEmotion={effectiveEmotion}
+              eyeShape={eyeShape}
             />
             <Live2DMouth
               openAmount={mouthOpen}
@@ -247,6 +252,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               transform: frame.accessoryTransform,
               transformOrigin: '200px 140px',
             }}
+            filter="url(#drop-shadow)"
           >
             <AccessoryComponent
               style={accessoryStyle}

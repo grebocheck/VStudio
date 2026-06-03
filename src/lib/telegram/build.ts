@@ -45,6 +45,7 @@ export function buildTelegramStickerLottie(config: AvatarConfig, spec: TelegramS
   const layers = backToFront.reverse().map((item, index) => ({ ...item, ind: index + 1 }));
 
   return {
+    tgs: 1,
     v: '5.7.4',
     fr: TELEGRAM_STICKER_FPS,
     ip: 0,

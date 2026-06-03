@@ -1,5 +1,5 @@
 import { timing } from './core';
-import type { ScaleKey, TelegramStickerSlug, TelegramEmotionAnimationPreset } from './core';
+import type { ScaleKey, StickerLayerMotion, TelegramStickerSlug, TelegramEmotionAnimationPreset } from './core';
 
 const heartBeat: ScaleKey[] = [
   [0, 100],
@@ -12,34 +12,118 @@ const heartBeat: ScaleKey[] = [
   [180, 100],
 ];
 
+const bodyBounce: StickerLayerMotion = {
+  anchor: [200, 344],
+  position: [
+    [0, 0, 0],
+    [16, 0, -6],
+    [30, 0, -2],
+    [62, 0, -4],
+    [90, 0, 0],
+    [116, 0, -6],
+    [132, 0, -2],
+    [180, 0, 0],
+  ],
+  scale: [
+    [0, 98, 98],
+    [16, 99, 96],
+    [30, 97, 98],
+    [62, 98, 97],
+    [90, 98, 98],
+    [116, 99, 96],
+    [132, 97, 98],
+    [180, 98, 98],
+  ],
+};
+
+const bodyFloat: StickerLayerMotion = {
+  anchor: [200, 344],
+  position: [
+    [0, 0, 0],
+    [42, 0, -4],
+    [90, 0, -1],
+    [136, 0, -4],
+    [180, 0, 0],
+  ],
+  scale: [
+    [0, 98, 98],
+    [42, 99, 97],
+    [90, 98, 98],
+    [136, 99, 97],
+    [180, 98, 98],
+  ],
+};
+
+const bodyPop: StickerLayerMotion = {
+  anchor: [200, 344],
+  position: [
+    [0, 0, 0],
+    [10, 0, -2],
+    [24, 0, -8],
+    [44, 0, -3],
+    [90, 0, -4],
+    [130, 0, -2],
+    [180, 0, 0],
+  ],
+  scale: [
+    [0, 98, 98],
+    [10, 96, 98],
+    [24, 99, 95],
+    [44, 98, 98],
+    [180, 98, 98],
+  ],
+};
+
+const bodyTense: StickerLayerMotion = {
+  anchor: [200, 344],
+  position: [
+    [0, 0, 0],
+    [18, 0, -2],
+    [34, 0, -1],
+    [50, 0, -2],
+    [66, 0, -1],
+    [100, 0, 0],
+    [128, 0, -2],
+    [146, 0, -1],
+    [180, 0, 0],
+  ],
+  scale: [
+    [0, 98, 98],
+    [34, 99, 97],
+    [66, 98, 98],
+    [128, 99, 97],
+    [180, 98, 98],
+  ],
+};
+
+const bodySlump: StickerLayerMotion = {
+  anchor: [200, 344],
+  position: [
+    [0, 0, 0],
+    [20, 0, -4],
+    [46, 0, -2],
+    [84, 0, 0],
+    [124, 0, -4],
+    [154, 0, -2],
+    [180, 0, 0],
+  ],
+  scale: [
+    [0, 98, 98],
+    [20, 97, 98],
+    [46, 98, 97],
+    [84, 98, 98],
+    [124, 97, 98],
+    [154, 98, 97],
+    [180, 98, 98],
+  ],
+};
+
 export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, TelegramEmotionAnimationPreset> = {
   happy: {
     slug: 'happy',
     label: 'Double bounce with smile pulse and soft hair follow-through',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [16, 0, -7],
-        [30, 0, 2],
-        [62, 0, -3],
-        [90, 0, 0],
-        [116, 0, -7],
-        [132, 0, 2],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100, 100],
-        [16, 104, 96],
-        [30, 98, 103],
-        [62, 101, 99],
-        [90, 100, 100],
-        [116, 104, 96],
-        [132, 98, 103],
-        [180, 100, 100],
-      ],
-    },
+    body: bodyBounce,
     hair: {
       anchor: [200, 170],
       position: [
@@ -162,24 +246,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'love',
     label: 'Heart pupil pulse with floating hearts and warm cheek glow',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [32, 0, -3],
-        [62, 0, 1],
-        [120, 0, -4],
-        [150, 0, 1],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100],
-        [32, 102, 98],
-        [62, 100],
-        [120, 103, 98],
-        [180, 100],
-      ],
-    },
+    body: bodyFloat,
     hair: {
       anchor: [200, 170],
       position: [
@@ -275,24 +342,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'starry',
     label: 'Twinkling stars with bright pupil pops and lifted anticipation',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [30, 0, -4],
-        [52, 0, 1],
-        [120, 0, -4],
-        [150, 0, 1],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100],
-        [30, 102, 98],
-        [52, 100],
-        [120, 102, 98],
-        [180, 100],
-      ],
-    },
+    body: bodyFloat,
     hair: {
       anchor: [200, 170],
       position: [
@@ -399,16 +449,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'smug',
     label: 'Asymmetric eyebrow/mouth attitude with a lazy side sway',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [48, 4, -2],
-        [92, 5, 0],
-        [140, -3, -2],
-        [180, 0, 0],
-      ],
-    },
+    body: bodyFloat,
     hair: {
       anchor: [200, 170],
       position: [
@@ -518,25 +559,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'shocked',
     label: 'Fast pop, recoil, and bouncing alert mark',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [10, 0, 8],
-        [24, 0, -8],
-        [44, 0, 2],
-        [90, 0, -2],
-        [130, 0, 2],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100],
-        [10, 96, 105],
-        [24, 105, 95],
-        [44, 100],
-        [180, 100],
-      ],
-    },
+    body: bodyPop,
     hair: {
       anchor: [200, 170],
       position: [
@@ -655,27 +678,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'angry',
     label: 'Head shake, brow slam, and rage-mark pulse',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [18, -4, 1],
-        [34, 4, -1],
-        [50, -5, 1],
-        [66, 5, -1],
-        [100, 0, 0],
-        [128, -4, 1],
-        [146, 4, -1],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100],
-        [34, 101, 99],
-        [66, 100],
-        [128, 101, 99],
-        [180, 100],
-      ],
-    },
+    body: bodyTense,
     hair: {
       anchor: [200, 170],
       position: [
@@ -824,26 +827,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'cry',
     label: 'Shoulder sob, trembling mouth, and falling tear loops',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [24, 0, 5],
-        [46, 0, -1],
-        [86, 0, 4],
-        [122, 0, -1],
-        [150, 0, 5],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100],
-        [24, 97, 105],
-        [46, 100],
-        [86, 98, 104],
-        [150, 97, 105],
-        [180, 100],
-      ],
-    },
+    body: bodySlump,
     hair: {
       anchor: [200, 170],
       position: [
@@ -977,17 +961,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'cool',
     label: 'Laid-back groove with shades glint and rising music notes',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [36, -5, -2],
-        [72, 0, 1],
-        [116, 5, -2],
-        [144, 0, 1],
-        [180, 0, 0],
-      ],
-    },
+    body: bodyFloat,
     hair: {
       anchor: [200, 170],
       position: [
@@ -1096,26 +1070,7 @@ export const TELEGRAM_EMOTION_ANIMATION_PRESETS: Record<TelegramStickerSlug, Tel
     slug: 'dizzy',
     label: 'Wobble cycle with rotating spiral and unstable body drift',
     timing,
-    body: {
-      anchor: [200, 344],
-      position: [
-        [0, 0, 0],
-        [28, -8, 2],
-        [56, 7, -2],
-        [90, 0, 3],
-        [126, -7, -2],
-        [154, 8, 2],
-        [180, 0, 0],
-      ],
-      scale: [
-        [0, 100],
-        [28, 99, 103],
-        [56, 102, 98],
-        [90, 98, 104],
-        [126, 102, 98],
-        [180, 100],
-      ],
-    },
+    body: bodyTense,
     hair: {
       anchor: [200, 170],
       position: [

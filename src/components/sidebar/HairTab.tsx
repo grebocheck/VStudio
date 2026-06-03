@@ -62,6 +62,8 @@ export const HairTab: React.FC<HairTabProps> = ({ config, setConfig }) => {
             <option value="spiky">{t.rightSidebar.bangsOptions.spiky}</option>
             <option value="curly-bangs">{isEn ? 'Curly Bangs' : 'Кучерява чілка (завитушки)'}</option>
             <option value="cross-bangs">{isEn ? 'Cross Strands (Anime)' : 'Хрестоподібна чілка (аніме)'}</option>
+            <option value="wolf-cut">{isEn ? 'Layered Wolf Cut' : 'Вовчий стрижка (шари)'}</option>
+            <option value="curtain-bangs">{isEn ? 'Curtain Bangs' : 'Штори-чубчик'}</option>
           </select>
         </div>
 
@@ -88,6 +90,8 @@ export const HairTab: React.FC<HairTabProps> = ({ config, setConfig }) => {
             <option value="short">{t.rightSidebar.backOptions.short}</option>
             <option value="braids">{t.rightSidebar.backOptions.braids}</option>
             <option value="hime-long">{t.rightSidebar.backOptions.himeLong}</option>
+            <option value="ponytail">{isEn ? 'High Ponytail' : 'Високий хвіст'}</option>
+            <option value="bun">{isEn ? 'Elegant Bun' : 'Елегантний пучок'}</option>
           </select>
         </div>
 

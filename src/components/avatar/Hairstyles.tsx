@@ -1,8 +1,28 @@
 import React from 'react';
 
 export const HairComponent: React.FC<{
-  bangStyle: 'classic' | 'side' | 'center-part' | 'short' | 'hime' | 'spiky' | 'curly-bangs' | 'cross-bangs';
-  backStyle: 'straight' | 'tails' | 'short' | 'curly' | 'braids' | 'hime-long' | 'drill-tails' | 'wavy';
+  bangStyle:
+    | 'classic'
+    | 'side'
+    | 'center-part'
+    | 'short'
+    | 'hime'
+    | 'spiky'
+    | 'curly-bangs'
+    | 'cross-bangs'
+    | 'wolf-cut'
+    | 'curtain-bangs';
+  backStyle:
+    | 'straight'
+    | 'tails'
+    | 'short'
+    | 'curly'
+    | 'braids'
+    | 'hime-long'
+    | 'drill-tails'
+    | 'wavy'
+    | 'ponytail'
+    | 'bun';
   color: string;
   highlightColor: string;
   angleY: number;
@@ -243,12 +263,85 @@ export const HairComponent: React.FC<{
           )}
         </g>
       )}
+
+      {backStyle === 'ponytail' && (
+        <g
+          id="hair-ponytail"
+          style={{
+            transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${hairSwayX * 0.18}deg)`,
+            transformOrigin: '200px 100px',
+          }}
+        >
+          {/* Base volume behind head */}
+          <path d="M105 130 C100 155, 95 190, 110 210 Q200 220, 290 210 C305 190, 300 155, 295 130 Z" fill={color} />
+          {/* Ponytail flowing down from tie point */}
+          <path
+            d={`M195 115 C180 115, 205 95, 210 90 C225 85, 260 100, 265 120
+               C270 145, 260 200, 255 260
+               C252 290, 245 320, 240 345
+               C235 355, 225 350, 228 330
+               C232 300, 238 250, 240 200
+               C242 170, 235 140, 225 120
+               C215 105, 195 115, 195 115 Z`}
+            fill={color}
+          />
+          {isAnime && (
+            <>
+              <path d="M230 140 Q245 190, 242 260" stroke="rgba(0,0,0,0.08)" strokeWidth="3" fill="none" />
+              <path d="M220 130 Q240 180, 238 250" stroke="rgba(0,0,0,0.05)" strokeWidth="2.5" fill="none" />
+            </>
+          )}
+          {/* Hair tie / ribbon */}
+          <circle cx="215" cy="105" r="8" fill={highlightColor} />
+          <circle cx="215" cy="105" r="5" fill={color} />
+        </g>
+      )}
+
+      {backStyle === 'bun' && (
+        <g id="hair-bun">
+          {/* Base volume */}
+          <path d="M110 130 C100 160, 95 195, 110 215 Q200 225, 290 215 C305 195, 300 160, 290 130 Z" fill={color} />
+          {/* Round bun on top of head */}
+          <circle cx="200" cy="78" r="32" fill={color} />
+          {isAnime && (
+            <>
+              <circle cx="200" cy="78" r="28" fill="rgba(0,0,0,0.1)" />
+              <path
+                d="M182 62 Q200 52, 218 62"
+                stroke={highlightColor}
+                strokeWidth="3"
+                fill="none"
+                opacity="0.7"
+                strokeLinecap="round"
+              />
+            </>
+          )}
+          {/* Decorative hair sticks / pins */}
+          <line x1="185" y1="50" x2="175" y2="35" stroke={highlightColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="175" cy="33" r="4" fill={highlightColor} />
+          <line x1="215" y1="50" x2="225" y2="35" stroke={highlightColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="225" cy="33" r="4" fill={highlightColor} />
+          {/* Loose wisps */}
+          <path d="M130 140 Q120 170, 125 200" stroke={color} strokeWidth="3" fill="none" opacity="0.7" />
+          <path d="M270 140 Q280 170, 275 200" stroke={color} strokeWidth="3" fill="none" opacity="0.7" />
+        </g>
+      )}
     </>
   );
 };
 
 export const FrontHairComponent: React.FC<{
-  bangStyle: 'classic' | 'side' | 'center-part' | 'short' | 'hime' | 'spiky' | 'curly-bangs' | 'cross-bangs';
+  bangStyle:
+    | 'classic'
+    | 'side'
+    | 'center-part'
+    | 'short'
+    | 'hime'
+    | 'spiky'
+    | 'curly-bangs'
+    | 'cross-bangs'
+    | 'wolf-cut'
+    | 'curtain-bangs';
   color: string;
   highlightColor: string;
   angleY: number;
@@ -276,6 +369,35 @@ export const FrontHairComponent: React.FC<{
            Q200 165, 102 140 Z"
         fill={color}
       />
+
+      {isAnime && (
+        <g id="anime-hair-texture">
+          {/* Hair strand lines for texture */}
+          <path d="M 120 70 Q 150 140 140 160" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+          <path d="M 150 60 Q 180 140 170 165" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+          <path d="M 280 70 Q 250 140 260 160" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+          <path d="M 250 60 Q 220 140 230 165" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+
+          {/* Angel Ring / Halo highlight */}
+          <path
+            d="M 120 110 C 150 80, 250 80, 280 110"
+            stroke="rgba(255,255,255,0.4)"
+            strokeWidth="12"
+            fill="none"
+            strokeLinecap="round"
+            filter="blur(2px)"
+          />
+          {/* Sharp core of the Angel Ring */}
+          <path
+            d="M 130 108 C 160 82, 240 82, 270 108"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray="40 10 15 5 20 15"
+          />
+        </g>
+      )}
 
       {/* Bangs selection patterns */}
       {bangStyle === 'classic' && (
@@ -414,6 +536,66 @@ export const FrontHairComponent: React.FC<{
           />
           <path d="M106 130 Q88 170, 115 225 L125 195 Q106 160, 118 135 Z" fill={color} />
           <path d="M294 130 Q312 170, 285 225 L275 195 Q294 160, 282 135 Z" fill={color} />
+        </g>
+      )}
+
+      {bangStyle === 'wolf-cut' && (
+        <g id="bangs-wolf-cut">
+          {/* Layered choppy bangs with jagged edges */}
+          <path
+            d="M106 130
+               L118 170 L128 155
+               L140 175 L150 158
+               L165 180 L172 160
+               L185 178 L195 148 L205 178
+               L228 160 L235 180
+               L250 158 L260 175
+               L272 155 L282 170
+               L294 130 Z"
+            fill={color}
+          />
+          {/* Side face-framing layers (longer pieces) */}
+          <path d="M106 130 Q88 175, 100 240 L112 215 Q98 170, 118 135 Z" fill={color} />
+          <path d="M294 130 Q312 175, 300 240 L288 215 Q302 170, 282 135 Z" fill={color} />
+          {/* Secondary choppy texture layer */}
+          <path d="M115 155 L128 175 L135 162" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+          <path d="M265 155 L272 175 L280 162" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
+        </g>
+      )}
+
+      {bangStyle === 'curtain-bangs' && (
+        <g id="bangs-curtain">
+          {/* Soft curtain bangs parted in the center, flowing to the sides */}
+          <path
+            d="M106 130
+               C118 145, 135 158, 155 172
+               C170 180, 185 168, 195 155
+               C198 150, 200 148, 200 148
+               C200 148, 202 150, 205 155
+               C215 168, 230 180, 245 172
+               C265 158, 282 145, 294 130 Z"
+            fill={color}
+          />
+          {/* Side face-framing curtains */}
+          <path d="M106 130 C95 165, 100 210, 112 245 L122 220 Q108 175, 120 135 Z" fill={color} />
+          <path d="M294 130 C305 165, 300 210, 288 245 L278 220 Q292 175, 280 135 Z" fill={color} />
+          {/* Soft highlight curves */}
+          <path
+            d="M140 145 Q165 165, 190 155"
+            stroke={highlightColor}
+            strokeWidth="2"
+            fill="none"
+            opacity="0.45"
+            strokeLinecap="round"
+          />
+          <path
+            d="M260 145 Q235 165, 210 155"
+            stroke={highlightColor}
+            strokeWidth="2"
+            fill="none"
+            opacity="0.45"
+            strokeLinecap="round"
+          />
         </g>
       )}
 

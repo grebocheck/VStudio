@@ -6,7 +6,30 @@ export const HeadBase: React.FC<{
   blushColor: string;
   earStyle: 'normal' | 'elf' | 'pointy';
   artStyle?: 'classic' | 'anime' | 'retro';
-}> = ({ skinColor, blushOpacity, blushColor, earStyle, artStyle = 'classic' }) => {
+  faceShape?: 'default' | 'sharp' | 'round' | 'chubby' | 'mature';
+}> = ({ skinColor, blushOpacity, blushColor, earStyle, artStyle = 'classic', faceShape = 'default' }) => {
+  // Define variations of the anime face shape
+  const getAnimeFacePath = () => {
+    switch (faceShape) {
+      case 'sharp':
+        // V-shaped jaw, standard shonen/shojo
+        return 'M 136 130 C 120 160, 126 195, 142 215 C 160 235, 185 255, 200 258 C 215 255, 240 235, 258 215 C 274 195, 280 160, 264 130 C 255 110, 145 110, 136 130 Z';
+      case 'round':
+        // Softer moe cheeks
+        return 'M 130 130 C 105 165, 115 205, 140 225 C 160 240, 180 248, 200 248 C 220 248, 240 240, 260 225 C 285 205, 295 165, 270 130 C 255 110, 145 110, 130 130 Z';
+      case 'chubby':
+        // Wider, fuller cheeks
+        return 'M 125 130 C 95 170, 110 215, 140 230 C 165 245, 180 250, 200 250 C 220 250, 235 245, 260 230 C 290 215, 305 170, 275 130 C 260 110, 140 110, 125 130 Z';
+      case 'mature':
+        // Longer face, prominent cheekbones
+        return 'M 138 130 C 120 165, 130 205, 145 225 C 160 245, 185 260, 200 262 C 215 260, 240 245, 255 225 C 270 205, 280 165, 262 130 C 255 110, 145 110, 138 130 Z';
+      case 'default':
+      default:
+        // Original standard anime face
+        return 'M 134 130 C 114 158, 120 195, 138 214 C 152 228, 180 244, 200 248 C 220 244, 248 228, 262 214 C 280 195, 286 158, 266 130 C 255 110, 145 110, 134 130 Z';
+    }
+  };
+
   return (
     <g id="head-base">
       {/* Elf / Pointy ears matching skin tone */}
@@ -52,38 +75,34 @@ export const HeadBase: React.FC<{
 
       {/* High-quality stylized anime head shape */}
       {artStyle === 'retro' ? (
-        <path
-          d="M 125 140 
-             C 105 165, 105 210, 135 234 
-             C 155 246, 245 246, 265 234 
-             C 295 210, 295 165, 275 140 
-             C 260 115, 140 115, 125 140 Z"
-          fill={skinColor}
-          stroke="#1c1917"
-          strokeWidth="3.5"
-        />
+        <g>
+          <path
+            d="M 125 140 C 105 165, 105 210, 135 234 C 155 246, 245 246, 265 234 C 295 210, 295 165, 275 140 C 260 115, 140 115, 125 140 Z"
+            fill={skinColor}
+            stroke="#1c1917"
+            strokeWidth="3.5"
+          />
+          <path
+            d="M 125 140 C 105 165, 105 210, 135 234 C 155 246, 245 246, 265 234 C 295 210, 295 165, 275 140 C 260 115, 140 115, 125 140 Z"
+            fill="url(#face-shading)"
+          />
+        </g>
       ) : artStyle === 'anime' ? (
-        <path
-          d="M 134 130 
-             C 114 158, 120 195, 138 214 
-             C 152 228, 180 244, 200 248 
-             C 220 244, 248 228, 262 214 
-             C 280 195, 286 158, 266 130 
-             C 255 110, 145 110, 134 130 Z"
-          fill={skinColor}
-          stroke="rgba(0,0,0,0.22)"
-          strokeWidth="1.5"
-        />
+        <g>
+          <path d={getAnimeFacePath()} fill={skinColor} stroke="rgba(0,0,0,0.22)" strokeWidth="1.5" />
+          <path d={getAnimeFacePath()} fill="url(#face-shading)" />
+        </g>
       ) : (
-        <path
-          d="M135 130 
-             C110 160, 110 200, 130 215 
-             C145 225, 175 240, 200 240 
-             C225 240, 255 225, 270 215 
-             C290 200, 290 160, 265 130 
-             C255 110, 145 110, 135 130 Z"
-          fill={skinColor}
-        />
+        <g>
+          <path
+            d="M135 130 C110 160, 110 200, 130 215 C145 225, 175 240, 200 240 C225 240, 255 225, 270 215 C290 200, 290 160, 265 130 C255 110, 145 110, 135 130 Z"
+            fill={skinColor}
+          />
+          <path
+            d="M135 130 C110 160, 110 200, 130 215 C145 225, 175 240, 200 240 C225 240, 255 225, 270 215 C290 200, 290 160, 265 130 C255 110, 145 110, 135 130 Z"
+            fill="url(#face-shading)"
+          />
+        </g>
       )}
 
       {/* Dynamic cheek blush & slash layers */}
@@ -108,8 +127,9 @@ export const HeadBase: React.FC<{
             </>
           ) : (
             <>
-              <ellipse cx="148" cy="195" rx="14" ry="7" fill={blushColor} opacity={blushOpacity} />
-              <ellipse cx="252" cy="195" rx="14" ry="7" fill={blushColor} opacity={blushOpacity} />
+              {/* Soft volumetric blush */}
+              <circle cx="148" cy="195" r="22" fill="url(#soft-blush)" color={blushColor} opacity={blushOpacity} />
+              <circle cx="252" cy="195" r="22" fill="url(#soft-blush)" color={blushColor} opacity={blushOpacity} />
             </>
           )}
         </>
@@ -122,7 +142,13 @@ export const HeadBase: React.FC<{
           <ellipse cx="198" cy="188" rx="3" ry="2" fill="#ffffff" opacity="0.8" />
         </g>
       ) : artStyle === 'anime' ? (
-        <path d="M199 184 L201 190" stroke="rgba(0,0,0,0.35)" strokeWidth="1" fill="none" strokeLinecap="round" />
+        <g id="anime-nose">
+          {/* Nose shadow for depth */}
+          <path d="M199 186 L201 190" stroke="rgba(0,0,0,0.15)" strokeWidth="3" fill="none" strokeLinecap="round" />
+          {/* Crisp highlight tip */}
+          <path d="M199 184 L201 190" stroke="rgba(0,0,0,0.4)" strokeWidth="1" fill="none" strokeLinecap="round" />
+          <circle cx="198" cy="187" r="1" fill="#ffffff" opacity="0.6" />
+        </g>
       ) : (
         <path
           d="M198 185 L200 193 L196 195"

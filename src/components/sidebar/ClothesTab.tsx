@@ -47,6 +47,11 @@ export const ClothesTab: React.FC<ClothesTabProps> = ({ config, setConfig }) => 
             <option value="sailor-fuku">{isEn ? 'High School Sailor Suit' : 'Матроска (Sailor Uniform)'}</option>
             <option value="sweater">{isEn ? 'Cozy Winter Sweater' : "Теплий в'язаний светр"}</option>
             <option value="maid">{isEn ? 'Graceful Maid Dress' : 'Костюм покоївки (Maid Dress)'}</option>
+            <option value="idol-stage">{isEn ? 'Sparkling Idol Stage' : 'Блискучий Айдол (Idol Stage)'}</option>
+            <option value="witch-robe">{isEn ? 'Mystical Witch Robe' : 'Містичний Плащ Відьми'}</option>
+            <option value="royal-knight">{isEn ? 'Royal Knight Armor' : 'Броня Лицаря (Royal Knight)'}</option>
+            <option value="cyber-ninja">{isEn ? 'Cyber Ninja Stealth' : 'Кібер-Ніндзя (Cyber Ninja)'}</option>
+            <option value="lolita-dress">{isEn ? 'Gothic Lolita Dress' : 'Сукня Лоліти (Lolita Dress)'}</option>
           </select>
         </div>
 
@@ -92,6 +97,9 @@ export const ClothesTab: React.FC<ClothesTabProps> = ({ config, setConfig }) => 
             <option value="neko-ears">{t.rightSidebar.decorOptions.neko}</option>
             <option value="angel-halo">{t.rightSidebar.decorOptions.angelHalo}</option>
             <option value="fox-mask">{t.rightSidebar.decorOptions.foxMask}</option>
+            <option value="witch-hat">{isEn ? 'Witch Hat 🧙' : 'Капелюх Відьми 🧙'}</option>
+            <option value="crown">{isEn ? 'Royal Crown 👑' : 'Корона / Тіара 👑'}</option>
+            <option value="bunny-ears">{isEn ? 'Bunny Ears 🐰' : 'Кролячі Вушка 🐰'}</option>
           </select>
         </div>
 

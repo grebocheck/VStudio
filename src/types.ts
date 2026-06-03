@@ -45,12 +45,32 @@ export interface NamedCameraCalibrationProfile {
 export interface AvatarConfig {
   skinColor: string;
   eyeColor: string;
-  pupilStyle: 'round' | 'star' | 'heart' | 'slit';
+  pupilStyle: 'round' | 'star' | 'heart' | 'slit' | 'diamond' | 'cross' | 'flower';
   pupilColor: string;
-  eyebrowStyle: 'normal' | 'thick' | 'thin' | 'sad';
+  eyebrowStyle: 'normal' | 'thick' | 'thin' | 'sad' | 'none';
   eyebrowColor: string;
-  hairStyleBang: 'classic' | 'side' | 'center-part' | 'short' | 'hime' | 'spiky' | 'curly-bangs' | 'cross-bangs';
-  hairStyleBack: 'straight' | 'tails' | 'short' | 'curly' | 'braids' | 'hime-long' | 'drill-tails' | 'wavy';
+  hairStyleBang:
+    | 'classic'
+    | 'side'
+    | 'center-part'
+    | 'short'
+    | 'hime'
+    | 'spiky'
+    | 'curly-bangs'
+    | 'cross-bangs'
+    | 'wolf-cut'
+    | 'curtain-bangs';
+  hairStyleBack:
+    | 'straight'
+    | 'tails'
+    | 'short'
+    | 'curly'
+    | 'braids'
+    | 'hime-long'
+    | 'drill-tails'
+    | 'wavy'
+    | 'ponytail'
+    | 'bun';
   hairColor: string;
   hairHighlightColor: string;
   clothingStyle:
@@ -62,10 +82,25 @@ export interface AvatarConfig {
     | 'druid-cloak'
     | 'sailor-fuku'
     | 'sweater'
-    | 'maid';
+    | 'maid'
+    | 'idol-stage'
+    | 'witch-robe'
+    | 'royal-knight'
+    | 'cyber-ninja'
+    | 'lolita-dress';
   clothingColor1: string;
   clothingColor2: string;
-  accessoryStyle: 'none' | 'headphones' | 'horns' | 'glasses' | 'neko-ears' | 'angel-halo' | 'fox-mask';
+  accessoryStyle:
+    | 'none'
+    | 'headphones'
+    | 'horns'
+    | 'glasses'
+    | 'neko-ears'
+    | 'angel-halo'
+    | 'fox-mask'
+    | 'witch-hat'
+    | 'crown'
+    | 'bunny-ears';
   accessoryColor: string;
   backgroundStyle: 'gaming' | 'nebula' | 'green-screen' | 'dark-studio';
   name: string;
@@ -86,6 +121,8 @@ export interface AvatarConfig {
   clothingPrint?: 'none' | 'cat' | 'star' | 'heart' | 'cyber' | 'cross';
   activeEmotion?: Emotion;
   artStyle?: 'classic' | 'anime' | 'retro';
+  faceShape?: 'default' | 'sharp' | 'round' | 'chubby' | 'mature';
+  eyeShape?: 'default' | 'almond' | 'droopy' | 'sharp' | 'cat-eye';
 }
 
 export interface RigParams {

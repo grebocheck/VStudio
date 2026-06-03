@@ -2,12 +2,13 @@ import React from 'react';
 import { Emotion } from '../../types';
 
 export const EyebrowSVG: React.FC<{
-  style: 'normal' | 'thick' | 'thin' | 'sad';
+  style: 'normal' | 'thick' | 'thin' | 'sad' | 'none';
   color: string;
   isLeft: boolean;
   eyebrowY: number;
   artStyle?: 'classic' | 'anime' | 'retro';
 }> = ({ style, color, isLeft, eyebrowY, artStyle = 'classic' }) => {
+  if (style === 'none') return null;
   const transform = isLeft ? `translate(0, ${eyebrowY})` : `scale(-1, 1) translate(-400, ${eyebrowY})`;
 
   const isAnime = artStyle === 'anime';
@@ -50,7 +51,7 @@ export const EyebrowSVG: React.FC<{
 
 export const EyeSVG: React.FC<{
   eyeColor: string;
-  pupilStyle: 'round' | 'star' | 'heart' | 'slit';
+  pupilStyle: 'round' | 'star' | 'heart' | 'slit' | 'diamond' | 'cross' | 'flower' | 'none';
   pupilColor: string;
   isLeft: boolean;
   pupilX: number;
@@ -58,6 +59,7 @@ export const EyeSVG: React.FC<{
   blink: number; // 0 (fully closed) to 1 (fully open)
   artStyle?: 'classic' | 'anime' | 'retro';
   activeEmotion?: Emotion;
+  eyeShape?: 'default' | 'almond' | 'droopy' | 'sharp' | 'cat-eye';
 }> = ({
   eyeColor,
   pupilStyle,
@@ -68,6 +70,7 @@ export const EyeSVG: React.FC<{
   blink,
   artStyle = 'classic',
   activeEmotion = 'none',
+  eyeShape = 'default',
 }) => {
   // Center coordinates: Symmetrical local coordinates where both eyes are defined at 156.
   // The right eye utilizes scale(-1, 1) translate(-400, 0) to align itself perfectly at 244.
@@ -224,8 +227,8 @@ export const EyeSVG: React.FC<{
             strokeLinecap="round"
           />
 
-          {/* Sclera / Eyeball White: slightly larger/wider to represent wide-eyed shock */}
-          <ellipse cx={cx} cy={cy - 4} rx={23} ry={17.5} fill="#ffffff" />
+          {/* Sclera / Eyeball White: slightly larger/wider to represent wide-eyed shock, volumetric shading */}
+          <ellipse cx={cx} cy={cy - 4} rx={23} ry={17.5} fill="url(#eye-sclera)" />
 
           {/* Top ambient occlusion shadow on eyeball */}
           <path d={`M ${cx - 23} ${cy - 4} A 23 17.5 0 0 0 ${cx + 23} ${cy - 4} Z`} fill="rgba(15, 23, 42, 0.08)" />
@@ -793,6 +796,53 @@ export const EyeSVG: React.FC<{
 
   // Active Open Eyes
   if (isAnime) {
+    const getEyeShapeData = () => {
+      switch (eyeShape) {
+        case 'almond':
+          return {
+            scleraRx: 24,
+            scleraRy: 14,
+            scleraCy: cy - 2,
+            lashPath: `M ${cx + 25} ${cy - 2} C ${cx + 10} ${cy - 18}, ${cx - 15} ${cy - 18}, ${cx - 26} ${cy - 4} Q ${cx - 30} ${cy - 8}, ${cx - 30} ${cy - 4} Q ${cx - 26} ${cy + 2}, ${cx - 22} ${cy - 5} C ${cx - 12} ${cy - 14}, ${cx + 10} ${cy - 14}, ${cx + 23} ${cy} Z`,
+            lowerLidPath: `M ${cx - 18} ${cy + 9} Q ${cx} ${cy + 13}, ${cx + 18} ${cy + 9}`,
+          };
+        case 'droopy':
+          return {
+            scleraRx: 22,
+            scleraRy: 17,
+            scleraCy: cy - 2,
+            lashPath: `M ${cx + 22} ${cy - 6} C ${cx + 8} ${cy - 20}, ${cx - 16} ${cy - 18}, ${cx - 28} ${cy + 2} Q ${cx - 32} ${cy - 2}, ${cx - 30} ${cy + 4} Q ${cx - 26} ${cy + 6}, ${cx - 24} ${cy} C ${cx - 14} ${cy - 16}, ${cx + 8} ${cy - 16}, ${cx + 20} ${cy - 4} Z`,
+            lowerLidPath: `M ${cx - 20} ${cy + 13} Q ${cx} ${cy + 17}, ${cx + 15} ${cy + 11}`,
+          };
+        case 'sharp':
+          return {
+            scleraRx: 21,
+            scleraRy: 14,
+            scleraCy: cy - 5,
+            lashPath: `M ${cx + 20} ${cy - 8} L ${cx - 25} ${cy - 8} L ${cx - 28} ${cy - 14} L ${cx - 32} ${cy - 6} L ${cx - 26} ${cy - 2} L ${cx - 20} ${cy - 6} L ${cx + 18} ${cy - 6} Z`,
+            lowerLidPath: `M ${cx - 14} ${cy + 8} L ${cx + 14} ${cy + 6}`,
+          };
+        case 'cat-eye':
+          return {
+            scleraRx: 21,
+            scleraRy: 16,
+            scleraCy: cy - 5,
+            lashPath: `M ${cx + 20} ${cy - 4} C ${cx + 8} ${cy - 20}, ${cx - 15} ${cy - 16}, ${cx - 22} ${cy - 12} Q ${cx - 32} ${cy - 22}, ${cx - 35} ${cy - 14} Q ${cx - 28} ${cy - 10}, ${cx - 22} ${cy - 6} C ${cx - 15} ${cy - 12}, ${cx + 8} ${cy - 16}, ${cx + 18} ${cy - 2} Z`,
+            lowerLidPath: `M ${cx - 14} ${cy + 10} Q ${cx + 2} ${cy + 14}, ${cx + 18} ${cy + 6}`,
+          };
+        case 'default':
+        default:
+          return {
+            scleraRx: 22.5,
+            scleraRy: 16.2,
+            scleraCy: cy - 4,
+            lashPath: `M ${cx + 23} ${cy - 5} C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7} Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6} Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8} C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`,
+            lowerLidPath: `M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`,
+          };
+      }
+    };
+    const shapeData = getEyeShapeData();
+
     return (
       <g transform={transformEye}>
         <defs>
@@ -823,17 +873,26 @@ export const EyeSVG: React.FC<{
           strokeLinecap="round"
         />
 
-        {/* Sclera / Eyeball White: adjusted size and offset to stay cleanly enclosed, with NO outer stroke to prevent double-outline artifacting */}
-        <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} fill="#ffffff" />
+        {/* Sclera / Eyeball White: adjusted size and offset to stay cleanly enclosed, with volumetric shading */}
+        <ellipse
+          cx={cx}
+          cy={shapeData.scleraCy}
+          rx={shapeData.scleraRx}
+          ry={shapeData.scleraRy}
+          fill="url(#eye-sclera)"
+        />
 
         {/* Top ambient occlusion shadow on eyeball */}
-        <path d={`M ${cx - 22.5} ${cy - 4} A 22.5 16.2 0 0 0 ${cx + 22.5} ${cy - 4} Z`} fill="rgba(15, 23, 42, 0.08)" />
+        <path
+          d={`M ${cx - shapeData.scleraRx} ${shapeData.scleraCy} A ${shapeData.scleraRx} ${shapeData.scleraRy} 0 0 0 ${cx + shapeData.scleraRx} ${shapeData.scleraCy} Z`}
+          fill="rgba(15, 23, 42, 0.08)"
+        />
 
         {/* Masked Iris rendering to keep drawing inside the sclera circle */}
         <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}>
           <defs>
             <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}`}>
-              <ellipse cx={cx} cy={cy - 4} rx={22.5} ry={16.2} />
+              <ellipse cx={cx} cy={shapeData.scleraCy} rx={shapeData.scleraRx} ry={shapeData.scleraRy} />
             </clipPath>
           </defs>
 
@@ -880,7 +939,7 @@ export const EyeSVG: React.FC<{
                  L ${cx + px - 3} ${cy + py - 3} Z`}
               fill={pupilColor}
             />
-          ) : (
+          ) : pupilStyle === 'heart' ? (
             // Heart pupil: adorable heart curves
             <path
               d={`M ${cx + px} ${cy + py + 6}
@@ -888,7 +947,54 @@ export const EyeSVG: React.FC<{
                  C ${cx + px + 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py + 6} Z`}
               fill={pupilColor}
             />
-          )}
+          ) : pupilStyle === 'diamond' ? (
+            // Diamond pupil: crystalline rhombus with inner glow
+            <>
+              <path
+                d={`M ${cx + px} ${cy + py - 11}
+                   L ${cx + px + 7} ${cy + py}
+                   L ${cx + px} ${cy + py + 11}
+                   L ${cx + px - 7} ${cy + py} Z`}
+                fill={pupilColor}
+              />
+              <path
+                d={`M ${cx + px} ${cy + py - 6}
+                   L ${cx + px + 3.5} ${cy + py}
+                   L ${cx + px} ${cy + py + 6}
+                   L ${cx + px - 3.5} ${cy + py} Z`}
+                fill="#ffffff"
+                opacity="0.3"
+              />
+            </>
+          ) : pupilStyle === 'cross' ? (
+            // Cross pupil: gothic/demonic cross shape
+            <path
+              d={`M ${cx + px - 2.5} ${cy + py - 11}
+                 H ${cx + px + 2.5} V ${cy + py - 2.5}
+                 H ${cx + px + 8} V ${cy + py + 2.5}
+                 H ${cx + px + 2.5} V ${cy + py + 11}
+                 H ${cx + px - 2.5} V ${cy + py + 2.5}
+                 H ${cx + px - 8} V ${cy + py - 2.5}
+                 H ${cx + px - 2.5} Z`}
+              fill={pupilColor}
+            />
+          ) : pupilStyle === 'flower' ? (
+            // Flower pupil: sakura/lotus petal arrangement
+            <g>
+              {[0, 72, 144, 216, 288].map((angle) => (
+                <ellipse
+                  key={angle}
+                  cx={cx + px}
+                  cy={cy + py - 6}
+                  rx="3"
+                  ry="6"
+                  fill={pupilColor}
+                  transform={`rotate(${angle}, ${cx + px}, ${cy + py})`}
+                />
+              ))}
+              <circle cx={cx + px} cy={cy + py} r="3" fill={pupilColor} />
+            </g>
+          ) : null}
 
           {/* Glowing bottom crescent highlight (glass reflections) */}
           <path
@@ -908,29 +1014,15 @@ export const EyeSVG: React.FC<{
         </g>
 
         {/* Bold upper feline eyelash wing sweep (Perfect outer-sweeping layout due to mirroring!) */}
-        <path
-          d={`M ${cx + 23} ${cy - 5} 
-             C ${cx + 10} ${cy - 22}, ${cx - 19} ${cy - 22}, ${cx - 26} ${cy - 7}
-             Q ${cx - 33} ${cy - 13}, ${cx - 33} ${cy - 6}
-             Q ${cx - 29} ${cy}, ${cx - 24} ${cy - 8}
-             C ${cx - 16} ${cy - 18}, ${cx + 10} ${cy - 18}, ${cx + 21} ${cy - 3} Z`}
-          fill="#1c1917"
-          stroke="#1c1917"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
+        <path d={shapeData.lashPath} fill="#1c1917" stroke="#1c1917" strokeWidth="0.8" strokeLinejoin="round" />
 
         {/* Outer mini eyelash barb detail */}
-        <path d={`M ${cx - 26} ${cy - 3} Q ${cx - 32} ${cy + 1}, ${cx - 29} ${cy - 1} Z`} fill="#1c1917" />
+        {eyeShape === 'default' && (
+          <path d={`M ${cx - 26} ${cy - 3} Q ${cx - 32} ${cy + 1}, ${cx - 29} ${cy - 1} Z`} fill="#1c1917" />
+        )}
 
         {/* Lower eyelid line sweep - perfectly frames the bottom of the sclera */}
-        <path
-          d={`M ${cx - 16} ${cy + 11.5} Q ${cx} ${cy + 13.5}, ${cx + 16} ${cy + 11.5}`}
-          stroke="#1c1917"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={shapeData.lowerLidPath} stroke="#1c1917" strokeWidth="3" fill="none" strokeLinecap="round" />
 
         {/* Adorable little bottom side lash flick */}
         <path
@@ -983,7 +1075,41 @@ export const EyeSVG: React.FC<{
             d={`M ${cx + px} ${cy + py + 3.5} C ${cx + px - 4} ${cy + py}, ${cx + px - 5} ${cy + py - 3.5}, ${cx + px} ${cy + py - 2} C ${cx + px + 5} ${cy + py - 3.5}, ${cx + px + 4} ${cy + py}, ${cx + px} ${cy + py + 3.5} Z`}
             fill={pupilColor}
           />
-        ) : (
+        ) : pupilStyle === 'diamond' ? (
+          <path
+            d={`M ${cx + px} ${cy + py - 5}
+               L ${cx + px + 4} ${cy + py}
+               L ${cx + px} ${cy + py + 5}
+               L ${cx + px - 4} ${cy + py} Z`}
+            fill={pupilColor}
+          />
+        ) : pupilStyle === 'cross' ? (
+          <path
+            d={`M ${cx + px - 1.5} ${cy + py - 5}
+               H ${cx + px + 1.5} V ${cy + py - 1.5}
+               H ${cx + px + 5} V ${cy + py + 1.5}
+               H ${cx + px + 1.5} V ${cy + py + 5}
+               H ${cx + px - 1.5} V ${cy + py + 1.5}
+               H ${cx + px - 5} V ${cy + py - 1.5}
+               H ${cx + px - 1.5} Z`}
+            fill={pupilColor}
+          />
+        ) : pupilStyle === 'flower' ? (
+          <g>
+            {[0, 72, 144, 216, 288].map((angle) => (
+              <ellipse
+                key={angle}
+                cx={cx + px}
+                cy={cy + py - 3}
+                rx="1.8"
+                ry="3.5"
+                fill={pupilColor}
+                transform={`rotate(${angle}, ${cx + px}, ${cy + py})`}
+              />
+            ))}
+            <circle cx={cx + px} cy={cy + py} r="1.8" fill={pupilColor} />
+          </g>
+        ) : pupilStyle === 'none' ? null : (
           <circle cx={cx + px} cy={cy + py} r={4.5} fill={pupilColor} />
         )}
 

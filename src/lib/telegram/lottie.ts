@@ -1,5 +1,5 @@
-import { px, scaledPoint, scaledVec3, FRAME_COUNT } from './core';
-import type { LottieValue, Vec2, Vec3, ScalarKey, OffsetKey, ScaleKey, StickerLayerMotion } from './core';
+import { px, scaledPoint, FRAME_COUNT } from './core';
+import type { LottieValue, Vec2, ScalarKey, OffsetKey, ScaleKey, StickerLayerMotion } from './core';
 
 const hexToRgba = (hex: string, fallback: string): [number, number, number, number] => {
   const safe = /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(hex) ? hex : fallback;
@@ -104,34 +104,21 @@ const group = (name: string, items: LottieValue[]): LottieValue => ({
 
 const valueDimensions = (value: number | number[]) => (Array.isArray(value) ? value.length : 1);
 
-const easingFor = (value: number | number[], mode: 'soft' | 'snap' | 'linear' = 'soft') => {
+const easingFor = (value: number | number[]) => {
   const dimensions = valueDimensions(value);
-  const curve =
-    mode === 'linear'
-      ? { ix: 0, iy: 0, ox: 1, oy: 1 }
-      : mode === 'snap'
-        ? { ix: 0.82, iy: 1, ox: 0.18, oy: 0 }
-        : { ix: 0.667, iy: 1, ox: 0.333, oy: 0 };
 
   return {
-    i: { x: Array(dimensions).fill(curve.ix), y: Array(dimensions).fill(curve.iy) },
-    o: { x: Array(dimensions).fill(curve.ox), y: Array(dimensions).fill(curve.oy) },
+    i: { x: Array(dimensions).fill(0.833), y: Array(dimensions).fill(0.833) },
+    o: { x: Array(dimensions).fill(0.167), y: Array(dimensions).fill(0.167) },
   };
 };
 
-const animatedKeyframe = (
-  time: number,
-  value: number | number[],
-  endValue?: number | number[],
-  ease: 'soft' | 'snap' | 'linear' = 'soft',
-): LottieValue => {
+const animatedKeyframe = (time: number, value: number | number[], hasNext = true): LottieValue => {
   const start = Array.isArray(value) ? value : [value];
-  const end = endValue === undefined ? undefined : Array.isArray(endValue) ? endValue : [endValue];
   return {
     t: time,
     s: start,
-    ...(end ? { e: end } : {}),
-    ...easingFor(start, ease),
+    ...(hasNext ? easingFor(start) : {}),
   };
 };
 
@@ -139,51 +126,194 @@ const closeKeys = <T extends [number, ...number[]]>(keys: T[]): T[] => {
   const first = keys[0];
   const last = keys[keys.length - 1];
   if (last[0] === FRAME_COUNT && first.slice(1).every((value, index) => value === last[index + 1])) return keys;
+  if (last[0] === FRAME_COUNT) return [...keys.slice(0, -1), [FRAME_COUNT, ...first.slice(1)] as T];
   return [...keys, [FRAME_COUNT, ...first.slice(1)] as T];
 };
 
-const offsetProperty = (anchor: Vec2, keys?: OffsetKey[]): LottieValue => {
-  if (!keys || keys.length === 0) return { a: 0, k: scaledVec3([anchor[0], anchor[1], 0]) };
-  const closed = closeKeys(keys);
-  return {
-    a: 1,
-    k: closed.map(([frame, x, y], index) =>
-      animatedKeyframe(
-        frame,
-        scaledVec3([anchor[0] + x, anchor[1] + y, 0]),
-        closed[index + 1]
-          ? scaledVec3([anchor[0] + closed[index + 1][1], anchor[1] + closed[index + 1][2], 0])
-          : undefined,
-      ),
-    ),
-  };
-};
-
-const scaleProperty = (keys?: ScaleKey[]): LottieValue => {
-  if (!keys || keys.length === 0) return { a: 0, k: [100, 100, 100] };
-  const closed = closeKeys(keys);
-  const scaleValue = ([, x, y = x]: ScaleKey): Vec3 => [x, y, 100];
-  return {
-    a: 1,
-    k: closed.map((key, index) =>
-      animatedKeyframe(key[0], scaleValue(key), closed[index + 1] ? scaleValue(closed[index + 1]) : undefined),
-    ),
-  };
-};
-
-const scalarProperty = (
-  fallback: number,
-  keys?: ScalarKey[],
-  ease: 'soft' | 'snap' | 'linear' = 'soft',
-): LottieValue => {
+const scalarProperty = (fallback: number, keys?: ScalarKey[]): LottieValue => {
   if (!keys || keys.length === 0) return { a: 0, k: fallback };
   const closed = closeKeys(keys);
   return {
     a: 1,
-    k: closed.map(([frame, value], index) =>
-      animatedKeyframe(frame, value, closed[index + 1] ? closed[index + 1][1] : undefined, ease),
-    ),
+    k: closed.map(([frame, value], index) => animatedKeyframe(frame, value, index < closed.length - 1)),
   };
+};
+
+const motionFrames = (motion: StickerLayerMotion): number[] =>
+  Array.from(
+    new Set([
+      0,
+      FRAME_COUNT,
+      ...(motion.position ?? []).map(([frame]) => frame),
+      ...(motion.scale ?? []).map(([frame]) => frame),
+      ...(motion.rotation ?? []).map(([frame]) => frame),
+    ]),
+  ).sort((left, right) => left - right);
+
+const sampleClosedScalar = (keys: ScalarKey[] | undefined, fallback: number, frame: number): number => {
+  if (!keys || keys.length === 0) return fallback;
+  const closed = closeKeys(keys);
+  const first = closed[0];
+  if (frame <= first[0]) return first[1];
+  for (let index = 0; index < closed.length - 1; index += 1) {
+    const current = closed[index];
+    const next = closed[index + 1];
+    if (frame < current[0] || frame > next[0]) continue;
+    if (frame === current[0] || current[0] === next[0]) return current[1];
+    const progress = (frame - current[0]) / (next[0] - current[0]);
+    return current[1] + (next[1] - current[1]) * progress;
+  }
+  return closed[closed.length - 1][1];
+};
+
+const sampleClosedOffset = (keys: OffsetKey[] | undefined, frame: number): Vec2 => {
+  if (!keys || keys.length === 0) return [0, 0];
+  const closed = closeKeys(keys);
+  const first = closed[0];
+  if (frame <= first[0]) return [first[1], first[2]];
+  for (let index = 0; index < closed.length - 1; index += 1) {
+    const current = closed[index];
+    const next = closed[index + 1];
+    if (frame < current[0] || frame > next[0]) continue;
+    if (frame === current[0] || current[0] === next[0]) return [current[1], current[2]];
+    const progress = (frame - current[0]) / (next[0] - current[0]);
+    return [current[1] + (next[1] - current[1]) * progress, current[2] + (next[2] - current[2]) * progress];
+  }
+  const last = closed[closed.length - 1];
+  return [last[1], last[2]];
+};
+
+const sampleClosedScale = (keys: ScaleKey[] | undefined, frame: number): Vec2 => {
+  if (!keys || keys.length === 0) return [100, 100];
+  const closed = closeKeys(keys);
+  const first = closed[0];
+  if (frame <= first[0]) return [first[1], first[2] ?? first[1]];
+  for (let index = 0; index < closed.length - 1; index += 1) {
+    const current = closed[index];
+    const next = closed[index + 1];
+    const currentY = current[2] ?? current[1];
+    const nextY = next[2] ?? next[1];
+    if (frame < current[0] || frame > next[0]) continue;
+    if (frame === current[0] || current[0] === next[0]) return [current[1], currentY];
+    const progress = (frame - current[0]) / (next[0] - current[0]);
+    return [current[1] + (next[1] - current[1]) * progress, currentY + (nextY - currentY) * progress];
+  }
+  const last = closed[closed.length - 1];
+  return [last[1], last[2] ?? last[1]];
+};
+
+const roundPoint = ([x, y]: Vec2): Vec2 => [Math.round(x * 100) / 100, Math.round(y * 100) / 100];
+
+const transformPoint = (point: Vec2, motion: StickerLayerMotion, frame: number): Vec2 => {
+  const anchor = scaledPoint(motion.anchor);
+  const offset = sampleClosedOffset(motion.position, frame);
+  const position = scaledPoint([motion.anchor[0] + offset[0], motion.anchor[1] + offset[1]]);
+  const scale = sampleClosedScale(motion.scale, frame);
+  const rotation = (sampleClosedScalar(motion.rotation, 0, frame) * Math.PI) / 180;
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const dx = (point[0] - anchor[0]) * (scale[0] / 100);
+  const dy = (point[1] - anchor[1]) * (scale[1] / 100);
+  return roundPoint([position[0] + dx * cos - dy * sin, position[1] + dx * sin + dy * cos]);
+};
+
+const transformDelta = (delta: Vec2, motion: StickerLayerMotion, frame: number): Vec2 => {
+  const scale = sampleClosedScale(motion.scale, frame);
+  const rotation = (sampleClosedScalar(motion.rotation, 0, frame) * Math.PI) / 180;
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const dx = delta[0] * (scale[0] / 100);
+  const dy = delta[1] * (scale[1] / 100);
+  return roundPoint([dx * cos - dy * sin, dx * sin + dy * cos]);
+};
+
+const staticNumberArray = (prop: unknown): number[] | null => {
+  if (!prop || typeof prop !== 'object' || Array.isArray(prop)) return null;
+  const value = (prop as Record<string, unknown>).k;
+  return Array.isArray(value) && value.every((item) => typeof item === 'number') ? value : null;
+};
+
+const pathKeyframe = (frame: number, value: LottieValue, hasNext = true): LottieValue => ({
+  t: frame,
+  s: [value],
+  ...(hasNext
+    ? {
+        i: { x: 0.833, y: 0.833 },
+        o: { x: 0.167, y: 0.167 },
+      }
+    : {}),
+});
+
+const bakePath = (shape: LottieValue, motion: StickerLayerMotion, frames: number[]): LottieValue => {
+  if (!shape.ks || typeof shape.ks !== 'object' || Array.isArray(shape.ks)) return shape;
+  const ks = shape.ks as Record<string, unknown>;
+  if (!ks.k || typeof ks.k !== 'object' || Array.isArray(ks.k)) return shape;
+  const path = ks.k as Record<string, unknown>;
+  if (!Array.isArray(path.v) || !Array.isArray(path.i) || !Array.isArray(path.o)) return shape;
+
+  const bakedAt = (frame: number): LottieValue => ({
+    ...path,
+    v: (path.v as Vec2[]).map((point) => transformPoint(point, motion, frame)),
+    i: (path.i as Vec2[]).map((delta) => transformDelta(delta, motion, frame)),
+    o: (path.o as Vec2[]).map((delta) => transformDelta(delta, motion, frame)),
+  });
+  const values = frames.map(bakedAt);
+
+  return {
+    ...shape,
+    ks: {
+      ...ks,
+      a: 1,
+      k: frames.map((frame, index) => pathKeyframe(frame, values[index], index < frames.length - 1)),
+    },
+  };
+};
+
+const bakePointProperty = (prop: unknown, motion: StickerLayerMotion, frames: number[]): LottieValue | unknown => {
+  const point = staticNumberArray(prop);
+  if (!point || point.length < 2) return prop;
+  const values = frames.map((frame) => transformPoint([point[0], point[1]], motion, frame));
+  return {
+    ...(prop as Record<string, unknown>),
+    a: 1,
+    k: frames.map((frame, index) => animatedKeyframe(frame, values[index], index < frames.length - 1)),
+  };
+};
+
+const bakeSizeProperty = (prop: unknown, motion: StickerLayerMotion, frames: number[]): LottieValue | unknown => {
+  const size = staticNumberArray(prop);
+  if (!size || size.length < 2) return prop;
+  const values = frames.map((frame) => {
+    const scale = sampleClosedScale(motion.scale, frame);
+    return [Math.round(size[0] * (scale[0] / 100) * 100) / 100, Math.round(size[1] * (scale[1] / 100) * 100) / 100];
+  });
+  return {
+    ...(prop as Record<string, unknown>),
+    a: 1,
+    k: frames.map((frame, index) => animatedKeyframe(frame, values[index], index < frames.length - 1)),
+  };
+};
+
+const bakeShapeMotion = (item: LottieValue, motion: StickerLayerMotion, frames: number[]): LottieValue => {
+  let baked = { ...item };
+  if (item.ty === 'sh') {
+    baked = bakePath(item, motion, frames);
+  } else if (item.ty === 'el' || item.ty === 'rc') {
+    baked.p = bakePointProperty(item.p, motion, frames);
+    baked.s = bakeSizeProperty(item.s, motion, frames);
+  } else if (item.ty === 'gf' || item.ty === 'gs') {
+    baked.s = bakePointProperty(item.s, motion, frames);
+    baked.e = bakePointProperty(item.e, motion, frames);
+  }
+
+  if (Array.isArray(item.it)) baked.it = item.it.map((child) => bakeShapeMotion(child, motion, frames));
+  return baked;
+};
+
+const bakeMotionIntoShapes = (shapes: LottieValue[], motion: StickerLayerMotion): LottieValue[] => {
+  if (!motion.position && !motion.scale && !motion.rotation) return shapes;
+  const frames = motionFrames(motion);
+  return shapes.map((shape) => bakeShapeMotion(shape, motion, frames));
 };
 
 const layer = (index: number, name: string, shapes: LottieValue[], motion: StickerLayerMotion): LottieValue => ({
@@ -194,13 +324,13 @@ const layer = (index: number, name: string, shapes: LottieValue[], motion: Stick
   sr: 1,
   ks: {
     o: scalarProperty(100, motion.opacity),
-    r: scalarProperty(0, motion.rotation, name.includes('dizzy') ? 'linear' : 'soft'),
-    p: offsetProperty(motion.anchor, motion.position),
-    a: { a: 0, k: scaledVec3([motion.anchor[0], motion.anchor[1], 0]) },
-    s: scaleProperty(motion.scale),
+    r: { a: 0, k: 0 },
+    p: { a: 0, k: [0, 0, 0] },
+    a: { a: 0, k: [0, 0, 0] },
+    s: { a: 0, k: [100, 100, 100] },
   },
   ao: 0,
-  shapes,
+  shapes: bakeMotionIntoShapes(shapes, motion),
   ip: 0,
   op: FRAME_COUNT,
   st: 0,
