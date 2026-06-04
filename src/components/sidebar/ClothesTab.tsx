@@ -221,8 +221,8 @@ export const ClothesTab: React.FC<ClothesTabProps> = ({ config, setConfig }) => 
             </div>
             <input
               type="range"
-              min="0.70"
-              max="1.25"
+              min="0.40"
+              max="1.40"
               step="0.01"
               value={config.neckHeight ?? 1.0}
               onChange={(e) => setConfig((prev) => ({ ...prev, neckHeight: parseFloat(e.target.value) }))}

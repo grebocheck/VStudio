@@ -3,7 +3,7 @@ import { FRAME, HAIR_PHYSICS } from '../engine/constants';
 
 export const RIG_RENDER_INTERVAL_MS = 1000 / 30;
 
-type AvatarFrameConfig = Pick<AvatarConfig, 'accessoryStyle' | 'artStyle' | 'headSize'>;
+type AvatarFrameConfig = Pick<AvatarConfig, 'accessoryStyle' | 'artStyle' | 'headSize' | 'neckHeight'>;
 
 export interface AvatarFrameStyles {
   accessoryTransform: string;
@@ -31,6 +31,7 @@ export const shouldPublishRigFrame = (lastPublishedAt: number, now: number, inte
 export function calculateAvatarFrameStyles(config: AvatarFrameConfig, rig: RigParams): AvatarFrameStyles {
   const artStyle = config.artStyle ?? 'classic';
   const headSize = config.headSize ?? 1;
+  const neckHeight = config.neckHeight ?? 1.0;
   const isAnime = artStyle === 'anime';
   const isRetro = artStyle === 'retro';
   const facesTranslateX = rig.angleX * FRAME.FACE_TRANSLATE_X;
@@ -48,7 +49,8 @@ export function calculateAvatarFrameStyles(config: AvatarFrameConfig, rig: RigPa
   const headStretchX = 1 - lookDistance * FRAME.HEAD_STRETCH_X + retroBounceX;
   const physicsSwayX = (rig.hairSwayX ?? 0) * (isAnime ? HAIR_PHYSICS.ANIME_GAIN_X : 1);
   const physicsSwayY = (rig.hairSwayY ?? 0) * (isAnime ? HAIR_PHYSICS.ANIME_GAIN_Y : 1);
-  const headTranslate = `translate(${rig.bodyX * FRAME.HEAD_BODY_X}px, ${outlineTranslateY - rig.angleY * FRAME.HEAD_PITCH_OFFSET}px) rotate(${headRotation}deg) scale(${headSize}) scale(${headStretchX}, ${headStretchY})`;
+  const headNeckYOffset = (1.0 - neckHeight) * 40;
+  const headTranslate = `translate(${rig.bodyX * FRAME.HEAD_BODY_X}px, ${outlineTranslateY - rig.angleY * FRAME.HEAD_PITCH_OFFSET + headNeckYOffset}px) rotate(${headRotation}deg) scale(${headSize}) scale(${headStretchX}, ${headStretchY})`;
   const floatingAccessory =
     config.accessoryStyle === 'neko-ears' ||
     config.accessoryStyle === 'horns' ||
@@ -66,15 +68,15 @@ export function calculateAvatarFrameStyles(config: AvatarFrameConfig, rig: RigPa
           ? facesTranslateX * FRAME.ACCESSORY_FOLLOW + physicsSwayX * FRAME.ACCESSORY_SWAY
           : outlineTranslateX * FRAME.ACCESSORY_OUTLINE
     }px) rotate(${floatingAccessory ? physicsSwayX * FRAME.ACCESSORY_ROTATE : 0}deg)`,
-    backHairTransform: `${headTranslate} translate(${physicsSwayX * FRAME.BACK_HAIR_SWAY_X + facesTranslateX * FRAME.BACK_HAIR_FACE_X}px, ${
+    backHairTransform: `${headTranslate} translate(${outlineTranslateX + physicsSwayX * FRAME.BACK_HAIR_SWAY_X + facesTranslateX * FRAME.BACK_HAIR_FACE_X}px, ${
       physicsSwayY * FRAME.BACK_HAIR_SWAY_Y
     }px) rotate(${physicsSwayX * FRAME.HAIR_ROTATE}deg)`,
     chestTransform: `scale(${chestBreathingScale})`,
     debugFaceTransform: `translate(${rig.bodyX * FRAME.HEAD_BODY_X + facesTranslateX}px, ${
-      outlineTranslateY + facesTranslateY
+      outlineTranslateY + facesTranslateY + headNeckYOffset
     }px) rotate(${headRotation}deg)`,
     debugHeadCx: FRAME.DEBUG_HEAD_CX + rig.bodyX * FRAME.HEAD_BODY_X,
-    debugHeadCy: FRAME.DEBUG_HEAD_CY + outlineTranslateY,
+    debugHeadCy: FRAME.DEBUG_HEAD_CY + outlineTranslateY + headNeckYOffset,
     faceTransform: `translate(${facesTranslateX}px, ${facesTranslateY}px)`,
     facesTranslateX,
     facesTranslateY,

@@ -30,7 +30,7 @@ describe('calculateAvatarFrameStyles', () => {
     expect(frame.physicsSwayX).toBe(5.4);
     expect(frame.physicsSwayY).toBe(2.5);
     expect(frame.debugHeadCx).toBe(201.2);
-    expect(frame.debugHeadCy).toBe(159.4);
+    expect(frame.debugHeadCy).toBe(163.4);
   });
 });
 

@@ -169,7 +169,7 @@ export const HairComponent: React.FC<{
           </g>
           <g
             style={{
-              transform: `rotate(${-hairSwayX * 0.8}deg)`,
+              transform: `rotate(${hairSwayX * 0.8}deg)`,
               transformOrigin: '296px 132px',
               transition: 'transform 0.1s ease-out',
             }}
@@ -241,7 +241,7 @@ export const HairComponent: React.FC<{
           </g>
           <g
             style={{
-              transform: `rotate(${-hairSwayX * 0.8}deg)`,
+              transform: `rotate(${hairSwayX * 0.8}deg)`,
               transformOrigin: '296px 132px',
               transition: 'transform 0.1s ease-out',
             }}
@@ -429,7 +429,7 @@ export const HairComponent: React.FC<{
             d="M290 120 C320 120, 375 160, 380 240 C384 300, 365 350, 372 380 C355 375, 345 330, 350 260 C352 210, 325 160, 305 140 Z"
             fill={color}
             style={{
-              transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${-hairSwayX * 1.15}deg)`,
+              transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${hairSwayX * 1.15}deg)`,
               transformOrigin: '290px 130px',
             }}
           />
@@ -439,7 +439,7 @@ export const HairComponent: React.FC<{
             <path d="M110 128 L120 140 L110 136 L104 128 Z" fill={highlightColor} />
             <circle cx="104" cy="128" r="5" fill={highlightColor} />
           </g>
-          <g style={{ transform: `rotate(${-hairSwayX * 0.8}deg)`, transformOrigin: '296px 128px' }}>
+          <g style={{ transform: `rotate(${hairSwayX * 0.8}deg)`, transformOrigin: '296px 128px' }}>
             <path d="M290 128 L280 140 L290 136 L296 128 Z" fill={highlightColor} />
             <path d="M302 128 L312 140 L302 136 L296 128 Z" fill={highlightColor} />
             <circle cx="296" cy="128" r="5" fill={highlightColor} />
@@ -578,12 +578,12 @@ export const FrontHairComponent: React.FC<{
 
   // Hair styling parameters for multi-layered sway & ahoge
   const leftLockStyle = {
-    transform: `rotate(${hairSwayX * 0.8}deg)`,
+    transform: `rotate(${hairSwayX * 0.4}deg)`,
     transformOrigin: '106px 130px',
     transition: 'transform 0.1s ease-out',
   };
   const rightLockStyle = {
-    transform: `rotate(${hairSwayX * 0.8}deg)`,
+    transform: `rotate(${hairSwayX * 0.4}deg)`,
     transformOrigin: '294px 130px',
     transition: 'transform 0.1s ease-out',
   };

@@ -163,7 +163,7 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
   if (typeof p.blushOpacity === 'number') out.blushOpacity = clamp(p.blushOpacity, 0, 1);
   if (typeof p.headSize === 'number') out.headSize = clamp(p.headSize, 0.8, 1.2);
   if (typeof p.neckWidth === 'number') out.neckWidth = clamp(p.neckWidth, 0.6, 1.4);
-  if (typeof p.neckHeight === 'number') out.neckHeight = clamp(p.neckHeight, 0.6, 1.4);
+  if (typeof p.neckHeight === 'number') out.neckHeight = clamp(p.neckHeight, 0.4, 1.4);
   if (typeof p.shoulderWidth === 'number') out.shoulderWidth = clamp(p.shoulderWidth, 0.7, 1.3);
   if (typeof p.frecklesDensity === 'number') out.frecklesDensity = clamp(p.frecklesDensity, 0.3, 1.0);
 

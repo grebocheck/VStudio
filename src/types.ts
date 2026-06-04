@@ -159,7 +159,7 @@ export interface AvatarConfig {
   // Custom proportions variables
   headSize?: number; // 0.8 to 1.2
   neckWidth?: number; // 0.6 to 1.4
-  neckHeight?: number; // 0.6 to 1.4
+  neckHeight?: number; // 0.4 to 1.4
   shoulderWidth?: number; // 0.7 to 1.3
   clothingPrint?: 'none' | 'cat' | 'star' | 'heart' | 'cyber' | 'cross';
   activeEmotion?: Emotion;

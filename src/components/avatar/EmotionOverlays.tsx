@@ -76,61 +76,111 @@ export const EmotionOverlays: React.FC<EmotionOverlaysProps> = ({ emotion }) => 
     )}
 
     {emotion === 'cry' && (
-      <g opacity="0.95">
+      <g opacity="0.98">
+        {/* Swelling watery eyes / tear reservoir at lower lids */}
         <path
-          d="M152 173 C148 185, 156 195, 150 220"
-          fill="none"
-          stroke="#60a5fa"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-        <path
-          d="M152 173 C149 195, 154 210, 149 238"
-          fill="none"
-          stroke="#3b82f6"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          opacity="0.75"
-        />
-        <circle
-          cx="150"
-          cy="221"
-          r="5"
-          fill="#a0c4ff"
-          className="animate-ping"
-          style={{ transformOrigin: '150px 221px' }}
-        />
-        <circle cx="150" cy="221" r="4.2" fill="#ffffff" />
-        <path
-          d="M248 173 C244 185, 252 195, 246 220"
-          fill="none"
-          stroke="#60a5fa"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-        <path
-          d="M248 173 C245 195, 250 210, 245 238"
-          fill="none"
-          stroke="#3b82f6"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          opacity="0.75"
-        />
-        <circle
-          cx="246"
-          cy="221"
-          r="5"
-          fill="#a0c4ff"
-          className="animate-ping"
-          style={{ transformOrigin: '246px 221px' }}
-        />
-        <circle cx="246" cy="221" r="4.2" fill="#ffffff" />
-        <path d="M149 230 L151 235 L149 242 L147 235 Z" fill="#93c5fd" className="animate-[bounce_1.5s_infinite]" />
-        <path
-          d="M245 230 L247 235 L245 242 L243 235 Z"
+          d="M 132 188 Q 150 196, 168 188 Q 150 192, 132 188 Z"
           fill="#93c5fd"
-          className="animate-[bounce_1.5s_infinite_0.4s]"
+          opacity="0.8"
+          style={{ filter: 'drop-shadow(0 0 3px rgba(147, 197, 253, 0.8))' }}
         />
+        <path
+          d="M 232 188 Q 250 196, 268 188 Q 250 192, 232 188 Z"
+          fill="#93c5fd"
+          opacity="0.8"
+          style={{ filter: 'drop-shadow(0 0 3px rgba(147, 197, 253, 0.8))' }}
+        />
+
+        {/* Double-layered main tear streams flowing down */}
+        {/* Left main stream */}
+        <path
+          d="M 150 188 C 146 220, 154 240, 149 265"
+          fill="none"
+          stroke="#60a5fa"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          opacity="0.85"
+        />
+        <path
+          d="M 150 188 C 146 220, 154 240, 149 265"
+          fill="none"
+          stroke="#e0f2fe"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+
+        {/* Right main stream */}
+        <path
+          d="M 250 188 C 254 220, 246 240, 251 265"
+          fill="none"
+          stroke="#60a5fa"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          opacity="0.85"
+        />
+        <path
+          d="M 250 188 C 254 220, 246 240, 251 265"
+          fill="none"
+          stroke="#e0f2fe"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+
+        {/* Dynamic falling teardrops (dripping along the stream paths) */}
+        {/* Left falling teardrops */}
+        <path
+          d="M 150 188 C 148 191, 148 194, 150 196 C 152 194, 152 191, 150 188 Z"
+          fill="#e0f2fe"
+          stroke="#3b82f6"
+          strokeWidth="1"
+          className="animate-tear-fall-left-1"
+        />
+        <path
+          d="M 150 188 C 148 191, 148 194, 150 196 C 152 194, 152 191, 150 188 Z"
+          fill="#e0f2fe"
+          stroke="#3b82f6"
+          strokeWidth="1"
+          className="animate-tear-fall-left-2"
+        />
+
+        {/* Right falling teardrops */}
+        <path
+          d="M 250 188 C 248 191, 248 194, 250 196 C 252 194, 252 191, 250 188 Z"
+          fill="#e0f2fe"
+          stroke="#3b82f6"
+          strokeWidth="1"
+          className="animate-tear-fall-right-1"
+        />
+        <path
+          d="M 250 188 C 248 191, 248 194, 250 196 C 252 194, 252 191, 250 188 Z"
+          fill="#e0f2fe"
+          stroke="#3b82f6"
+          strokeWidth="1"
+          className="animate-tear-fall-right-2"
+        />
+
+        {/* Splash/ripple at the bottom of streams */}
+        <circle
+          cx="149"
+          cy="265"
+          r="5"
+          fill="#93c5fd"
+          className="animate-ping"
+          style={{ transformOrigin: '149px 265px' }}
+        />
+        <circle cx="149" cy="265" r="3.5" fill="#ffffff" />
+
+        <circle
+          cx="251"
+          cy="265"
+          r="5"
+          fill="#93c5fd"
+          className="animate-ping"
+          style={{ transformOrigin: '251px 265px' }}
+        />
+        <circle cx="251" cy="265" r="3.5" fill="#ffffff" />
       </g>
     )}
 
@@ -305,19 +355,52 @@ export const EmotionOverlays: React.FC<EmotionOverlaysProps> = ({ emotion }) => 
     )}
 
     {emotion === 'cool' && (
-      <g opacity="0.9">
-        <text x="90" y="120" fontSize="18" fill="#d946ef" className="animate-[bounce_1.4s_infinite_0.2s]">
-          ♫
-        </text>
-        <text x="310" y="110" fontSize="14" fill="#06b6d4" className="animate-[bounce_2s_infinite_0.4s]">
-          ♪
-        </text>
-        <text x="110" y="80" fontSize="15" fill="#10b981" className="animate-[pulse_1.2s_infinite_0.6s]">
-          ♬
-        </text>
-        <text x="290" y="70" fontSize="16" fill="#8b5cf6" className="animate-[bounce_1.8s_infinite]">
-          ♫
-        </text>
+      <g opacity="0.95">
+        {/* Floating, glowing SVG music notes */}
+        <path
+          d="M90 120 A 6 5 0 1 1 78 120 A 6 5 0 1 1 90 120 L 90 100 Q 98 100 102 95 L 102 91 Q 96 95 90 95 Z"
+          fill="#d946ef"
+          className="animate-note-1"
+          style={{ filter: 'drop-shadow(0 0 3px #d946ef)' }}
+        />
+        <path
+          d="M 290 110 A 5 4 0 1 0 300 110 L 300 90 L 316 86 L 316 106 A 5 4 0 1 0 326 106 L 326 82 L 298 89 Z"
+          fill="#06b6d4"
+          className="animate-note-2"
+          style={{ filter: 'drop-shadow(0 0 3px #06b6d4)' }}
+        />
+        <path
+          d="M110 80 A 5 4 0 1 1 100 80 A 5 4 0 1 1 110 80 L 110 60 Q 118 60 122 55 L 122 51 Q 116 55 110 55 Z"
+          fill="#10b981"
+          className="animate-note-3"
+          style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}
+        />
+        <path
+          d="M 270 70 A 5 4 0 1 0 280 70 L 280 50 L 296 46 L 296 66 A 5 4 0 1 0 306 66 L 306 42 L 278 49 Z"
+          fill="#8b5cf6"
+          className="animate-note-4"
+          style={{ filter: 'drop-shadow(0 0 3px #8b5cf6)' }}
+        />
+
+        {/* Rotating neon star sparkles */}
+        <path
+          d="M 75 142 Q 75 150 83 150 Q 75 150 75 158 Q 75 150 67 150 Q 75 150 75 142 Z"
+          fill="#06b6d4"
+          className="animate-[spin_6s_linear_infinite]"
+          style={{ transformOrigin: '75px 150px', filter: 'drop-shadow(0 0 4px #06b6d4)' }}
+        />
+        <path
+          d="M 325 133 Q 325 140 332 140 Q 325 140 325 147 Q 325 140 318 140 Q 325 140 325 133 Z"
+          fill="#d946ef"
+          className="animate-[spin_5s_linear_infinite_reverse]"
+          style={{ transformOrigin: '325px 140px', filter: 'drop-shadow(0 0 4px #d946ef)' }}
+        />
+        <path
+          d="M 200 60 Q 200 70 210 70 Q 200 70 200 80 Q 200 70 190 70 Q 200 70 200 60 Z"
+          fill="#facc15"
+          className="animate-[spin_8s_linear_infinite]"
+          style={{ transformOrigin: '200px 70px', filter: 'drop-shadow(0 0 4px #facc15)' }}
+        />
       </g>
     )}
 

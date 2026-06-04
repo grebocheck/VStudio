@@ -102,6 +102,7 @@ export const EyeSVG: React.FC<{
   const py = pupilY * (artStyle === 'anime' ? 3.8 : 2.5);
 
   const isAnime = artStyle === 'anime';
+  const effectiveBlink = activeEmotion === 'cool' ? blink * 0.7 : blink;
 
   const isSparklyStyle =
     pupilStyle === 'star' || pupilStyle === 'heart' || pupilStyle === 'flower' || pupilStyle === 'diamond';
@@ -178,46 +179,10 @@ export const EyeSVG: React.FC<{
           strokeLinecap="round"
         />
         <path
-          d={`M ${cx + 20} ${cy + 15} L ${cx + 26} ${cy + 21} M ${cx + 26} ${cy + 15} L ${cx + 20} ${cy + 21}`}
-          stroke="#ec4899"
+          d={`M ${cx + 19} ${cy - 18} L ${cx + 25} ${cy - 12} M ${cx + 25} ${cy - 18} L ${cx + 19} ${cy - 12}`}
+          stroke="#eab308"
           strokeWidth="2"
           strokeLinecap="round"
-        />
-      </g>
-    );
-  }
-
-  if (activeEmotion === 'cool') {
-    return (
-      <g transform={transformEye}>
-        {/* High-fidelity retro cyberpunk sunglasses/shades */}
-        {/* Frame / Glass lens */}
-        <polygon
-          points={`${cx - 25},${cy - 14} ${cx + 24},${cy - 17} ${cx + 21} ${cy + 12} ${cx - 17} ${cy + 9}`}
-          fill="#0f172a"
-          stroke="#4338ca"
-          strokeWidth="3"
-        />
-        {/* Neon magenta cyber reflection stripes */}
-        <path
-          d={`M ${cx - 17} ${cy - 4} L ${cx + 14} ${cy + 8}`}
-          stroke="#d946ef"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-          opacity="0.8"
-        />
-        <path
-          d={`M ${cx - 10} ${cy - 7} L ${cx + 18} ${cy + 4}`}
-          stroke="#38bdf8"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          opacity="0.9"
-        />
-        {/* Sparkling star detail on sunglasses edge */}
-        <path
-          d={`M ${cx - 22} ${cy - 7} Q ${cx - 22} ${cy - 1} ${cx - 16} ${cy - 1} Q ${cx - 22} ${cy - 1} ${cx - 22} ${cy + 5} Q ${cx - 22} ${cy - 1} ${cx - 28} ${cy - 1} Q ${cx - 22} ${cy - 1} ${cx - 22} ${cy - 7}`}
-          fill="#ffffff"
-          opacity="0.95"
         />
       </g>
     );
@@ -713,7 +678,7 @@ export const EyeSVG: React.FC<{
   }
 
   // If blinking/closed, draw an elegant sleeping/smiling curved eyelash path instead of iris!
-  if (blink < 0.25) {
+  if (effectiveBlink < 0.25) {
     const lashD = isAnime
       ? `M ${cx - 22} ${cy + 1} 
          C ${cx - 10} ${cy + 11}, ${cx + 10} ${cy + 11}, ${cx + 22} ${cy + 1}
@@ -869,8 +834,8 @@ export const EyeSVG: React.FC<{
           <path
             d={`M ${cx - 30} ${cy - 30} 
                 L ${cx + 30} ${cy - 30} 
-                L ${cx + 30} ${cy - 12 + (1 - blink) * 20} 
-                Q ${cx} ${cy - 4 + (1 - blink) * 20}, ${cx - 30} ${cy - 12 + (1 - blink) * 20} 
+                L ${cx + 30} ${cy - 12 + (1 - effectiveBlink) * 20} 
+                Q ${cx} ${cy - 4 + (1 - effectiveBlink) * 20}, ${cx - 30} ${cy - 12 + (1 - effectiveBlink) * 20} 
                 Z`}
             fill="rgba(15, 23, 42, 0.22)"
             style={{ mixBlendMode: 'multiply' }}
@@ -1093,8 +1058,8 @@ export const EyeSVG: React.FC<{
         <path
           d={`M ${cx - 25} ${cy - 20} 
               L ${cx + 25} ${cy - 20} 
-              L ${cx + 25} ${cy - 4 + (1 - blink) * 12} 
-              Q ${cx} ${cy + (1 - blink) * 12}, ${cx - 25} ${cy - 4 + (1 - blink) * 12} 
+              L ${cx + 25} ${cy - 4 + (1 - effectiveBlink) * 12} 
+              Q ${cx} ${cy + (1 - effectiveBlink) * 12}, ${cx - 25} ${cy - 4 + (1 - effectiveBlink) * 12} 
               Z`}
           fill="rgba(15, 23, 42, 0.18)"
           style={{ mixBlendMode: 'multiply' }}
@@ -1220,6 +1185,40 @@ export const EyeSVG: React.FC<{
         <g stroke="#1c1917" strokeWidth="2.2" strokeLinecap="round" fill="none">
           <path d={`M ${cx - rx} ${cy - ry / 2} Q ${cx - rx - 8} ${cy - ry - 2}, ${cx - rx - 12} ${cy - ry + 1}`} />
           <path d={`M ${cx - rx + 3} ${cy + 2} Q ${cx - rx - 6} ${cy + 2}, ${cx - rx - 10} ${cy + 6}`} />
+        </g>
+      )}
+
+      {/* Futuristic Cyber Shades / Visor overlay when looking Cool */}
+      {activeEmotion === 'cool' && (
+        <g>
+          {/* Semi-transparent Dark/Purple visor lens */}
+          <polygon
+            points={`${cx - 28},${cy - 16} ${cx + 44},${cy - 16} ${cx + 44},${cy + 15} ${cx - 20},${cy + 12}`}
+            fill="url(#cool-lens-grad)"
+            opacity="0.86"
+          />
+          {/* Neon cyan top frame border */}
+          <line x1={cx - 28} y1={cy - 16} x2={cx + 44} y2={cy - 16} stroke="#06b6d4" strokeWidth="2.5" />
+          {/* Neon magenta bottom lens accent */}
+          <line x1={cx - 20} y1={cy + 12} x2={cx + 44} y2={cy + 15} stroke="#d946ef" strokeWidth="2" />
+          {/* Sweeping animated light glint */}
+          <line
+            x1={cx - 30}
+            y1={cy - 16}
+            x2={cx + 10}
+            y2={cy + 15}
+            stroke="#ffffff"
+            strokeWidth="3.5"
+            opacity="0.6"
+            className="animate-shades-glint"
+            style={{ pointerEvents: 'none' }}
+          />
+          {/* Sparkle star on outer frame edge */}
+          <path
+            d={`M ${cx - 24} ${cy - 8} Q ${cx - 24} ${cy - 2} ${cx - 18} ${cy - 2} Q ${cx - 24} ${cy - 2} ${cx - 24} ${cy + 4} Q ${cx - 24} ${cy - 2} ${cx - 30} ${cy - 2} Q ${cx - 24} ${cy - 2} ${cx - 24} ${cy - 8}`}
+            fill="#ffffff"
+            className="animate-pulse"
+          />
         </g>
       )}
     </g>
