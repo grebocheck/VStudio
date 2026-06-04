@@ -64,6 +64,10 @@ export const HairTab: React.FC<HairTabProps> = ({ config, setConfig }) => {
             <option value="cross-bangs">{isEn ? 'Cross Strands (Anime)' : 'Хрестоподібна чілка (аніме)'}</option>
             <option value="wolf-cut">{isEn ? 'Layered Wolf Cut' : 'Вовчий стрижка (шари)'}</option>
             <option value="curtain-bangs">{isEn ? 'Curtain Bangs' : 'Штори-чубчик'}</option>
+            <option value="asymmetric">{t.rightSidebar.bangsOptions.asymmetric}</option>
+            <option value="blunt-bangs">{t.rightSidebar.bangsOptions['blunt-bangs']}</option>
+            <option value="messy">{t.rightSidebar.bangsOptions.messy}</option>
+            <option value="braided-bangs">{t.rightSidebar.bangsOptions['braided-bangs']}</option>
           </select>
         </div>
 
@@ -92,6 +96,11 @@ export const HairTab: React.FC<HairTabProps> = ({ config, setConfig }) => {
             <option value="hime-long">{t.rightSidebar.backOptions.himeLong}</option>
             <option value="ponytail">{isEn ? 'High Ponytail' : 'Високий хвіст'}</option>
             <option value="bun">{isEn ? 'Elegant Bun' : 'Елегантний пучок'}</option>
+            <option value="side-tail">{t.rightSidebar.backOptions['side-tail']}</option>
+            <option value="twintail-long">{t.rightSidebar.backOptions['twintail-long']}</option>
+            <option value="messy-bun">{t.rightSidebar.backOptions['messy-bun']}</option>
+            <option value="fishtail-braid">{t.rightSidebar.backOptions['fishtail-braid']}</option>
+            <option value="layered">{t.rightSidebar.backOptions.layered}</option>
           </select>
         </div>
 

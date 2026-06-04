@@ -6,7 +6,19 @@ import { AvatarConfig } from '../types';
  * JSON) without letting invalid values break the SVG renderer.
  */
 const ENUMS = {
-  pupilStyle: ['round', 'star', 'heart', 'slit', 'diamond', 'cross', 'flower'],
+  pupilStyle: [
+    'round',
+    'star',
+    'heart',
+    'slit',
+    'diamond',
+    'cross',
+    'flower',
+    'spiral',
+    'crescent',
+    'infinity',
+    'cat-vertical',
+  ],
   eyebrowStyle: ['normal', 'thick', 'thin', 'sad', 'none'],
   hairStyleBang: [
     'classic',
@@ -19,6 +31,10 @@ const ENUMS = {
     'cross-bangs',
     'wolf-cut',
     'curtain-bangs',
+    'asymmetric',
+    'blunt-bangs',
+    'messy',
+    'braided-bangs',
   ],
   hairStyleBack: [
     'straight',
@@ -31,6 +47,11 @@ const ENUMS = {
     'wavy',
     'ponytail',
     'bun',
+    'side-tail',
+    'twintail-long',
+    'messy-bun',
+    'fishtail-braid',
+    'layered',
   ],
   clothingStyle: [
     'hoodie',
@@ -47,6 +68,11 @@ const ENUMS = {
     'royal-knight',
     'cyber-ninja',
     'lolita-dress',
+    'school-blazer',
+    'chinese-dress',
+    'pirate-coat',
+    'angel-dress',
+    'punk-jacket',
   ],
   accessoryStyle: [
     'none',
@@ -59,6 +85,14 @@ const ENUMS = {
     'witch-hat',
     'crown',
     'bunny-ears',
+    'eye-patch',
+    'flower-crown',
+    'hair-ribbons',
+    'choker',
+    'earrings',
+    'tiara',
+    'demon-wings',
+    'scarf',
   ],
   backgroundStyle: ['gaming', 'nebula', 'green-screen', 'dark-studio'],
   earStyle: ['normal', 'elf', 'pointy'],
@@ -67,6 +101,9 @@ const ENUMS = {
   artStyle: ['classic', 'anime', 'retro'],
   faceShape: ['default', 'sharp', 'round', 'chubby', 'mature'],
   eyeShape: ['default', 'almond', 'droopy', 'sharp', 'cat-eye'],
+  beautyMark: ['none', 'left-cheek', 'right-cheek', 'under-eye', 'chin'],
+  facePaint: ['none', 'tribal', 'cat-whiskers', 'butterfly', 'under-eye-stripe'],
+  eyelashStyle: ['natural', 'glamour', 'minimal', 'none'],
 } as const;
 
 const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
@@ -106,6 +143,8 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
     'clothingColor2',
     'accessoryColor',
     'blushColor',
+    'frecklesColor',
+    'eyeColorRight',
   ] as const) {
     if (isHex(p[key])) out[key] = (p[key] as string).trim();
   }
@@ -117,6 +156,8 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
   // Booleans
   if (typeof p.hasFangs === 'boolean') out.hasFangs = p.hasFangs;
   if (typeof p.accessoryGlow === 'boolean') out.accessoryGlow = p.accessoryGlow;
+  if (typeof p.freckles === 'boolean') out.freckles = p.freckles;
+  if (typeof p.heterochromia === 'boolean') out.heterochromia = p.heterochromia;
 
   // Numeric ranges
   if (typeof p.blushOpacity === 'number') out.blushOpacity = clamp(p.blushOpacity, 0, 1);
@@ -124,6 +165,7 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
   if (typeof p.neckWidth === 'number') out.neckWidth = clamp(p.neckWidth, 0.6, 1.4);
   if (typeof p.neckHeight === 'number') out.neckHeight = clamp(p.neckHeight, 0.6, 1.4);
   if (typeof p.shoulderWidth === 'number') out.shoulderWidth = clamp(p.shoulderWidth, 0.7, 1.3);
+  if (typeof p.frecklesDensity === 'number') out.frecklesDensity = clamp(p.frecklesDensity, 0.3, 1.0);
 
   return out;
 }

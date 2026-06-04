@@ -45,7 +45,18 @@ export interface NamedCameraCalibrationProfile {
 export interface AvatarConfig {
   skinColor: string;
   eyeColor: string;
-  pupilStyle: 'round' | 'star' | 'heart' | 'slit' | 'diamond' | 'cross' | 'flower';
+  pupilStyle:
+    | 'round'
+    | 'star'
+    | 'heart'
+    | 'slit'
+    | 'diamond'
+    | 'cross'
+    | 'flower'
+    | 'spiral'
+    | 'crescent'
+    | 'infinity'
+    | 'cat-vertical';
   pupilColor: string;
   eyebrowStyle: 'normal' | 'thick' | 'thin' | 'sad' | 'none';
   eyebrowColor: string;
@@ -59,7 +70,11 @@ export interface AvatarConfig {
     | 'curly-bangs'
     | 'cross-bangs'
     | 'wolf-cut'
-    | 'curtain-bangs';
+    | 'curtain-bangs'
+    | 'asymmetric'
+    | 'blunt-bangs'
+    | 'messy'
+    | 'braided-bangs';
   hairStyleBack:
     | 'straight'
     | 'tails'
@@ -70,7 +85,12 @@ export interface AvatarConfig {
     | 'drill-tails'
     | 'wavy'
     | 'ponytail'
-    | 'bun';
+    | 'bun'
+    | 'side-tail'
+    | 'twintail-long'
+    | 'messy-bun'
+    | 'fishtail-braid'
+    | 'layered';
   hairColor: string;
   hairHighlightColor: string;
   clothingStyle:
@@ -87,7 +107,12 @@ export interface AvatarConfig {
     | 'witch-robe'
     | 'royal-knight'
     | 'cyber-ninja'
-    | 'lolita-dress';
+    | 'lolita-dress'
+    | 'school-blazer'
+    | 'chinese-dress'
+    | 'pirate-coat'
+    | 'angel-dress'
+    | 'punk-jacket';
   clothingColor1: string;
   clothingColor2: string;
   accessoryStyle:
@@ -100,7 +125,15 @@ export interface AvatarConfig {
     | 'fox-mask'
     | 'witch-hat'
     | 'crown'
-    | 'bunny-ears';
+    | 'bunny-ears'
+    | 'eye-patch'
+    | 'flower-crown'
+    | 'hair-ribbons'
+    | 'choker'
+    | 'earrings'
+    | 'tiara'
+    | 'demon-wings'
+    | 'scarf';
   accessoryColor: string;
   backgroundStyle: 'gaming' | 'nebula' | 'green-screen' | 'dark-studio';
   name: string;
@@ -112,6 +145,16 @@ export interface AvatarConfig {
   earStyle: 'normal' | 'elf' | 'pointy';
   hairGradient: 'none' | 'linear' | 'sunset' | 'indigo-fade';
   accessoryGlow: boolean;
+
+  // Phase C — Face details
+  freckles?: boolean;
+  frecklesDensity?: number; // 0.3 to 1.0
+  frecklesColor?: string;
+  beautyMark?: 'none' | 'left-cheek' | 'right-cheek' | 'under-eye' | 'chin';
+  facePaint?: 'none' | 'tribal' | 'cat-whiskers' | 'butterfly' | 'under-eye-stripe';
+  heterochromia?: boolean;
+  eyeColorRight?: string;
+  eyelashStyle?: 'natural' | 'glamour' | 'minimal' | 'none';
 
   // Custom proportions variables
   headSize?: number; // 0.8 to 1.2

@@ -151,6 +151,10 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
             <option value="diamond">{isEn ? 'Crystal Diamond 💎' : 'Кришталевий Діамант 💎'}</option>
             <option value="cross">{isEn ? 'Gothic Cross ✙' : 'Готичний Хрест ✙'}</option>
             <option value="flower">{isEn ? 'Sakura Flower 🌸' : 'Квітка Сакури 🌸'}</option>
+            <option value="spiral">{t.rightSidebar.pupilOptions.spiral}</option>
+            <option value="crescent">{t.rightSidebar.pupilOptions.crescent}</option>
+            <option value="infinity">{t.rightSidebar.pupilOptions.infinity}</option>
+            <option value="cat-vertical">{t.rightSidebar.pupilOptions['cat-vertical']}</option>
           </select>
         </div>
 
@@ -236,6 +240,29 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
           </select>
         </div>
 
+        {/* Heterochromia toggle */}
+        <div className="space-y-1">
+          <div
+            className={`flex items-center space-x-2.5 h-10 px-3 rounded border ${
+              theme === 'dark' ? 'bg-[#0a0a0c]/80 border-white/5' : 'bg-slate-50 border-slate-200'
+            }`}
+          >
+            <input
+              type="checkbox"
+              id="heterochromia-checkbox"
+              checked={config.heterochromia ?? false}
+              onChange={(e) => setConfig((prev) => ({ ...prev, heterochromia: e.target.checked }))}
+              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/40 w-4 h-4 cursor-pointer accent-indigo-500"
+            />
+            <label
+              htmlFor="heterochromia-checkbox"
+              className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}
+            >
+              {t.rightSidebar.heterochromia}
+            </label>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-3 pt-1">
           <div className="space-y-1">
             <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">
@@ -254,7 +281,7 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
 
           <div className="space-y-1">
             <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">
-              {isEn ? 'Eyes Iris' : 'Райдужка ока'}
+              {config.heterochromia ? (isEn ? 'Left Eye Iris' : 'Ліва Райдужка') : isEn ? 'Eyes Iris' : 'Райдужка ока'}
             </label>
             <div className="flex items-center space-x-2">
               <input
@@ -265,6 +292,161 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
               />
               <span className="text-[9px] font-mono text-slate-500 dark:text-white/50">{config.eyeColor}</span>
             </div>
+          </div>
+        </div>
+
+        {config.heterochromia && (
+          <div className="space-y-1">
+            <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">
+              {t.rightSidebar.eyeColorRight}
+            </label>
+            <div className="flex items-center space-x-2 p-2 rounded border dark:bg-[#08080a] dark:border-white/5 bg-slate-50 border-slate-200/60">
+              <input
+                type="color"
+                value={config.eyeColorRight ?? '#2563eb'}
+                onChange={(e) => setConfig((p) => ({ ...p, eyeColorRight: e.target.value }))}
+                className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-250'}`}
+              />
+              <span className="text-[9px] font-mono text-slate-500 dark:text-white/50">
+                {config.eyeColorRight ?? '#2563eb'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {t.rightSidebar.eyelashStyle}
+          </label>
+          <select
+            value={config.eyelashStyle || 'natural'}
+            onChange={(e) => setConfig((prev) => ({ ...prev, eyelashStyle: e.target.value as any }))}
+            className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                : 'bg-white text-slate-700 border-slate-200'
+            }`}
+          >
+            <option value="natural">{t.rightSidebar.eyelashOptions.natural}</option>
+            <option value="glamour">{t.rightSidebar.eyelashOptions.glamour}</option>
+            <option value="minimal">{t.rightSidebar.eyelashOptions.minimal}</option>
+            <option value="none">{t.rightSidebar.eyelashOptions.none}</option>
+          </select>
+        </div>
+
+        <div
+          className={`mt-4 p-4 rounded-sm border space-y-4 ${
+            theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+          }`}
+        >
+          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 block font-mono">
+            {isEn ? 'Cosmetics & Face Details' : 'Косметика та деталі обличчя'}
+          </span>
+
+          {/* Freckles Toggle */}
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2.5">
+              <input
+                type="checkbox"
+                id="freckles-checkbox"
+                checked={config.freckles ?? false}
+                onChange={(e) => setConfig((prev) => ({ ...prev, freckles: e.target.checked }))}
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/40 w-4 h-4 cursor-pointer accent-indigo-500"
+              />
+              <label
+                htmlFor="freckles-checkbox"
+                className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}
+              >
+                {t.rightSidebar.frecklesLabel}
+              </label>
+            </div>
+          </div>
+
+          {config.freckles && (
+            <>
+              {/* Freckles Density */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] font-semibold">
+                  <span>{t.rightSidebar.frecklesDensity}</span>
+                  <span className="text-indigo-500">{Math.round((config.frecklesDensity ?? 0.6) * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.3"
+                  max="1.0"
+                  step="0.05"
+                  value={config.frecklesDensity ?? 0.6}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, frecklesDensity: parseFloat(e.target.value) }))}
+                  className="w-full accent-indigo-500 cursor-pointer h-1.5"
+                />
+              </div>
+
+              {/* Freckles Color */}
+              <div className="space-y-1">
+                <label className="text-[9px] text-slate-400 dark:text-white/40 block font-mono uppercase font-bold">
+                  {t.rightSidebar.frecklesColor}
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="color"
+                    value={config.frecklesColor ?? '#8b5a2b'}
+                    onChange={(e) => setConfig((p) => ({ ...p, frecklesColor: e.target.value }))}
+                    className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border border-slate-250'}`}
+                  />
+                  <span className="text-[9px] font-mono text-slate-500 dark:text-white/50">
+                    {config.frecklesColor ?? '#8b5a2b'}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Beauty Mark Selection */}
+          <div className="space-y-1">
+            <label
+              className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+            >
+              {t.rightSidebar.beautyMarkLabel}
+            </label>
+            <select
+              value={config.beautyMark || 'none'}
+              onChange={(e) => setConfig((prev) => ({ ...prev, beautyMark: e.target.value as any }))}
+              className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                  : 'bg-white text-slate-700 border-slate-200'
+              }`}
+            >
+              <option value="none">{t.rightSidebar.beautyMarkOptions.none}</option>
+              <option value="left-cheek">{t.rightSidebar.beautyMarkOptions['left-cheek']}</option>
+              <option value="right-cheek">{t.rightSidebar.beautyMarkOptions['right-cheek']}</option>
+              <option value="under-eye">{t.rightSidebar.beautyMarkOptions['under-eye']}</option>
+              <option value="chin">{t.rightSidebar.beautyMarkOptions.chin}</option>
+            </select>
+          </div>
+
+          {/* Face Paint Selection */}
+          <div className="space-y-1">
+            <label
+              className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+            >
+              {t.rightSidebar.facePaintLabel}
+            </label>
+            <select
+              value={config.facePaint || 'none'}
+              onChange={(e) => setConfig((prev) => ({ ...prev, facePaint: e.target.value as any }))}
+              className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                  : 'bg-white text-slate-700 border-slate-200'
+              }`}
+            >
+              <option value="none">{t.rightSidebar.facePaintOptions.none}</option>
+              <option value="tribal">{t.rightSidebar.facePaintOptions.tribal}</option>
+              <option value="cat-whiskers">{t.rightSidebar.facePaintOptions['cat-whiskers']}</option>
+              <option value="butterfly">{t.rightSidebar.facePaintOptions.butterfly}</option>
+              <option value="under-eye-stripe">{t.rightSidebar.facePaintOptions['under-eye-stripe']}</option>
+            </select>
           </div>
         </div>
       </div>

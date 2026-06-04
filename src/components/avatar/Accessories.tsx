@@ -11,7 +11,15 @@ export const AccessoryComponent: React.FC<{
     | 'fox-mask'
     | 'witch-hat'
     | 'crown'
-    | 'bunny-ears';
+    | 'bunny-ears'
+    | 'eye-patch'
+    | 'flower-crown'
+    | 'hair-ribbons'
+    | 'choker'
+    | 'earrings'
+    | 'tiara'
+    | 'demon-wings'
+    | 'scarf';
   color: string;
   angleX: number;
   accessoryGlow?: boolean;
@@ -339,6 +347,184 @@ export const AccessoryComponent: React.FC<{
                C 245 0, 248 45, 252 65 Z"
             fill="#ffccd5"
           />
+        </g>
+      )}
+
+      {/* Eye Patch */}
+      {style === 'eye-patch' && (
+        <g id="accessory-eye-patch" style={{ transform: `translateY(40px)` }}>
+          {/* Strap going across the head */}
+          <path d="M 130 130 Q 200 120, 270 130" stroke="#1c1917" strokeWidth="3" fill="none" />
+          <path d="M 130 130 Q 100 140, 90 155" stroke="#1c1917" strokeWidth="3" fill="none" />
+          {/* Patch over right eye */}
+          <ellipse cx="244" cy="135" rx="24" ry="18" fill="#1c1917" />
+          <ellipse cx="244" cy="135" rx="22" ry="16" fill={color} />
+          {/* Skull / crossbones decorative emblem */}
+          <circle cx="244" cy="132" r="5" fill="#ffffff" opacity="0.8" />
+          <path d="M238 138 L250 138" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+          <path d="M241 141 L247 141" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+        </g>
+      )}
+
+      {/* Flower Crown */}
+      {style === 'flower-crown' && (
+        <g id="accessory-flower-crown" transform="translate(200, 82)">
+          {/* Vine / stem band */}
+          <path
+            d="M -65 0 Q -30 -12, 0 -8 Q 30 -12, 65 0"
+            stroke="#16a34a"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path d="M -55 2 Q -25 -8, 0 -5 Q 25 -8, 55 2" stroke="#22c55e" strokeWidth="1.5" fill="none" opacity="0.6" />
+          {/* Roses */}
+          {[-45, -15, 15, 45].map((x, i) => (
+            <g key={i} transform={`translate(${x}, ${-6 + Math.sin(i * 1.5) * 3})`}>
+              <circle cx="0" cy="0" r="7" fill={i % 2 === 0 ? color : '#f472b6'} />
+              <circle cx="0" cy="0" r="4" fill={i % 2 === 0 ? '#ffffff' : color} opacity="0.4" />
+              <circle cx="-2" cy="-2" r="1.5" fill="#ffffff" opacity="0.7" />
+            </g>
+          ))}
+          {/* Small leaves */}
+          <path d="M -30 -2 Q -35 -8, -28 -10 Q -25 -4, -30 -2 Z" fill="#22c55e" />
+          <path d="M 0 0 Q -5 -8, 2 -10 Q 5 -4, 0 0 Z" fill="#22c55e" />
+          <path d="M 30 -2 Q 35 -8, 28 -10 Q 25 -4, 30 -2 Z" fill="#22c55e" />
+        </g>
+      )}
+
+      {/* Hair Ribbons */}
+      {style === 'hair-ribbons' && (
+        <g id="accessory-hair-ribbons">
+          {/* Left ribbon */}
+          <g transform="translate(120, 105)">
+            <path d="M 0 0 C -12 -8, -12 8, 0 0 Z" fill={color} stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <path d="M 0 0 C 12 -8, 12 8, 0 0 Z" fill={color} stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <circle cx="0" cy="0" r="3.5" fill={color} />
+            <path d="M -2 2 L -8 18 L -2 15 L 0 3 Z" fill={color} />
+            <path d="M 2 2 L 8 18 L 2 15 L 0 3 Z" fill={color} />
+          </g>
+          {/* Right ribbon */}
+          <g transform="translate(280, 105)">
+            <path d="M 0 0 C -12 -8, -12 8, 0 0 Z" fill={color} stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <path d="M 0 0 C 12 -8, 12 8, 0 0 Z" fill={color} stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <circle cx="0" cy="0" r="3.5" fill={color} />
+            <path d="M -2 2 L -8 18 L -2 15 L 0 3 Z" fill={color} />
+            <path d="M 2 2 L 8 18 L 2 15 L 0 3 Z" fill={color} />
+          </g>
+        </g>
+      )}
+
+      {/* Choker */}
+      {style === 'choker' && (
+        <g id="accessory-choker" transform="translate(0, 0)">
+          {/* Band around neck */}
+          <path d="M 168 260 Q 200 268, 232 260" stroke={color} strokeWidth="6" fill="none" strokeLinecap="round" />
+          <path d="M 168 260 Q 200 268, 232 260" stroke="rgba(0,0,0,0.15)" strokeWidth="2" fill="none" />
+          {/* Central pendant / gem */}
+          <path d="M 200 264 L 204 270 L 200 276 L 196 270 Z" fill="#ffffff" stroke={color} strokeWidth="1.5" />
+          <circle cx="200" cy="270" r="2" fill={color} />
+        </g>
+      )}
+
+      {/* Earrings */}
+      {style === 'earrings' && (
+        <g id="accessory-earrings">
+          {/* Left earring */}
+          <g transform="translate(128, 170)">
+            <circle cx="0" cy="0" r="2" fill={color} />
+            <line x1="0" y1="2" x2="0" y2="12" stroke={color} strokeWidth="1.5" />
+            <path d="M 0 12 L -5 18 L 0 24 L 5 18 Z" fill={color} stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
+            <circle cx="0" cy="18" r="1.5" fill="#ffffff" opacity="0.6" />
+          </g>
+          {/* Right earring */}
+          <g transform="translate(272, 170)">
+            <circle cx="0" cy="0" r="2" fill={color} />
+            <line x1="0" y1="2" x2="0" y2="12" stroke={color} strokeWidth="1.5" />
+            <path d="M 0 12 L -5 18 L 0 24 L 5 18 Z" fill={color} stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
+            <circle cx="0" cy="18" r="1.5" fill="#ffffff" opacity="0.6" />
+          </g>
+        </g>
+      )}
+
+      {/* Tiara */}
+      {style === 'tiara' && (
+        <g id="accessory-tiara" transform="translate(200, 82)">
+          {/* Delicate band */}
+          <path
+            d="M -50 5 Q -25 -5, 0 -8 Q 25 -5, 50 5"
+            stroke={color}
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+          {/* Central gemstone peak */}
+          <path d="M -8 -8 L 0 -22 L 8 -8" stroke={color} strokeWidth="2.5" fill="none" strokeLinejoin="round" />
+          <circle cx="0" cy="-22" r="4" fill="#3b82f6" stroke={color} strokeWidth="1.5" />
+          <circle cx="0" cy="-22" r="1.5" fill="#ffffff" opacity="0.8" />
+          {/* Side peaks */}
+          <path d="M -25 0 L -20 -12 L -15 0" stroke={color} strokeWidth="2" fill="none" strokeLinejoin="round" />
+          <circle cx="-20" cy="-12" r="2.5" fill="#ec4899" stroke={color} strokeWidth="1" />
+          <path d="M 25 0 L 20 -12 L 15 0" stroke={color} strokeWidth="2" fill="none" strokeLinejoin="round" />
+          <circle cx="20" cy="-12" r="2.5" fill="#ec4899" stroke={color} strokeWidth="1" />
+          {/* Tiny accent diamonds */}
+          <circle cx="-38" cy="2" r="1.5" fill="#ffffff" opacity="0.7" />
+          <circle cx="38" cy="2" r="1.5" fill="#ffffff" opacity="0.7" />
+        </g>
+      )}
+
+      {/* Demon Wings */}
+      {style === 'demon-wings' && (
+        <g id="accessory-demon-wings">
+          {/* Left wing */}
+          <g transform="translate(105, 270) scale(0.85)">
+            <path
+              d="M 0 0 C -30 -20, -55 -40, -60 -15 C -65 5, -40 -5, -35 5 C -30 15, -50 10, -45 25 C -40 35, -20 15, 0 0 Z"
+              fill={color}
+              stroke="#1c1917"
+              strokeWidth="2"
+            />
+            <path d="M -5 -2 Q -30 -15, -50 -10" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+            <path d="M -3 2 Q -25 5, -40 20" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+          </g>
+          {/* Right wing */}
+          <g transform="translate(295, 270) scale(-0.85, 0.85)">
+            <path
+              d="M 0 0 C -30 -20, -55 -40, -60 -15 C -65 5, -40 -5, -35 5 C -30 15, -50 10, -45 25 C -40 35, -20 15, 0 0 Z"
+              fill={color}
+              stroke="#1c1917"
+              strokeWidth="2"
+            />
+            <path d="M -5 -2 Q -30 -15, -50 -10" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+            <path d="M -3 2 Q -25 5, -40 20" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
+          </g>
+        </g>
+      )}
+
+      {/* Scarf */}
+      {style === 'scarf' && (
+        <g id="accessory-scarf" transform="translate(0, 0)">
+          {/* Scarf wrapped around neck */}
+          <path
+            d="M 155 258 Q 200 275, 245 258 Q 250 270, 245 280 Q 200 295, 155 280 Q 150 270, 155 258 Z"
+            fill={color}
+            stroke="rgba(0,0,0,0.12)"
+            strokeWidth="1.5"
+          />
+          {/* Hanging tail end */}
+          <path
+            d="M 220 278 C 225 295, 230 320, 225 345 C 222 355, 215 358, 212 350 C 210 340, 215 315, 218 295 Z"
+            fill={color}
+          />
+          {/* Knit texture lines */}
+          <path d="M 165 264 Q 200 278, 235 264" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" />
+          <path d="M 160 272 Q 200 286, 240 272" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" />
+          {/* Fringe at the end */}
+          <g opacity="0.8">
+            <line x1="215" y1="345" x2="213" y2="358" stroke={color} strokeWidth="2" strokeLinecap="round" />
+            <line x1="219" y1="347" x2="218" y2="360" stroke={color} strokeWidth="2" strokeLinecap="round" />
+            <line x1="223" y1="345" x2="222" y2="358" stroke={color} strokeWidth="2" strokeLinecap="round" />
+          </g>
         </g>
       )}
     </g>

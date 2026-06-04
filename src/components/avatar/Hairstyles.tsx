@@ -11,7 +11,11 @@ export const HairComponent: React.FC<{
     | 'curly-bangs'
     | 'cross-bangs'
     | 'wolf-cut'
-    | 'curtain-bangs';
+    | 'curtain-bangs'
+    | 'asymmetric'
+    | 'blunt-bangs'
+    | 'messy'
+    | 'braided-bangs';
   backStyle:
     | 'straight'
     | 'tails'
@@ -22,7 +26,12 @@ export const HairComponent: React.FC<{
     | 'drill-tails'
     | 'wavy'
     | 'ponytail'
-    | 'bun';
+    | 'bun'
+    | 'side-tail'
+    | 'twintail-long'
+    | 'messy-bun'
+    | 'fishtail-braid'
+    | 'layered';
   color: string;
   highlightColor: string;
   angleY: number;
@@ -366,6 +375,176 @@ export const HairComponent: React.FC<{
           <path d="M270 140 Q280 170, 275 200" stroke={color} strokeWidth="3" fill="none" opacity="0.7" />
         </g>
       )}
+
+      {backStyle === 'side-tail' && (
+        <g
+          id="hair-side-tail"
+          style={{
+            transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${hairSwayX * 0.15}deg)`,
+            transformOrigin: '200px 100px',
+          }}
+        >
+          {/* Base volume behind head */}
+          <path d="M105 130 C100 155, 95 190, 110 210 Q200 220, 290 210 C305 190, 300 155, 295 130 Z" fill={color} />
+          {/* Side tail flowing from right side */}
+          <path
+            d={`M280 130 C295 140, 310 170, 320 220
+               C325 260, 318 310, 310 345
+               C305 355, 295 350, 298 330
+               C302 290, 305 240, 295 200
+               C288 170, 275 145, 270 135 Z`}
+            fill={color}
+            style={{
+              transform: `rotate(${hairSwayX * 1.2}deg)`,
+              transformOrigin: '280px 130px',
+            }}
+          />
+          {isAnime && <path d="M295 180 Q310 230, 305 300" stroke="rgba(0,0,0,0.08)" strokeWidth="3" fill="none" />}
+          {/* Hair tie ribbon */}
+          <g
+            style={{
+              transform: `rotate(${hairSwayX * 0.8}deg)`,
+              transformOrigin: '285px 135px',
+            }}
+          >
+            <circle cx="285" cy="135" r="7" fill={highlightColor} />
+            <circle cx="285" cy="135" r="4.5" fill={color} />
+          </g>
+        </g>
+      )}
+
+      {backStyle === 'twintail-long' && (
+        <g id="hair-twintail-long">
+          {/* Left long twin-tail */}
+          <path
+            d="M110 120 C80 120, 25 160, 20 240 C16 300, 35 350, 28 380 C45 375, 55 330, 50 260 C48 210, 75 160, 95 140 Z"
+            fill={color}
+            style={{
+              transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${hairSwayX * 1.15}deg)`,
+              transformOrigin: '110px 130px',
+            }}
+          />
+          {/* Right long twin-tail */}
+          <path
+            d="M290 120 C320 120, 375 160, 380 240 C384 300, 365 350, 372 380 C355 375, 345 330, 350 260 C352 210, 325 160, 305 140 Z"
+            fill={color}
+            style={{
+              transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${-hairSwayX * 1.15}deg)`,
+              transformOrigin: '290px 130px',
+            }}
+          />
+          {/* Ribbon ties */}
+          <g style={{ transform: `rotate(${hairSwayX * 0.8}deg)`, transformOrigin: '104px 128px' }}>
+            <path d="M98 128 L88 140 L98 136 L104 128 Z" fill={highlightColor} />
+            <path d="M110 128 L120 140 L110 136 L104 128 Z" fill={highlightColor} />
+            <circle cx="104" cy="128" r="5" fill={highlightColor} />
+          </g>
+          <g style={{ transform: `rotate(${-hairSwayX * 0.8}deg)`, transformOrigin: '296px 128px' }}>
+            <path d="M290 128 L280 140 L290 136 L296 128 Z" fill={highlightColor} />
+            <path d="M302 128 L312 140 L302 136 L296 128 Z" fill={highlightColor} />
+            <circle cx="296" cy="128" r="5" fill={highlightColor} />
+          </g>
+          {isAnime && (
+            <>
+              <path d="M80 170 Q50 240, 38 340" stroke="rgba(0,0,0,0.07)" strokeWidth="3" fill="none" />
+              <path d="M320 170 Q350 240, 362 340" stroke="rgba(0,0,0,0.07)" strokeWidth="3" fill="none" />
+            </>
+          )}
+        </g>
+      )}
+
+      {backStyle === 'messy-bun' && (
+        <g id="hair-messy-bun">
+          {/* Base volume */}
+          <path d="M110 130 C100 160, 95 195, 110 215 Q200 225, 290 215 C305 195, 300 160, 290 130 Z" fill={color} />
+          {/* Messy bun — irregular shape on top */}
+          <ellipse cx="200" cy="80" rx="35" ry="30" fill={color} />
+          <ellipse cx="192" cy="72" rx="18" ry="14" fill={color} />
+          <ellipse cx="212" cy="74" rx="16" ry="12" fill={color} />
+          {isAnime && (
+            <>
+              <ellipse cx="200" cy="80" rx="30" ry="26" fill="rgba(0,0,0,0.1)" />
+              <path
+                d="M185 68 Q200 58, 215 68"
+                stroke={highlightColor}
+                strokeWidth="2.5"
+                fill="none"
+                opacity="0.65"
+                strokeLinecap="round"
+              />
+            </>
+          )}
+          {/* Stray wisps */}
+          <path d="M165 90 Q155 110, 160 130" stroke={color} strokeWidth="3" fill="none" opacity="0.8" />
+          <path d="M235 88 Q245 108, 240 128" stroke={color} strokeWidth="3" fill="none" opacity="0.8" />
+          <path d="M180 75 Q170 60, 175 50" stroke={color} strokeWidth="2.5" fill="none" opacity="0.7" />
+          <path d="M220 77 Q230 62, 225 52" stroke={color} strokeWidth="2.5" fill="none" opacity="0.7" />
+          {/* Hair pin */}
+          <line x1="210" y1="55" x2="218" y2="42" stroke={highlightColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="218" cy="40" r="3.5" fill={highlightColor} />
+        </g>
+      )}
+
+      {backStyle === 'fishtail-braid' && (
+        <g
+          id="hair-fishtail-braid"
+          style={{
+            transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${hairSwayX * 0.12}deg)`,
+            transformOrigin: '200px 100px',
+          }}
+        >
+          {/* Base behind head */}
+          <path d="M105 130 C100 155, 95 190, 110 210 Q200 220, 290 210 C305 190, 300 155, 295 130 Z" fill={color} />
+          {/* Single thick braid down the back center */}
+          <path
+            d="M190 130 C185 160, 180 220, 185 300 C188 340, 195 365, 200 375 C205 365, 212 340, 215 300 C220 220, 215 160, 210 130 Z"
+            fill={color}
+          />
+          {/* Fishtail weave pattern */}
+          <path
+            d="M195 150 Q200 160, 205 150 Q200 170, 195 160 Q200 180, 205 170 Q200 190, 195 180 Q200 200, 205 190 Q200 210, 195 200 Q200 220, 205 210 Q200 230, 195 220 Q200 240, 205 230 Q200 250, 195 240 Q200 260, 205 250 Q200 270, 195 260 Q200 280, 205 270 Q200 290, 195 280 Q200 300, 205 290 Q200 310, 195 300 Q200 320, 205 310"
+            stroke="rgba(0,0,0,0.12)"
+            strokeWidth="2.5"
+            fill="none"
+          />
+          {/* Braid tie at end */}
+          <circle cx="200" cy="370" r="5" fill={highlightColor} />
+        </g>
+      )}
+
+      {backStyle === 'layered' && (
+        <g
+          id="hair-layered"
+          style={{
+            transform: `scaleY(${1 + hairSwayY * 0.008}) rotate(${hairSwayX * 0.12}deg)`,
+            transformOrigin: '200px 100px',
+          }}
+        >
+          {/* Bottom layer (longest) */}
+          <path
+            d="M95 130 C75 170, 70 250, 80 330 C90 340, 100 340, 105 320 Q110 280, 115 240 L285 240 Q290 280, 295 320 C300 340, 310 340, 320 330 C330 250, 325 170, 305 130 Z"
+            fill={color}
+          />
+          {/* Middle layer */}
+          <path
+            d="M100 130 C82 165, 80 220, 90 280 Q105 290, 120 260 L280 260 Q295 290, 310 280 C320 220, 318 165, 300 130 Z"
+            fill={color}
+            opacity="0.95"
+          />
+          {isAnime && (
+            <>
+              <path d="M110 160 Q95 220, 100 290" stroke="rgba(0,0,0,0.06)" strokeWidth="2.5" fill="none" />
+              <path d="M290 160 Q305 220, 300 290" stroke="rgba(0,0,0,0.06)" strokeWidth="2.5" fill="none" />
+            </>
+          )}
+          {/* Top layer (shortest, frames face) */}
+          <path
+            d="M105 130 C90 160, 92 200, 110 230 Q200 238, 290 230 C308 200, 310 160, 295 130 Z"
+            fill={color}
+            opacity="0.9"
+          />
+        </g>
+      )}
     </>
   );
 };
@@ -381,7 +560,11 @@ export const FrontHairComponent: React.FC<{
     | 'curly-bangs'
     | 'cross-bangs'
     | 'wolf-cut'
-    | 'curtain-bangs';
+    | 'curtain-bangs'
+    | 'asymmetric'
+    | 'blunt-bangs'
+    | 'messy'
+    | 'braided-bangs';
   color: string;
   highlightColor: string;
   angleY: number;
@@ -680,6 +863,113 @@ export const FrontHairComponent: React.FC<{
           <g style={rightLockStyle}>
             <path d="M294 130 C305 165, 300 210, 288 245 L278 220 Q292 175, 280 135 Z" fill={color} />
           </g>
+        </g>
+      )}
+
+      {bangStyle === 'asymmetric' && (
+        <g id="bangs-asymmetric">
+          {/* Long side on left, short on right */}
+          <path
+            d="M106 130
+               C115 135, 135 152, 155 168
+               C175 178, 195 155, 200 145
+               C205 138, 215 140, 230 148
+               C250 142, 275 135, 294 130 Z"
+            fill={color}
+          />
+          <g style={leftLockStyle}>
+            {/* Extra-long left face-framing piece */}
+            <path d="M106 130 C90 170, 95 230, 110 270 L122 240 Q105 185, 120 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C300 155, 292 175, 285 195 L277 180 Q285 155, 282 135 Z" fill={color} />
+          </g>
+        </g>
+      )}
+
+      {bangStyle === 'blunt-bangs' && (
+        <g id="bangs-blunt">
+          {/* Perfectly straight-cut blunt bangs */}
+          <path
+            d="M106 130
+               L108 152 H292 L294 130 Z"
+            fill={color}
+          />
+          {/* Subtle strand separation lines */}
+          <line x1="140" y1="132" x2="140" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
+          <line x1="170" y1="132" x2="170" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
+          <line x1="200" y1="132" x2="200" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
+          <line x1="230" y1="132" x2="230" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
+          <line x1="260" y1="132" x2="260" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
+          <g style={leftLockStyle}>
+            <path d="M106 130 C100 155, 108 195, 118 220 L126 200 Q114 165, 120 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 C300 155, 292 195, 282 220 L274 200 Q286 165, 280 135 Z" fill={color} />
+          </g>
+        </g>
+      )}
+
+      {bangStyle === 'messy' && (
+        <g id="bangs-messy">
+          {/* Chaotic strands going in different directions */}
+          <path
+            d="M106 130
+               L112 158 L120 142 L130 162
+               L140 138 L152 165 L160 140
+               L172 160 L180 135 L190 158
+               L200 130 L210 158 L220 135
+               L228 160 L240 140 L248 165
+               L260 138 L270 162 L280 142
+               L288 158 L294 130 Z"
+            fill={color}
+          />
+          {/* Extra wild strands */}
+          <path d="M150 130 Q145 118, 155 112" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path d="M250 130 Q255 115, 245 110" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round" />
+          <g style={leftLockStyle}>
+            <path d="M106 130 Q85 175, 105 230 L118 205 Q100 165, 118 135 Z" fill={color} />
+          </g>
+          <g style={rightLockStyle}>
+            <path d="M294 130 Q315 175, 295 230 L282 205 Q300 165, 282 135 Z" fill={color} />
+          </g>
+        </g>
+      )}
+
+      {bangStyle === 'braided-bangs' && (
+        <g id="bangs-braided">
+          {/* Base bang shape */}
+          <path
+            d="M106 130
+               C120 128, 140 140, 160 155
+               C180 142, 195 138, 200 138
+               C205 138, 220 142, 240 155
+               C260 140, 280 128, 294 130 Z"
+            fill={color}
+          />
+          {/* Left side braided strand */}
+          <g style={leftLockStyle}>
+            <path d="M106 130 C95 160, 100 210, 112 250 L122 225 Q108 175, 120 135 Z" fill={color} />
+            <path
+              d="M110 150 Q100 160, 108 175 Q96 185, 104 200 Q92 210, 100 225 Q88 235, 96 245"
+              stroke="rgba(0,0,0,0.12)"
+              strokeWidth="2.5"
+              fill="none"
+            />
+          </g>
+          {/* Right side braided strand */}
+          <g style={rightLockStyle}>
+            <path d="M294 130 C305 160, 300 210, 288 250 L278 225 Q292 175, 280 135 Z" fill={color} />
+            <path
+              d="M290 150 Q300 160, 292 175 Q304 185, 296 200 Q308 210, 300 225 Q312 235, 304 245"
+              stroke="rgba(0,0,0,0.12)"
+              strokeWidth="2.5"
+              fill="none"
+            />
+          </g>
+          {/* Tiny braid ties */}
+          <rect x="94" y="242" width="10" height="5" fill={highlightColor} rx="1" />
+          <rect x="296" y="242" width="10" height="5" fill={highlightColor} rx="1" />
         </g>
       )}
 

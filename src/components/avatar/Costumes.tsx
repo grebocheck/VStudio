@@ -16,7 +16,12 @@ export const NeckAndShoulders: React.FC<{
     | 'witch-robe'
     | 'royal-knight'
     | 'cyber-ninja'
-    | 'lolita-dress';
+    | 'lolita-dress'
+    | 'school-blazer'
+    | 'chinese-dress'
+    | 'pirate-coat'
+    | 'angel-dress'
+    | 'punk-jacket';
   color1: string;
   color2: string;
   angleZ: number;
@@ -604,6 +609,211 @@ export const NeckAndShoulders: React.FC<{
               <path d="M -5 8 L -15 35 L -5 32 L 0 10 Z" fill={color2} opacity="0.9" />
               <path d="M 5 8 L 15 35 L 5 32 L 0 10 Z" fill={color2} opacity="0.9" />
             </g>
+          </g>
+        )}
+
+        {/* School Blazer option */}
+        {clothingStyle === 'school-blazer' && (
+          <g id="torso-school-blazer">
+            {/* Base blazer body */}
+            <path d="M125 280 C 105 320, 30 370, 0 400 L400 400 C 370 370, 295 320, 275 280 Z" fill={color1} />
+            {/* White shirt inner collar */}
+            <path d="M 160 270 L 175 285 L 200 280 L 225 285 L 240 270 L 200 295 Z" fill="#ffffff" />
+            {/* Tie / Ribbon */}
+            <path d="M 195 290 L 190 350 L 200 365 L 210 350 L 205 290 Z" fill={color2} />
+            <polygon points="190,290 210,290 200,298" fill={color2} />
+            {/* Blazer Lapels */}
+            <path
+              d="M 155 270 L 175 340 L 200 345 L 225 340 L 245 270 L 230 270 L 200 330 L 170 270 Z"
+              fill="rgba(0,0,0,0.15)"
+            />
+            <path d="M 155 270 L 170 330 L 200 335 L 230 330 L 245 270" stroke={color1} strokeWidth="3" fill="none" />
+            {/* Gold blazer buttons */}
+            <circle cx="190" cy="360" r="4.5" fill="#fbbf24" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <circle cx="210" cy="360" r="4.5" fill="#fbbf24" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <circle cx="190" cy="385" r="4.5" fill="#fbbf24" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <circle cx="210" cy="385" r="4.5" fill="#fbbf24" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+          </g>
+        )}
+
+        {/* Chinese Dress / Qipao option */}
+        {clothingStyle === 'chinese-dress' && (
+          <g id="torso-chinese-dress">
+            {/* Fitted dress body */}
+            <path d="M125 280 C 110 320, 45 365, 10 400 L390 400 C 355 365, 290 320, 275 280 Z" fill={color1} />
+            {/* Mandarin Collar */}
+            <path
+              d="M 155 264 Q 200 282, 245 264 L 245 273 Q 200 292, 155 273 Z"
+              fill={color1}
+              stroke="rgba(0,0,0,0.15)"
+              strokeWidth="1"
+            />
+            {/* Contrast trimming along collar and edge */}
+            <path d="M 155 264 Q 200 282, 245 264" stroke={color2} strokeWidth="2.5" fill="none" />
+            <path d="M 155 273 Q 200 292, 245 273" stroke={color2} strokeWidth="2.5" fill="none" />
+            {/* Asymmetrical opening path */}
+            <path d="M 200 285 Q 215 315, 275 320" stroke={color2} strokeWidth="3" fill="none" strokeLinecap="round" />
+            {/* Frog/knot button closures */}
+            {[
+              { cx: 215, cy: 295 },
+              { cx: 235, cy: 308 },
+              { cx: 255, cy: 317 },
+            ].map((pt, idx) => (
+              <g key={idx} transform={`translate(${pt.cx}, ${pt.cy})`}>
+                <circle cx="0" cy="0" r="3.5" fill={color2} />
+                <path d="M -8 0 Q -4 -5, 0 0 Q 4 -5, 8 0" stroke={color2} strokeWidth="1.5" fill="none" />
+              </g>
+            ))}
+            {/* Decorative gold/color2 pattern lines on shoulders */}
+            <path
+              d="M 115 295 Q 90 320, 60 335"
+              stroke={color2}
+              strokeWidth="1.5"
+              strokeDasharray="4 2"
+              fill="none"
+              opacity="0.6"
+            />
+            <path
+              d="M 285 295 Q 310 320, 340 335"
+              stroke={color2}
+              strokeWidth="1.5"
+              strokeDasharray="4 2"
+              fill="none"
+              opacity="0.6"
+            />
+          </g>
+        )}
+
+        {/* Pirate Coat option */}
+        {clothingStyle === 'pirate-coat' && (
+          <g id="torso-pirate-coat">
+            {/* Ruffled cravat/shirt underneath */}
+            <path d="M 160 270 Q 200 320, 240 270 C 230 330, 170 330, 160 270 Z" fill="#ffffff" />
+            {/* Cravat ruffles layers */}
+            <path
+              d="M 175 285 C 190 280, 210 280, 225 285 Q 200 315, 175 285"
+              fill="#f1f5f9"
+              stroke="rgba(0,0,0,0.06)"
+            />
+            <path
+              d="M 183 300 C 192 295, 208 295, 217 300 Q 200 325, 183 300"
+              fill="#e2e8f0"
+              stroke="rgba(0,0,0,0.06)"
+            />
+            <path d="M 190 315 L 200 335 L 210 315 Z" fill="#cbd5e1" />
+
+            {/* Coat base */}
+            <path d="M125 280 C 105 320, 30 370, 0 400 L400 400 C 370 370, 295 320, 275 280 Z" fill={color1} />
+            {/* Open coat lapels (wide cuffs) */}
+            <path
+              d="M 155 270 L 175 400 M 245 270 L 225 400"
+              stroke={color2}
+              strokeWidth="14"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.95"
+            />
+            <path
+              d="M 155 270 L 175 400 M 245 270 L 225 400"
+              stroke={color1}
+              strokeWidth="8"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* Gold trim on lapels */}
+            <path d="M 148 270 L 168 400 M 252 270 L 232 400" stroke="#fbbf24" strokeWidth="2.5" fill="none" />
+
+            {/* Pirate skull cross-belt */}
+            <path d="M 105 315 L 305 385" stroke="#292524" strokeWidth="18" strokeLinecap="square" fill="none" />
+            <path
+              d="M 105 315 L 305 385"
+              stroke="#fbbf24"
+              strokeWidth="20"
+              strokeLinecap="square"
+              fill="none"
+              opacity="0.15"
+            />
+            {/* Belt buckle */}
+            <rect
+              x="190"
+              y="337"
+              width="22"
+              height="22"
+              rx="3"
+              transform="rotate(20, 201, 348)"
+              fill="#fbbf24"
+              stroke="#d97706"
+              strokeWidth="2"
+            />
+            <rect x="195" y="342" width="12" height="12" rx="1" transform="rotate(20, 201, 348)" fill="#292524" />
+          </g>
+        )}
+
+        {/* Angel Dress option */}
+        {clothingStyle === 'angel-dress' && (
+          <g id="torso-angel-dress">
+            {/* Flowy base */}
+            <path d="M125 280 C 100 310, 20 340, 0 400 L400 400 C 380 340, 300 310, 275 280 Z" fill={color1} />
+            {/* Semi-translucent layered chiffon overlay */}
+            <path d="M130 280 C 110 320, 30 350, 0 395 L200 400 Z" fill="rgba(255,255,255,0.45)" />
+            <path d="M270 280 C 290 320, 370 350, 400 395 L200 400 Z" fill="rgba(255,255,255,0.45)" />
+
+            {/* Sweetheart neckline bodice */}
+            <path
+              d="M 150 295 C 170 280, 185 285, 200 295 C 215 285, 230 280, 250 295 L 240 400 L 160 400 Z"
+              fill={color1}
+              stroke="rgba(0,0,0,0.08)"
+              strokeWidth="2"
+            />
+            {/* Gold or pastel trim & chest gem */}
+            <path
+              d="M 150 295 C 170 280, 185 285, 200 295 C 215 285, 230 280, 250 295"
+              fill="none"
+              stroke={color2}
+              strokeWidth="3"
+            />
+            <circle cx="200" cy="295" r="5" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+            <circle cx="200" cy="295" r="2" fill="#ffffff" />
+
+            {/* Ribbon / Corset lace under gem */}
+            <path d="M 190 315 L 210 330 M 210 315 L 190 330 M 188 340 L 212 355" stroke={color2} strokeWidth="1.5" />
+          </g>
+        )}
+
+        {/* Punk Jacket option */}
+        {clothingStyle === 'punk-jacket' && (
+          <g id="torso-punk-jacket">
+            {/* Striped t-shirt underneath */}
+            <path d="M135 282 C 115 320, 45 365, 10 400 L390 400 C 355 365, 285 320, 265 282 Z" fill={color2} />
+            {/* Striped pattern */}
+            {[300, 320, 340, 360, 380, 400].map((y, idx) => (
+              <path
+                key={idx}
+                d={`M ${120 - (y - 280) * 0.25} ${y} L ${280 + (y - 280) * 0.25} ${y}`}
+                stroke="#1c1917"
+                strokeWidth="8"
+                opacity="0.8"
+              />
+            ))}
+
+            {/* Open leather jacket */}
+            <path d="M125 280 C 105 320, 30 370, 0 400 L160 400 L 150 290 Z" fill={color1} />
+            <path d="M275 280 C 295 320, 370 370, 400 400 L240 400 L 250 290 Z" fill={color1} />
+            {/* Jacket collar folds */}
+            <path d="M 125 280 L 155 330 L 140 335 L 115 288 Z" fill="rgba(0,0,0,0.25)" />
+            <path d="M 275 280 L 245 330 L 260 335 L 285 288 Z" fill="rgba(0,0,0,0.25)" />
+            {/* Metallic zipper and studs */}
+            <path d="M 150 290 L 160 400" stroke="#cbd5e1" strokeWidth="3.5" strokeDasharray="5 3" />
+            <path d="M 250 290 L 240 400" stroke="#cbd5e1" strokeWidth="3.5" strokeDasharray="5 3" />
+            {/* Spikes/studs on collar */}
+            {[
+              { cx: 135, cy: 300 },
+              { cx: 145, cy: 315 },
+              { cx: 265, cy: 300 },
+              { cx: 255, cy: 315 },
+            ].map((pt, idx) => (
+              <circle key={idx} cx={pt.cx} cy={pt.cy} r="2.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.8" />
+            ))}
           </g>
         )}
 

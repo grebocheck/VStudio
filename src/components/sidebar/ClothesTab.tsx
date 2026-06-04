@@ -52,6 +52,11 @@ export const ClothesTab: React.FC<ClothesTabProps> = ({ config, setConfig }) => 
             <option value="royal-knight">{isEn ? 'Royal Knight Armor' : 'Броня Лицаря (Royal Knight)'}</option>
             <option value="cyber-ninja">{isEn ? 'Cyber Ninja Stealth' : 'Кібер-Ніндзя (Cyber Ninja)'}</option>
             <option value="lolita-dress">{isEn ? 'Gothic Lolita Dress' : 'Сукня Лоліти (Lolita Dress)'}</option>
+            <option value="school-blazer">{t.rightSidebar.outfitOptions['school-blazer']}</option>
+            <option value="chinese-dress">{t.rightSidebar.outfitOptions['chinese-dress']}</option>
+            <option value="pirate-coat">{t.rightSidebar.outfitOptions['pirate-coat']}</option>
+            <option value="angel-dress">{t.rightSidebar.outfitOptions['angel-dress']}</option>
+            <option value="punk-jacket">{t.rightSidebar.outfitOptions['punk-jacket']}</option>
           </select>
         </div>
 
@@ -100,6 +105,14 @@ export const ClothesTab: React.FC<ClothesTabProps> = ({ config, setConfig }) => 
             <option value="witch-hat">{isEn ? 'Witch Hat 🧙' : 'Капелюх Відьми 🧙'}</option>
             <option value="crown">{isEn ? 'Royal Crown 👑' : 'Корона / Тіара 👑'}</option>
             <option value="bunny-ears">{isEn ? 'Bunny Ears 🐰' : 'Кролячі Вушка 🐰'}</option>
+            <option value="eye-patch">{t.rightSidebar.decorOptions['eye-patch']}</option>
+            <option value="flower-crown">{t.rightSidebar.decorOptions['flower-crown']}</option>
+            <option value="hair-ribbons">{t.rightSidebar.decorOptions['hair-ribbons']}</option>
+            <option value="choker">{t.rightSidebar.decorOptions.choker}</option>
+            <option value="earrings">{t.rightSidebar.decorOptions.earrings}</option>
+            <option value="tiara">{t.rightSidebar.decorOptions.tiara}</option>
+            <option value="demon-wings">{t.rightSidebar.decorOptions['demon-wings']}</option>
+            <option value="scarf">{t.rightSidebar.decorOptions.scarf}</option>
           </select>
         </div>
 

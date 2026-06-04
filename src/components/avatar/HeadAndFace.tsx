@@ -7,7 +7,24 @@ export const HeadBase: React.FC<{
   earStyle: 'normal' | 'elf' | 'pointy';
   artStyle?: 'classic' | 'anime' | 'retro';
   faceShape?: 'default' | 'sharp' | 'round' | 'chubby' | 'mature';
-}> = ({ skinColor, blushOpacity, blushColor, earStyle, artStyle = 'classic', faceShape = 'default' }) => {
+  freckles?: boolean;
+  frecklesDensity?: number;
+  frecklesColor?: string;
+  beautyMark?: 'none' | 'left-cheek' | 'right-cheek' | 'under-eye' | 'chin';
+  facePaint?: 'none' | 'tribal' | 'cat-whiskers' | 'butterfly' | 'under-eye-stripe';
+}> = ({
+  skinColor,
+  blushOpacity,
+  blushColor,
+  earStyle,
+  artStyle = 'classic',
+  faceShape = 'default',
+  freckles = false,
+  frecklesDensity = 0.6,
+  frecklesColor = '#8b5a2b',
+  beautyMark = 'none',
+  facePaint = 'none',
+}) => {
   // Define variations of the anime face shape
   const getAnimeFacePath = () => {
     switch (faceShape) {
@@ -158,6 +175,117 @@ export const HeadBase: React.FC<{
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+      )}
+
+      {/* Freckles Rendering */}
+      {freckles && (
+        <g id="facial-freckles" fill={frecklesColor}>
+          {[
+            { x: 175, y: 192, r: 1.2 },
+            { x: 182, y: 195, r: 0.9 },
+            { x: 170, y: 196, r: 1.1 },
+            { x: 178, y: 199, r: 0.8 },
+            { x: 165, y: 193, r: 1.0 },
+            { x: 173, y: 202, r: 0.7 },
+            { x: 225, y: 192, r: 1.2 },
+            { x: 218, y: 195, r: 0.9 },
+            { x: 230, y: 196, r: 1.1 },
+            { x: 222, y: 199, r: 0.8 },
+            { x: 235, y: 193, r: 1.0 },
+            { x: 227, y: 202, r: 0.7 },
+            { x: 192, y: 189, r: 0.8 },
+            { x: 208, y: 189, r: 0.8 },
+            { x: 196, y: 192, r: 1.0 },
+            { x: 204, y: 192, r: 1.0 },
+            { x: 200, y: 194, r: 1.2 },
+          ].map((pt, idx) => {
+            const hash = (idx * 7 + 13) % 10;
+            if (hash / 10 >= (frecklesDensity ?? 0.6)) return null;
+            return (
+              <circle
+                key={idx}
+                cx={pt.x}
+                cy={pt.y}
+                r={pt.r * (artStyle === 'retro' ? 1.5 : 1.0)}
+                opacity={artStyle === 'retro' ? 0.9 : 0.65}
+              />
+            );
+          })}
+        </g>
+      )}
+
+      {/* Beauty Mark Rendering */}
+      {(() => {
+        let bm = null;
+        if (beautyMark === 'left-cheek') bm = { cx: 172, cy: 212, r: 2.2 };
+        else if (beautyMark === 'right-cheek') bm = { cx: 228, cy: 212, r: 2.2 };
+        else if (beautyMark === 'under-eye') bm = { cx: 178, cy: 192, r: 1.8 };
+        else if (beautyMark === 'chin') bm = { cx: 194, cy: 232, r: 2.0 };
+
+        if (!bm) return null;
+        return <circle id={`beauty-mark-${beautyMark}`} cx={bm.cx} cy={bm.cy} r={bm.r} fill="#1c1917" opacity="0.85" />;
+      })()}
+
+      {/* Face Paint Rendering */}
+      {facePaint === 'tribal' && (
+        <g id="facepaint-tribal">
+          <path
+            d="M 140 188 L 160 195 L 142 205 L 158 208 L 138 214"
+            stroke="#991b1b"
+            strokeWidth="2.5"
+            fill="none"
+            strokeLinejoin="round"
+            opacity="0.8"
+          />
+          <path
+            d="M 260 188 L 240 195 L 258 205 L 242 208 L 262 214"
+            stroke="#991b1b"
+            strokeWidth="2.5"
+            fill="none"
+            strokeLinejoin="round"
+            opacity="0.8"
+          />
+        </g>
+      )}
+      {facePaint === 'cat-whiskers' && (
+        <g
+          id="facepaint-cat-whiskers"
+          stroke="#1e293b"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.75"
+        >
+          <line x1="140" y1="195" x2="162" y2="198" />
+          <line x1="138" y1="202" x2="160" y2="204" />
+          <line x1="142" y1="209" x2="162" y2="209" />
+          <line x1="260" y1="195" x2="238" y2="198" />
+          <line x1="262" y1="202" x2="240" y2="204" />
+          <line x1="258" y1="209" x2="238" y2="209" />
+        </g>
+      )}
+      {facePaint === 'butterfly' && (
+        <g id="facepaint-butterfly" opacity="0.85">
+          <path
+            d="M 152 195 C 145 188, 142 198, 152 200 C 142 202, 145 212, 152 205 C 159 212, 162 202, 152 200 C 162 198, 159 188, 152 195 Z"
+            fill="#ec4899"
+            stroke="#ffffff"
+            strokeWidth="0.8"
+          />
+        </g>
+      )}
+      {facePaint === 'under-eye-stripe' && (
+        <g
+          id="facepaint-under-eye-stripe"
+          stroke="#06b6d4"
+          strokeWidth="3"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.9"
+        >
+          <path d="M 142 188 L 158 190 M 140 193 L 155 195" />
+          <path d="M 258 188 L 242 190 M 260 193 L 245 195" />
+        </g>
       )}
     </g>
   );

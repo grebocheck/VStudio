@@ -62,6 +62,14 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
     artStyle = 'classic',
     faceShape = 'default',
     eyeShape = 'default',
+    heterochromia = false,
+    eyeColorRight = '#2563eb',
+    eyelashStyle = 'natural',
+    freckles = false,
+    frecklesDensity = 0.6,
+    frecklesColor = '#8b5a2b',
+    beautyMark = 'none',
+    facePaint = 'none',
   } = config;
 
   const {
@@ -156,6 +164,11 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               earStyle={earStyle}
               artStyle={artStyle}
               faceShape={faceShape}
+              freckles={freckles}
+              frecklesDensity={frecklesDensity}
+              frecklesColor={frecklesColor}
+              beautyMark={beautyMark}
+              facePaint={facePaint}
             />
             <FaceFlushOverlay emotion={effectiveEmotion} />
           </g>
@@ -215,9 +228,10 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               activeEmotion={effectiveEmotion}
               eyeShape={eyeShape}
               breath={breath}
+              eyelashStyle={eyelashStyle}
             />
             <EyeSVG
-              eyeColor={eyeColor}
+              eyeColor={heterochromia ? eyeColorRight : eyeColor}
               pupilStyle={pupilStyle}
               pupilColor={pupilColor}
               isLeft={false}
@@ -228,6 +242,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               activeEmotion={effectiveEmotion}
               eyeShape={eyeShape}
               breath={breath}
+              eyelashStyle={eyelashStyle}
             />
             <Live2DMouth
               openAmount={mouthOpen}
