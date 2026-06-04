@@ -395,12 +395,12 @@ export const FrontHairComponent: React.FC<{
 
   // Hair styling parameters for multi-layered sway & ahoge
   const leftLockStyle = {
-    transform: `rotate(${hairSwayX * 0.4}deg) translateX(${hairSwayX * 1.3}px)`,
+    transform: `rotate(${hairSwayX * 0.8}deg)`,
     transformOrigin: '106px 130px',
     transition: 'transform 0.1s ease-out',
   };
   const rightLockStyle = {
-    transform: `rotate(${hairSwayX * 0.4}deg) translateX(${hairSwayX * 1.3}px)`,
+    transform: `rotate(${hairSwayX * 0.8}deg)`,
     transformOrigin: '294px 130px',
     transition: 'transform 0.1s ease-out',
   };
@@ -715,27 +715,6 @@ export const FrontHairComponent: React.FC<{
           opacity="0.55"
         />
       )}
-
-      {/* Front Hair Rim Light (Left) */}
-      <path
-        d="M102 140 C100 45, 200 45, 200 45"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="5"
-        strokeLinecap="round"
-        opacity="0.28"
-        filter="url(#rim-blur)"
-      />
-      {/* Front Hair Rim Light (Right) */}
-      <path
-        d="M200 45 C200 45, 300 45, 298 140"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="5"
-        strokeLinecap="round"
-        opacity="0.18"
-        filter="url(#rim-blur)"
-      />
     </g>
   );
 };
