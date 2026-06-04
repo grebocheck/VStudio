@@ -356,6 +356,103 @@ export const EmotionOverlays: React.FC<EmotionOverlaysProps> = ({ emotion }) => 
 
     {emotion === 'cool' && (
       <g opacity="0.95">
+        <defs>
+          <clipPath id="cool-shades-clip">
+            <path d="M 124 158 L 184 158 Q 188 174 176 194 Q 168 202 156 202 Q 144 202 136 194 Q 122 174 124 158 Z" />
+            <path d="M 276 158 L 216 158 Q 212 174 224 194 Q 232 202 244 202 Q 256 202 264 194 Q 278 174 276 158 Z" />
+          </clipPath>
+        </defs>
+
+        {/* Sunglasses Frames (temple arms behind/at the sides) */}
+        <path d="M 124 162 L 102 166" stroke="#0f172a" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+        <path d="M 276 162 L 298 166" stroke="#0f172a" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+
+        {/* Lenses */}
+        <path
+          d="M 124 158 L 184 158 Q 188 174 176 194 Q 168 202 156 202 Q 144 202 136 194 Q 122 174 124 158 Z"
+          fill="url(#cool-lens-grad)"
+          opacity="0.88"
+          stroke="#1e293b"
+          strokeWidth="3.5"
+        />
+        <path
+          d="M 276 158 L 216 158 Q 212 174 224 194 Q 232 202 244 202 Q 256 202 264 194 Q 278 174 276 158 Z"
+          fill="url(#cool-lens-grad)"
+          opacity="0.88"
+          stroke="#1e293b"
+          strokeWidth="3.5"
+        />
+
+        {/* Neon lens accent borders (magenta glow) */}
+        <path
+          d="M 124 158 L 184 158 Q 188 174 176 194 Q 168 202 156 202 Q 144 202 136 194 Q 122 174 124 158 Z"
+          fill="none"
+          stroke="#d946ef"
+          strokeWidth="1.5"
+          opacity="0.95"
+          style={{ filter: 'drop-shadow(0 0 2px #d946ef)' }}
+        />
+        <path
+          d="M 276 158 L 216 158 Q 212 174 224 194 Q 232 202 244 202 Q 256 202 264 194 Q 278 174 276 158 Z"
+          fill="none"
+          stroke="#d946ef"
+          strokeWidth="1.5"
+          opacity="0.95"
+          style={{ filter: 'drop-shadow(0 0 2px #d946ef)' }}
+        />
+
+        {/* Sweeping light glints */}
+        <g clipPath="url(#cool-shades-clip)">
+          <line
+            x1="110"
+            y1="140"
+            x2="190"
+            y2="220"
+            stroke="#ffffff"
+            strokeWidth="4"
+            opacity="0.45"
+            className="animate-shades-glint"
+            style={{ pointerEvents: 'none' }}
+          />
+          <line
+            x1="198"
+            y1="140"
+            x2="278"
+            y2="220"
+            stroke="#ffffff"
+            strokeWidth="4"
+            opacity="0.45"
+            className="animate-shades-glint"
+            style={{ pointerEvents: 'none' }}
+          />
+        </g>
+
+        {/* Nose bridge (thick dark core + neon cyan overlay) */}
+        <path d="M 184 162 Q 200 157 216 162" stroke="#0f172a" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+        <path d="M 184 162 Q 200 157 216 162" stroke="#06b6d4" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+
+        {/* Top brow neon bar (cyan glow) */}
+        <path
+          d="M 120 156 L 280 156"
+          stroke="#06b6d4"
+          strokeWidth="3"
+          fill="none"
+          strokeLinecap="round"
+          style={{ filter: 'drop-shadow(0 0 4px #06b6d4)' }}
+        />
+
+        {/* Sparkle stars on outer corners */}
+        <path
+          d="M 121 161 Q 121 165 125 165 Q 121 165 121 169 Q 121 165 117 165 Q 121 165 121 161"
+          fill="#ffffff"
+          className="animate-pulse"
+        />
+        <path
+          d="M 279 161 Q 279 165 283 165 Q 279 165 279 169 Q 279 165 275 165 Q 279 165 279 161"
+          fill="#ffffff"
+          className="animate-pulse"
+        />
+
         {/* Floating, glowing SVG music notes */}
         <path
           d="M90 120 A 6 5 0 1 1 78 120 A 6 5 0 1 1 90 120 L 90 100 Q 98 100 102 95 L 102 91 Q 96 95 90 95 Z"

@@ -1187,40 +1187,6 @@ export const EyeSVG: React.FC<{
           <path d={`M ${cx - rx + 3} ${cy + 2} Q ${cx - rx - 6} ${cy + 2}, ${cx - rx - 10} ${cy + 6}`} />
         </g>
       )}
-
-      {/* Futuristic Cyber Shades / Visor overlay when looking Cool */}
-      {activeEmotion === 'cool' && (
-        <g>
-          {/* Semi-transparent Dark/Purple visor lens */}
-          <polygon
-            points={`${cx - 28},${cy - 16} ${cx + 44},${cy - 16} ${cx + 44},${cy + 15} ${cx - 20},${cy + 12}`}
-            fill="url(#cool-lens-grad)"
-            opacity="0.86"
-          />
-          {/* Neon cyan top frame border */}
-          <line x1={cx - 28} y1={cy - 16} x2={cx + 44} y2={cy - 16} stroke="#06b6d4" strokeWidth="2.5" />
-          {/* Neon magenta bottom lens accent */}
-          <line x1={cx - 20} y1={cy + 12} x2={cx + 44} y2={cy + 15} stroke="#d946ef" strokeWidth="2" />
-          {/* Sweeping animated light glint */}
-          <line
-            x1={cx - 30}
-            y1={cy - 16}
-            x2={cx + 10}
-            y2={cy + 15}
-            stroke="#ffffff"
-            strokeWidth="3.5"
-            opacity="0.6"
-            className="animate-shades-glint"
-            style={{ pointerEvents: 'none' }}
-          />
-          {/* Sparkle star on outer frame edge */}
-          <path
-            d={`M ${cx - 24} ${cy - 8} Q ${cx - 24} ${cy - 2} ${cx - 18} ${cy - 2} Q ${cx - 24} ${cy - 2} ${cx - 24} ${cy + 4} Q ${cx - 24} ${cy - 2} ${cx - 30} ${cy - 2} Q ${cx - 24} ${cy - 2} ${cx - 24} ${cy - 8}`}
-            fill="#ffffff"
-            className="animate-pulse"
-          />
-        </g>
-      )}
     </g>
   );
 };
