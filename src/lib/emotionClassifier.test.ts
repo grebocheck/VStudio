@@ -17,6 +17,7 @@ const neutral: EmotionFeatures = {
   mouthForm: 0,
   isDizzy: false,
   isTrulySleepy: false,
+  isLeaningIn: false,
 };
 
 const f = (over: Partial<EmotionFeatures>): EmotionFeatures => ({ ...neutral, ...over });
@@ -29,6 +30,10 @@ describe('classifyEmotion', () => {
   it('prioritizes dizzy and sleepy gates above everything', () => {
     expect(classifyEmotion(f({ isDizzy: true, smileAvg: 0.9 }))).toBe('dizzy');
     expect(classifyEmotion(f({ isTrulySleepy: true, smileAvg: 0.9 }))).toBe('sleepy');
+  });
+
+  it('detects starry when user is leaning in', () => {
+    expect(classifyEmotion(f({ isLeaningIn: true }))).toBe('starry');
   });
 
   it('detects shocked when jaw is open with raised brows or wide eyes', () => {

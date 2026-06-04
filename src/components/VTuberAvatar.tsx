@@ -208,6 +208,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               isLeft={true}
               eyebrowY={eyebrowY}
               artStyle={artStyle}
+              activeEmotion={effectiveEmotion}
             />
             <EyebrowSVG
               style={eyebrowStyle}
@@ -215,6 +216,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
               isLeft={false}
               eyebrowY={eyebrowY}
               artStyle={artStyle}
+              activeEmotion={effectiveEmotion}
             />
             <EyeSVG
               eyeColor={eyeColor}
@@ -246,7 +248,7 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
             />
             <Live2DMouth
               openAmount={mouthOpen}
-              form={mouthForm}
+              form={effectiveEmotion === 'angry' ? Math.min(-0.85, mouthForm) : mouthForm}
               hasFangs={hasFangs}
               artStyle={artStyle}
               tongueOut={tongueOut}

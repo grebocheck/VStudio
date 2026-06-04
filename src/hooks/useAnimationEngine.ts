@@ -101,6 +101,8 @@ export function useAnimationEngine({
   const dizzinessAccumulatorRef = useRef(0);
   const dizzinessLockedUntilRef = useRef(0);
   const drowsinessAccumulatorRef = useRef(0);
+  const previousCheekDistRef = useRef<number | null>(null);
+  const starryTriggeredUntilRef = useRef<number>(0);
 
   useEffect(() => {
     const cameraResponse = cameraResponseFromSmoothing(cameraCalibration.smoothing);
@@ -178,6 +180,11 @@ export function useAnimationEngine({
             updated.mouthOpen = Math.max(0, Math.sin(timeSec * AUTO_LOOK.MOUTH_FREQ) * AUTO_LOOK.MOUTH_AMP);
         }
 
+        if (trackingMode !== 'camera') {
+          previousCheekDistRef.current = null;
+          starryTriggeredUntilRef.current = 0;
+        }
+
         // 5. MediaPipe camera tracking + emotion classifier
         const video = videoRef.current;
         const landmarker = faceLandmarkerRef.current;
@@ -186,6 +193,7 @@ export function useAnimationEngine({
             const results = landmarker.detectForVideo(video, performance.now());
             if (results && results.faceLandmarks && results.faceLandmarks.length > 0) {
               const landmarks = results.faceLandmarks[0];
+              let isLeaningIn = false;
               const pLeftCheek = landmarks[234];
               const pRightCheek = landmarks[454];
               const pNose = landmarks[4];
@@ -199,6 +207,16 @@ export function useAnimationEngine({
 
                 const cheekMidX = (pLeftCheek.x + pRightCheek.x) / 2;
                 const cheekDist = Math.hypot(pRightCheek.x - pLeftCheek.x, pRightCheek.y - pLeftCheek.y);
+
+                const elapsedSec = elapsed / 1000;
+                if (previousCheekDistRef.current !== null && cheekDist > 0.05 && elapsedSec > 0.001) {
+                  const distVelocity = (cheekDist - previousCheekDistRef.current) / elapsedSec;
+                  if (distVelocity > 0.22) {
+                    starryTriggeredUntilRef.current = now + 2500;
+                  }
+                }
+                previousCheekDistRef.current = cheekDist;
+                isLeaningIn = now < starryTriggeredUntilRef.current;
                 const currentYaw = ((pNose.x - cheekMidX) / (cheekDist || 1)) * CAMERA.YAW_SCALE;
 
                 const faceMidY = (pForehead.y + pChin.y) / 2;
@@ -345,6 +363,7 @@ export function useAnimationEngine({
                   mouthForm: updated.mouthForm,
                   isDizzy,
                   isTrulySleepy,
+                  isLeaningIn,
                 });
 
                 // Debounce / hysteresis via per-emotion frame counters

@@ -71,7 +71,14 @@ export const EmotionOverlays: React.FC<EmotionOverlaysProps> = ({ emotion }) => 
           strokeLinecap="round"
           className="animate-bounce"
         />
-        <ellipse cx="200" cy="110" rx="65" ry="20" fill="#ef4444" opacity="0.25" style={{ filter: 'blur(6px)' }} />
+        <defs>
+          <linearGradient id="angry-forehead-gloom" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#b91c1c" stopOpacity="0.65" />
+            <stop offset="50%" stopColor="#7f1d1d" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#7f1d1d" stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+        <rect x="120" y="85" width="160" height="75" fill="url(#angry-forehead-gloom)" rx="12" />
       </g>
     )}
 

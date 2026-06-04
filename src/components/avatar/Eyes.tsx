@@ -7,12 +7,13 @@ export const EyebrowSVG: React.FC<{
   isLeft: boolean;
   eyebrowY: number;
   artStyle?: 'classic' | 'anime' | 'retro';
-}> = ({ style, color, isLeft, eyebrowY, artStyle = 'classic' }) => {
+  activeEmotion?: Emotion;
+}> = ({ style, color, isLeft, eyebrowY, artStyle = 'classic', activeEmotion = 'none' }) => {
   if (style === 'none') return null;
   const transform = isLeft ? `translate(0, ${eyebrowY})` : `scale(-1, 1) translate(-400, ${eyebrowY})`;
 
   const isAnime = artStyle === 'anime';
-  const strokeWidth = isAnime
+  const baseStrokeWidth = isAnime
     ? style === 'thick'
       ? 2.2
       : style === 'thin'
@@ -24,13 +25,18 @@ export const EyebrowSVG: React.FC<{
         ? 2
         : 4;
 
+  const strokeWidth = activeEmotion === 'angry' ? baseStrokeWidth * 1.35 : baseStrokeWidth;
+
   const opacity = style === 'sad' ? 0.9 : 1.0;
 
   let d = isAnime
     ? 'M138 128 C148 123, 163 123, 174 128' // sleeker anime arch shifted up
     : 'M140 145 C150 140, 165 140, 175 147'; // normal
 
-  if (style === 'sad') {
+  if (activeEmotion === 'angry') {
+    // Aggressive downward slant towards the nose
+    d = isAnime ? 'M136 118 C148 119, 162 126, 174 138' : 'M136 135 C146 137, 162 145, 174 160';
+  } else if (style === 'sad') {
     d = isAnime ? 'M136 132 C144 128, 162 125, 174 126' : 'M135 152 C145 148, 165 142, 175 142'; // curve goes upwards towards center shifted up
   } else if (style === 'thick' || style === 'thin') {
     d = isAnime ? 'M137 127 Q155 121, 173 127' : 'M138 144 Q155 138, 173 145';
@@ -680,22 +686,28 @@ export const EyeSVG: React.FC<{
   // If blinking/closed, draw an elegant sleeping/smiling curved eyelash path instead of iris!
   if (effectiveBlink < 0.25) {
     const lashD = isAnime
-      ? `M ${cx - 22} ${cy + 1} 
-         C ${cx - 10} ${cy + 11}, ${cx + 10} ${cy + 11}, ${cx + 22} ${cy + 1}
-         L ${cx + 21} ${cy + 2}
-         C ${cx + 9} ${cy + 13}, ${cx - 9} ${cy + 13}, ${cx - 21} ${cy + 2} Z`
-      : `M ${cx - 18} ${cy} Q ${cx} ${cy + 9}, ${cx + 18} ${cy}`;
+      ? activeEmotion === 'angry'
+        ? `M ${cx - 22} ${cy + 5} 
+           C ${cx - 10} ${cy - 3}, ${cx + 10} ${cy - 3}, ${cx + 22} ${cy + 5}
+           L ${cx + 21} ${cy + 6}
+           C ${cx + 9} ${cy - 1}, ${cx - 9} ${cy - 1}, ${cx - 21} ${cy + 6} Z`
+        : `M ${cx - 22} ${cy + 1} 
+           C ${cx - 10} ${cy + 11}, ${cx + 10} ${cy + 11}, ${cx + 22} ${cy + 1}
+           L ${cx + 21} ${cy + 2}
+           C ${cx + 9} ${cy + 13}, ${cx - 9} ${cy + 13}, ${cx - 21} ${cy + 2} Z`
+      : activeEmotion === 'angry'
+        ? `M ${cx - 18} ${cy + 4} Q ${cx} ${cy - 5}, ${cx + 18} ${cy + 4}`
+        : `M ${cx - 18} ${cy} Q ${cx} ${cy + 9}, ${cx + 18} ${cy}`;
+
+    const shadowD =
+      activeEmotion === 'angry'
+        ? `M ${cx - 20} ${cy + 6} Q ${cx} ${cy - 1}, ${cx + 20} ${cy + 6}`
+        : `M ${cx - 20} ${cy + 2} Q ${cx} ${cy + 12}, ${cx + 20} ${cy + 2}`;
 
     return (
       <g transform={transformEye}>
         {/* Shadow under closed eye */}
-        <path
-          d={`M ${cx - 20} ${cy + 2} Q ${cx} ${cy + 12}, ${cx + 20} ${cy + 2}`}
-          stroke="rgba(0,0,0,0.12)"
-          strokeWidth="4"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={shadowD} stroke="rgba(0,0,0,0.12)" strokeWidth="4" fill="none" strokeLinecap="round" />
         {/* Soft fleshy skin crease above closed eye */}
         <path
           d={`M ${cx - 15} ${cy - 14} Q ${cx} ${cy - 18}, ${cx + 15} ${cy - 14}`}
@@ -727,7 +739,7 @@ export const EyeSVG: React.FC<{
           strokeLinecap="round"
         />
         {/* Styled cute feline outer lashes */}
-        {isAnime && eyelashStyle !== 'none' && (
+        {isAnime && eyelashStyle !== 'none' && activeEmotion !== 'angry' && (
           <path
             d={`M ${cx - 18} ${cy + 4} L ${cx - 28} ${cy + 10} L ${cx - 21} ${cy + 7} Z`}
             fill="#1c1917"
@@ -735,7 +747,7 @@ export const EyeSVG: React.FC<{
             strokeWidth="0.8"
           />
         )}
-        {isAnime && eyelashStyle === 'glamour' && (
+        {isAnime && eyelashStyle === 'glamour' && activeEmotion !== 'angry' && (
           <path
             d={`M ${cx - 14} ${cy + 6} L ${cx - 24} ${cy + 15} L ${cx - 18} ${cy + 9} Z`}
             fill="#1c1917"
@@ -749,7 +761,18 @@ export const EyeSVG: React.FC<{
 
   // Active Open Eyes
   if (isAnime) {
+    const rxIris = activeEmotion === 'angry' ? 13.5 : 16.5;
+    const ryIris = activeEmotion === 'angry' ? 16.0 : 19.5;
+
     const getEyeShapeData = () => {
+      if (activeEmotion === 'angry') {
+        return {
+          eyeSlitPath: `M ${cx + 24} ${cy + 6} C ${cx + 12} ${cy - 10}, ${cx - 14} ${cy - 22}, ${cx - 26} ${cy - 6} C ${cx - 14} ${cy + 10}, ${cx + 12} ${cy + 13}, ${cx + 24} ${cy + 6} Z`,
+          lashPath: `M ${cx + 24} ${cy + 6} C ${cx + 12} ${cy - 10}, ${cx - 14} ${cy - 22}, ${cx - 26} ${cy - 6} L ${cx - 36} ${cy - 14} C ${cx - 29} ${cy - 17}, ${cx - 20} ${cy - 24.5}, ${cx - 8} ${cy - 24.5} C ${cx + 4} ${cy - 24.5}, ${cx + 16} ${cy - 15}, ${cx + 24} ${cy + 6} Z`,
+          lowerLidPath: `M ${cx - 18} ${cy + 10} C ${cx - 8} ${cy + 12}, ${cx + 8} ${cy + 12}, ${cx + 14} ${cy + 8} M ${cx - 14} ${cy + 11} L ${cx - 17} ${cy + 15}`,
+          creasePath: `M ${cx - 16} ${cy - 23} C ${cx - 4} ${cy - 27}, ${cx + 10} ${cy - 26}, ${cx + 18} ${cy - 20}`,
+        };
+      }
       switch (eyeShape) {
         case 'almond':
           return {
@@ -851,20 +874,20 @@ export const EyeSVG: React.FC<{
           </defs>
 
           {/* Saturated Kyoto / DxD style base oval iris */}
-          <ellipse cx={cx + px} cy={cy + py} rx="16.5" ry="19.5" fill={eyeColor} />
+          <ellipse cx={cx + px} cy={cy + py} rx={rxIris} ry={ryIris} fill={eyeColor} />
 
           {/* Saturated 3D light-transmitting overlay gradient */}
           <ellipse
             cx={cx + px}
             cy={cy + py}
-            rx="16.5"
-            ry="19.5"
+            rx={rxIris}
+            ry={ryIris}
             fill={`url(#anime-iris-overlay-${isLeft ? 'l' : 'r'})`}
           />
 
           {/* Dark lens shadow projection at the top half */}
           <path
-            d={`M ${cx + px - 16.5} ${cy + py} A 16.5 19.5 0 0 1 ${cx + px + 16.5} ${cy + py} L ${cx + px + 16.5} ${cy + py - 21} L ${cx + px - 16.5} ${cy + py - 21} Z`}
+            d={`M ${cx + px - rxIris} ${cy + py} A ${rxIris} ${ryIris} 0 0 1 ${cx + px + rxIris} ${cy + py} L ${cx + px + rxIris} ${cy + py - 21} L ${cx + px - rxIris} ${cy + py - 21} Z`}
             fill="rgba(15, 23, 42, 0.22)"
           />
 
@@ -1040,6 +1063,7 @@ export const EyeSVG: React.FC<{
   // Classic or Retro Eye mode
   const rx = 18;
   const ry = 12;
+  const isAngry = activeEmotion === 'angry';
 
   return (
     <g transform={transformEye}>
@@ -1066,10 +1090,10 @@ export const EyeSVG: React.FC<{
         />
 
         {/* Iris */}
-        <circle cx={cx + px} cy={cy + py} r={11} fill={eyeColor} />
+        <circle cx={cx + px} cy={cy + py} r={isAngry ? 8.5 : 11} fill={eyeColor} />
 
         {/* Inner shadow/ring */}
-        <circle cx={cx + px} cy={cy + py} r={8} fill="rgba(0,0,0,0.18)" />
+        <circle cx={cx + px} cy={cy + py} r={isAngry ? 6 : 8} fill="rgba(0,0,0,0.18)" />
 
         {/* Pupil according to selection */}
         <g transform={pupilTransform}>
@@ -1172,7 +1196,11 @@ export const EyeSVG: React.FC<{
 
       {/* Styled top eyelash brow border */}
       <path
-        d={`M ${cx - rx - 2} ${cy - 2} Q ${cx} ${cy - ry - 4}, ${cx + rx + 2} ${cy - 2}`}
+        d={
+          isAngry
+            ? `M ${cx - rx - 1} ${cy - 7} Q ${cx - 2} ${cy - ry}, ${cx + rx + 1} ${cy + 1.5}`
+            : `M ${cx - rx - 2} ${cy - 2} Q ${cx} ${cy - ry - 4}, ${cx + rx + 2} ${cy - 2}`
+        }
         stroke="#1c1917"
         strokeWidth={
           eyelashStyle === 'none' ? 1.0 : eyelashStyle === 'minimal' ? 2.0 : eyelashStyle === 'glamour' ? 4.2 : 3.2

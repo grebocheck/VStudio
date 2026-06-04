@@ -23,6 +23,7 @@ export interface EmotionFeatures {
   /** Stateful gates resolved by the engine before classification. */
   isDizzy: boolean;
   isTrulySleepy: boolean;
+  isLeaningIn: boolean;
 }
 
 /**
@@ -32,6 +33,7 @@ export interface EmotionFeatures {
 export function classifyEmotion(f: EmotionFeatures): Emotion {
   if (f.isDizzy) return 'dizzy';
   if (f.isTrulySleepy) return 'sleepy';
+  if (f.isLeaningIn) return 'starry';
   if (f.jawOpen > T.shocked.jawOpen && (f.browInnerUp > T.shocked.browInnerUp || f.eyeWideAvg > T.shocked.eyeWideAvg))
     return 'shocked';
   if (f.eyeWideAvg > T.scared.eyeWideAvg && f.jawOpen > T.scared.jawOpen) return 'scared';
