@@ -104,6 +104,13 @@ const ENUMS = {
   beautyMark: ['none', 'left-cheek', 'right-cheek', 'under-eye', 'chin'],
   facePaint: ['none', 'tribal', 'cat-whiskers', 'butterfly', 'under-eye-stripe'],
   eyelashStyle: ['natural', 'glamour', 'minimal', 'none'],
+  irisStyle: ['solid', 'organic', 'gemstone', 'galaxy'],
+  eyeHighlightStyle: ['standard', 'double-spark', 'star-glint', 'none'],
+  mouthShape: ['default', 'small', 'wide', 'pouty', 'thin'],
+  lipStyle: ['natural', 'glossy', 'dark', 'gradient'],
+  toothStyle: ['normal', 'fangs', 'gap-tooth', 'braces', 'sharp-teeth'],
+  faceScar: ['none', 'cheek-slash', 'eye-scar', 'cross-forehead'],
+  earDecoration: ['none', 'piercing', 'cuff', 'feather'],
 } as const;
 
 const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
@@ -145,6 +152,7 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
     'blushColor',
     'frecklesColor',
     'eyeColorRight',
+    'lipColor',
   ] as const) {
     if (isHex(p[key])) out[key] = (p[key] as string).trim();
   }

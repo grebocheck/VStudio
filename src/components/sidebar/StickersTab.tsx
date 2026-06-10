@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Sparkles } from 'lucide-react';
 import { AvatarConfig } from '../../types';
-import { TelegramStickerPackPanel } from '../TelegramStickerPackPanel';
 import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme/ThemeContext';
+
+// The sticker builder pulls in the whole SVG→Lottie pipeline (~4k lines), so it
+// only loads when the user opens this tab.
+const TelegramStickerPackPanel = React.lazy(() =>
+  import('../TelegramStickerPackPanel').then((m) => ({ default: m.TelegramStickerPackPanel })),
+);
 
 export interface StickersTabProps {
   config: AvatarConfig;
@@ -31,7 +36,9 @@ export const StickersTab: React.FC<StickersTabProps> = ({ config }) => {
         </p>
       </div>
 
-      <TelegramStickerPackPanel config={config} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
+      <Suspense fallback={<div className="text-[10px] opacity-60 animate-pulse">{copy.title}…</div>}>
+        <TelegramStickerPackPanel config={config} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
+      </Suspense>
     </div>
   );
 };

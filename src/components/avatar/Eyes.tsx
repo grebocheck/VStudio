@@ -80,6 +80,8 @@ export const EyeSVG: React.FC<{
   eyeShape?: 'default' | 'almond' | 'droopy' | 'sharp' | 'cat-eye';
   breath?: number;
   eyelashStyle?: 'natural' | 'glamour' | 'minimal' | 'none';
+  irisStyle?: 'solid' | 'organic' | 'gemstone' | 'galaxy';
+  eyeHighlightStyle?: 'standard' | 'double-spark' | 'star-glint' | 'none';
 }> = ({
   eyeColor,
   pupilStyle,
@@ -93,6 +95,8 @@ export const EyeSVG: React.FC<{
   eyeShape = 'default',
   breath = 0,
   eyelashStyle = 'natural',
+  irisStyle = 'solid',
+  eyeHighlightStyle = 'standard',
 }) => {
   // Center coordinates: Symmetrical local coordinates where both eyes are defined at 156.
   // The right eye utilizes scale(-1, 1) translate(-400, 0) to align itself perfectly at 244.
@@ -109,6 +113,179 @@ export const EyeSVG: React.FC<{
 
   const isAnime = artStyle === 'anime';
   const effectiveBlink = activeEmotion === 'cool' ? blink * 0.7 : blink;
+
+  const side = isLeft ? 'l' : 'r';
+
+  /** Four-point "spark" glint path used by the double-spark / star-glint highlight styles. */
+  const sparklePath = (x: number, y: number, s: number) =>
+    `M ${x} ${y - s} C ${x + s * 0.22} ${y - s * 0.22}, ${x + s * 0.22} ${y - s * 0.22}, ${x + s} ${y} C ${x + s * 0.22} ${y + s * 0.22}, ${x + s * 0.22} ${y + s * 0.22}, ${x} ${y + s} C ${x - s * 0.22} ${y + s * 0.22}, ${x - s * 0.22} ${y + s * 0.22}, ${x - s} ${y} C ${x - s * 0.22} ${y - s * 0.22}, ${x - s * 0.22} ${y - s * 0.22}, ${x} ${y - s} Z`;
+
+  /** Decorative iris texture layers, rendered inside the iris clip on top of the base color. */
+  const renderIrisDetail = (irx: number, iry: number) => {
+    const icx = cx + px;
+    const icy = cy + py;
+    if (irisStyle === 'organic') {
+      // Radial fibers like a real iris: dark spokes with a few light ones between.
+      return (
+        <g>
+          {Array.from({ length: 14 }).map((_, i) => {
+            const a = (i / 14) * Math.PI * 2;
+            const inner = 0.4;
+            const outer = 0.92;
+            const light = i % 3 === 0;
+            return (
+              <line
+                key={i}
+                x1={icx + Math.cos(a) * irx * inner}
+                y1={icy + Math.sin(a) * iry * inner}
+                x2={icx + Math.cos(a) * irx * outer}
+                y2={icy + Math.sin(a) * iry * outer}
+                stroke={light ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.28)'}
+                strokeWidth={light ? 1.0 : 1.3}
+                strokeLinecap="round"
+              />
+            );
+          })}
+          <ellipse
+            cx={icx}
+            cy={icy}
+            rx={irx * 0.55}
+            ry={iry * 0.55}
+            fill="none"
+            stroke="rgba(0,0,0,0.22)"
+            strokeWidth="1"
+          />
+        </g>
+      );
+    }
+    if (irisStyle === 'gemstone') {
+      // Crystal facets: alternating light wedges around the center.
+      return (
+        <g>
+          {Array.from({ length: 8 }).map((_, i) => {
+            const a1 = (i / 8) * Math.PI * 2;
+            const a2 = ((i + 1) / 8) * Math.PI * 2;
+            return (
+              <path
+                key={i}
+                d={`M ${icx} ${icy} L ${icx + Math.cos(a1) * irx * 0.95} ${icy + Math.sin(a1) * iry * 0.95} A ${irx * 0.95} ${iry * 0.95} 0 0 1 ${icx + Math.cos(a2) * irx * 0.95} ${icy + Math.sin(a2) * iry * 0.95} Z`}
+                fill={i % 2 === 0 ? 'rgba(255,255,255,0.22)' : 'rgba(15,23,42,0.18)'}
+              />
+            );
+          })}
+          <ellipse
+            cx={icx}
+            cy={icy}
+            rx={irx * 0.5}
+            ry={iry * 0.5}
+            fill="none"
+            stroke="rgba(255,255,255,0.45)"
+            strokeWidth="1.2"
+          />
+          <path d={sparklePath(icx - irx * 0.35, icy - iry * 0.4, irx * 0.28)} fill="#ffffff" opacity="0.85" />
+        </g>
+      );
+    }
+    if (irisStyle === 'galaxy') {
+      // Deep-space nebula: dark indigo wash, a light swirl arc and scattered stars.
+      const stars: Array<[number, number, number, number]> = [
+        [-0.45, -0.3, 1.1, 0.9],
+        [0.35, -0.5, 0.8, 0.7],
+        [0.5, 0.25, 1.0, 0.85],
+        [-0.25, 0.5, 0.7, 0.6],
+        [0.1, -0.15, 0.6, 0.9],
+        [-0.6, 0.1, 0.6, 0.5],
+      ];
+      return (
+        <g>
+          <defs>
+            <radialGradient id={`iris-galaxy-${side}`} cx="0.5" cy="0.45" r="0.65">
+              <stop offset="0%" stopColor="#312e81" stopOpacity="0.0" />
+              <stop offset="55%" stopColor="#1e1b4b" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#0c0a2a" stopOpacity="0.9" />
+            </radialGradient>
+          </defs>
+          <ellipse cx={icx} cy={icy} rx={irx} ry={iry} fill={`url(#iris-galaxy-${side})`} />
+          <path
+            d={`M ${icx - irx * 0.55} ${icy + iry * 0.25} Q ${icx} ${icy - iry * 0.7}, ${icx + irx * 0.6} ${icy - iry * 0.05}`}
+            stroke="rgba(196,181,253,0.55)"
+            strokeWidth={irx * 0.16}
+            fill="none"
+            strokeLinecap="round"
+          />
+          {stars.map(([sx, sy, r, o], i) => (
+            <circle key={i} cx={icx + sx * irx} cy={icy + sy * iry} r={r} fill="#ffffff" opacity={o} />
+          ))}
+        </g>
+      );
+    }
+    return null;
+  };
+
+  /** Specular glints on top of the iris; `scale` adapts anime sizes to the smaller classic iris. */
+  const renderEyeHighlights = (scale: number) => {
+    if (eyeHighlightStyle === 'none') return null;
+    if (eyeHighlightStyle === 'double-spark') {
+      return (
+        <g>
+          <path
+            d={sparklePath(cx + px * 0.4 - 5.5 * scale, cy + py * 0.4 - 6 * scale, 6.5 * scale)}
+            fill="#ffffff"
+            opacity="0.96"
+          />
+          <path
+            d={sparklePath(cx + px * -0.2 + 6 * scale, cy + py * -0.2 + 5.5 * scale, 4 * scale)}
+            fill="#ffffff"
+            opacity="0.85"
+          />
+        </g>
+      );
+    }
+    if (eyeHighlightStyle === 'star-glint') {
+      return (
+        <g>
+          <path
+            d={sparklePath(cx + px * 0.4 - 4 * scale, cy + py * 0.4 - 5 * scale, 9 * scale)}
+            fill="#ffffff"
+            opacity="0.95"
+          />
+          <circle
+            cx={cx + px * -0.2 + 6.5 * scale}
+            cy={cy + py * -0.2 + 6 * scale}
+            r={1.6 * scale}
+            fill="#ffffff"
+            opacity="0.7"
+          />
+        </g>
+      );
+    }
+    // standard
+    return (
+      <g>
+        <circle
+          cx={cx + px * 0.4 - 5.5 * scale}
+          cy={cy + py * 0.4 - 6.5 * scale}
+          r={5.2 * scale}
+          fill="#ffffff"
+          opacity="0.96"
+        />
+        <circle
+          cx={cx + px * -0.2 + 6.5 * scale}
+          cy={cy + py * -0.2 + 5 * scale}
+          r={3.2 * scale}
+          fill="#ffffff"
+          opacity="0.88"
+        />
+        <circle
+          cx={cx + px * 0.4 - 7 * scale}
+          cy={cy + py * 0.4 + 6.5 * scale}
+          r={1.6 * scale}
+          fill="#ffffff"
+          opacity="0.65"
+        />
+      </g>
+    );
+  };
 
   const isSparklyStyle =
     pupilStyle === 'star' || pupilStyle === 'heart' || pupilStyle === 'flower' || pupilStyle === 'diamond';
@@ -885,6 +1062,9 @@ export const EyeSVG: React.FC<{
             fill={`url(#anime-iris-overlay-${isLeft ? 'l' : 'r'})`}
           />
 
+          {/* Iris texture detail (organic fibers / gemstone facets / galaxy nebula) */}
+          {renderIrisDetail(rxIris, ryIris)}
+
           {/* Dark lens shadow projection at the top half */}
           <path
             d={`M ${cx + px - rxIris} ${cy + py} A ${rxIris} ${ryIris} 0 0 1 ${cx + px + rxIris} ${cy + py} L ${cx + px + rxIris} ${cy + py - 21} L ${cx + px - rxIris} ${cy + py - 21} Z`}
@@ -1018,20 +1198,22 @@ export const EyeSVG: React.FC<{
           </g>
 
           {/* Glowing bottom crescent highlight (glass reflections) */}
-          <path
-            d={`M ${cx + px - 13} ${cy + py + 3} 
-               Q ${cx + px} ${cy + py + 17}, ${cx + px + 13} ${cy + py + 3} 
-               Q ${cx + px} ${cy + py + 6}, ${cx + px - 13} ${cy + py + 3} Z`}
-            fill="rgba(255, 255, 255, 0.42)"
-          />
+          {eyeHighlightStyle !== 'none' && (
+            <path
+              d={`M ${cx + px - 13} ${cy + py + 3}
+                 Q ${cx + px} ${cy + py + 17}, ${cx + px + 13} ${cy + py + 3}
+                 Q ${cx + px} ${cy + py + 6}, ${cx + px - 13} ${cy + py + 3} Z`}
+              fill="rgba(255, 255, 255, 0.42)"
+            />
+          )}
 
           {/* Saturated nested core glow bubble */}
-          <ellipse cx={cx + px} cy={cy + py + 11} rx="8" ry="3.2" fill="rgba(255,255,255,0.22)" />
+          {eyeHighlightStyle !== 'none' && (
+            <ellipse cx={cx + px} cy={cy + py + 11} rx="8" ry="3.2" fill="rgba(255,255,255,0.22)" />
+          )}
 
-          {/* Multiple glassy glints & specular sparkles (vital for high-quality anime feel) */}
-          <circle cx={cx + px * 0.4 - 5.5} cy={cy + py * 0.4 - 6.5} r="5.2" fill="#ffffff" opacity="0.96" />
-          <circle cx={cx + px * -0.2 + 6.5} cy={cy + py * -0.2 + 5} r="3.2" fill="#ffffff" opacity="0.88" />
-          <circle cx={cx + px * 0.4 - 7} cy={cy + py * 0.4 + 6.5} r="1.6" fill="#ffffff" opacity="0.65" />
+          {/* Configurable glassy glints & specular sparkles (vital for high-quality anime feel) */}
+          {renderEyeHighlights(1)}
         </g>
 
         {/* Bold upper feline eyelash wing sweep (Now a filled compound path!) */}
@@ -1091,6 +1273,9 @@ export const EyeSVG: React.FC<{
 
         {/* Iris */}
         <circle cx={cx + px} cy={cy + py} r={isAngry ? 8.5 : 11} fill={eyeColor} />
+
+        {/* Iris texture detail (organic fibers / gemstone facets / galaxy nebula) */}
+        {renderIrisDetail(isAngry ? 8.5 : 11, isAngry ? 8.5 : 11)}
 
         {/* Inner shadow/ring */}
         <circle cx={cx + px} cy={cy + py} r={isAngry ? 6 : 8} fill="rgba(0,0,0,0.18)" />
@@ -1189,9 +1374,8 @@ export const EyeSVG: React.FC<{
           )}
         </g>
 
-        {/* Double bright specular dots */}
-        <circle cx={cx + px * 0.4 - 3.5} cy={cy + py * 0.4 - 3.5} r="3" fill="#ffffff" opacity="0.95" />
-        <circle cx={cx + px * -0.2 + 4} cy={cy + py * -0.2 + 3} r="1.5" fill="#ffffff" opacity="0.8" />
+        {/* Configurable bright specular dots */}
+        {renderEyeHighlights(0.6)}
       </g>
 
       {/* Styled top eyelash brow border */}

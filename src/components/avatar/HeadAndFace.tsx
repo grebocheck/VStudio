@@ -12,6 +12,8 @@ export const HeadBase: React.FC<{
   frecklesColor?: string;
   beautyMark?: 'none' | 'left-cheek' | 'right-cheek' | 'under-eye' | 'chin';
   facePaint?: 'none' | 'tribal' | 'cat-whiskers' | 'butterfly' | 'under-eye-stripe';
+  faceScar?: 'none' | 'cheek-slash' | 'eye-scar' | 'cross-forehead';
+  earDecoration?: 'none' | 'piercing' | 'cuff' | 'feather';
 }> = ({
   skinColor,
   blushOpacity,
@@ -24,6 +26,8 @@ export const HeadBase: React.FC<{
   frecklesColor = '#8b5a2b',
   beautyMark = 'none',
   facePaint = 'none',
+  faceScar = 'none',
+  earDecoration = 'none',
 }) => {
   // Define variations of the anime face shape
   const getAnimeFacePath = () => {
@@ -287,6 +291,90 @@ export const HeadBase: React.FC<{
           <path d="M 258 188 L 242 190 M 260 193 L 245 195" />
         </g>
       )}
+
+      {/* Face Scar Rendering */}
+      {faceScar === 'cheek-slash' && (
+        <g id="scar-cheek-slash" stroke="#b45a52" strokeLinecap="round" opacity="0.8">
+          <line x1="234" y1="196" x2="252" y2="216" strokeWidth="2" />
+          {/* Stitch marks across the slash */}
+          <line x1="237" y1="204" x2="243" y2="199" strokeWidth="1.2" />
+          <line x1="242" y1="209" x2="248" y2="204" strokeWidth="1.2" />
+          <line x1="247" y1="214" x2="253" y2="209" strokeWidth="1.2" />
+        </g>
+      )}
+      {faceScar === 'eye-scar' && (
+        <g id="scar-eye" stroke="#b45a52" strokeLinecap="round" opacity="0.8">
+          {/* Vertical scar running through the left eye (eye renders on top) */}
+          <path d="M 152 148 C 154 160, 154 168, 153 172" strokeWidth="2" fill="none" />
+          <path d="M 156 196 C 157 204, 156 212, 154 218" strokeWidth="2" fill="none" />
+          <line x1="151" y1="206" x2="160" y2="204" strokeWidth="1.2" />
+        </g>
+      )}
+      {faceScar === 'cross-forehead' && (
+        <g id="scar-cross-forehead" stroke="#b45a52" strokeLinecap="round" opacity="0.8">
+          <line x1="222" y1="138" x2="236" y2="154" strokeWidth="2" />
+          <line x1="236" y1="138" x2="222" y2="154" strokeWidth="2" />
+        </g>
+      )}
+
+      {/* Ear Decoration Rendering */}
+      {earDecoration !== 'none' &&
+        (() => {
+          // Anchor on the lobe of the visible ear; bare side of the head for `normal`.
+          const anchors =
+            earStyle === 'elf'
+              ? [
+                  { x: 120, y: 162, mirror: -1 },
+                  { x: 280, y: 162, mirror: 1 },
+                ]
+              : earStyle === 'pointy'
+                ? [
+                    { x: 119, y: 167, mirror: -1 },
+                    { x: 281, y: 167, mirror: 1 },
+                  ]
+                : [
+                    { x: 137, y: 199, mirror: -1 },
+                    { x: 263, y: 199, mirror: 1 },
+                  ];
+          return (
+            <g id={`ear-decoration-${earDecoration}`}>
+              {anchors.map(({ x, y, mirror }, i) => (
+                <g key={i}>
+                  {earDecoration === 'piercing' && (
+                    <>
+                      <circle cx={x} cy={y + 4} r="2.6" fill="none" stroke="#fbbf24" strokeWidth="1.6" />
+                      <circle cx={x} cy={y + 1.5} r="0.9" fill="#fbbf24" />
+                    </>
+                  )}
+                  {earDecoration === 'cuff' && (
+                    <g stroke="#e5e7eb" strokeWidth="2" fill="none" strokeLinecap="round">
+                      <path
+                        d={`M ${x + mirror * 4} ${y - 8} Q ${x + mirror * 8} ${y - 5}, ${x + mirror * 4} ${y - 2}`}
+                      />
+                      <path
+                        d={`M ${x + mirror * 4} ${y - 1} Q ${x + mirror * 8} ${y + 2}, ${x + mirror * 4} ${y + 5}`}
+                      />
+                    </g>
+                  )}
+                  {earDecoration === 'feather' && (
+                    <g>
+                      <line x1={x} y1={y + 2} x2={x} y2={y + 6} stroke="#fbbf24" strokeWidth="1.2" />
+                      <path
+                        d={`M ${x} ${y + 6}
+                            C ${x - 3.5} ${y + 12}, ${x - 2.5} ${y + 20}, ${x} ${y + 24}
+                            C ${x + 2.5} ${y + 20}, ${x + 3.5} ${y + 12}, ${x} ${y + 6} Z`}
+                        fill="#7dd3fc"
+                        stroke="#0369a1"
+                        strokeWidth="0.8"
+                      />
+                      <line x1={x} y1={y + 8} x2={x} y2={y + 22} stroke="#0369a1" strokeWidth="0.7" opacity="0.7" />
+                    </g>
+                  )}
+                </g>
+              ))}
+            </g>
+          );
+        })()}
     </g>
   );
 };
@@ -298,11 +386,29 @@ export const Live2DMouth: React.FC<{
   artStyle?: 'classic' | 'anime' | 'retro';
   tongueOut?: number;
   faceShape?: 'default' | 'sharp' | 'round' | 'chubby' | 'mature';
-}> = ({ openAmount, form, hasFangs = false, artStyle = 'classic', tongueOut = 0, faceShape = 'default' }) => {
+  mouthShape?: 'default' | 'small' | 'wide' | 'pouty' | 'thin';
+  lipStyle?: 'natural' | 'glossy' | 'dark' | 'gradient';
+  lipColor?: string;
+  toothStyle?: 'normal' | 'fangs' | 'gap-tooth' | 'braces' | 'sharp-teeth';
+}> = ({
+  openAmount,
+  form,
+  hasFangs = false,
+  artStyle = 'classic',
+  tongueOut = 0,
+  faceShape = 'default',
+  mouthShape = 'default',
+  lipStyle = 'natural',
+  lipColor = '#d6536d',
+  toothStyle,
+}) => {
   let mouthYOffset = 0;
   if (faceShape === 'mature') mouthYOffset = 6;
   else if (faceShape === 'sharp') mouthYOffset = 3;
   else if (faceShape === 'chubby' || faceShape === 'round') mouthYOffset = -2;
+
+  // `toothStyle` supersedes the legacy boolean; `hasFangs` keeps old configs working.
+  const teeth = toothStyle ?? (hasFangs ? 'fangs' : 'normal');
 
   const mouthY = 208 + mouthYOffset;
   const mouthX = 200;
@@ -321,7 +427,61 @@ export const Live2DMouth: React.FC<{
     heightScale -= form * 0.15; // Taller profile
   }
 
+  // Resting mouth silhouette
+  if (mouthShape === 'small') widthScale *= 0.7;
+  else if (mouthShape === 'wide') widthScale *= 1.3;
+  else if (mouthShape === 'pouty') {
+    widthScale *= 0.82;
+    heightScale *= 1.12;
+  } else if (mouthShape === 'thin') widthScale *= 1.08;
+
   const finalWidth = width * widthScale;
+
+  const hasVisibleLips = lipStyle !== 'natural' || mouthShape === 'pouty';
+  const lipFill = lipStyle === 'gradient' ? 'url(#lip-gradient-fill)' : lipColor;
+  const lipOpacity = lipStyle === 'dark' ? 0.95 : 0.8;
+  /** Soft upper+lower lip volume hugging the closed-mouth curve. */
+  const renderClosedLips = (sx: number, sy: number, ex: number, ey: number, controlY: number) => {
+    if (!hasVisibleLips) return null;
+    const fullness = mouthShape === 'pouty' ? 1.35 : 1.0;
+    return (
+      <g id="lips-closed">
+        {lipStyle === 'gradient' && (
+          <defs>
+            <linearGradient id="lip-gradient-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={lipColor} stopOpacity="0.55" />
+              <stop offset="55%" stopColor={lipColor} stopOpacity="1" />
+              <stop offset="100%" stopColor={lipColor} stopOpacity="0.75" />
+            </linearGradient>
+          </defs>
+        )}
+        <path
+          d={`M ${sx} ${sy}
+              C ${mouthX - finalWidth * 0.45} ${sy - 4.5 * fullness}, ${mouthX + finalWidth * 0.45} ${ey - 4.5 * fullness}, ${ex} ${ey}
+              Q ${mouthX} ${controlY + 1}, ${sx} ${sy} Z`}
+          fill={lipFill}
+          opacity={lipOpacity}
+        />
+        <path
+          d={`M ${sx} ${sy}
+              Q ${mouthX} ${controlY}, ${ex} ${ey}
+              C ${mouthX + finalWidth * 0.5} ${controlY + 5.5 * fullness}, ${mouthX - finalWidth * 0.5} ${controlY + 5.5 * fullness}, ${sx} ${sy} Z`}
+          fill={lipFill}
+          opacity={lipOpacity}
+        />
+        {lipStyle === 'glossy' && (
+          <ellipse
+            cx={mouthX}
+            cy={controlY + 3 * fullness}
+            rx={finalWidth * 0.32}
+            ry={1.6 * fullness}
+            fill="#ffffff"
+            opacity="0.55"
+          />
+        )}
+      </g>
+    );
+  };
 
   if (openAmount < 0.08) {
     if (artStyle === 'retro') {
@@ -375,6 +535,9 @@ export const Live2DMouth: React.FC<{
     const endY = mouthY - curveYOffset * 0.2;
     const controlY = mouthY + curveYOffset;
 
+    const closedStrokeWidth =
+      mouthShape === 'thin' ? (artStyle === 'anime' ? '1.4' : '1.8') : artStyle === 'anime' ? '2' : '2.5';
+
     return (
       <g>
         {tongueOut > 0.15 && (
@@ -389,13 +552,26 @@ export const Live2DMouth: React.FC<{
             strokeLinejoin="round"
           />
         )}
+        {renderClosedLips(startX, startY, endX, endY, controlY)}
         <path
           d={`M ${startX} ${startY} Q ${mouthX} ${controlY}, ${endX} ${endY}`}
           stroke="#1c1917"
-          strokeWidth={artStyle === 'anime' ? '2' : '2.5'}
+          strokeWidth={closedStrokeWidth}
           fill="none"
           strokeLinecap="round"
         />
+        {/* A small fang peeking over the closed lip */}
+        {(teeth === 'fangs' || teeth === 'sharp-teeth') && (
+          <path
+            d={`M ${mouthX + finalWidth * 0.35} ${mouthY + curveYOffset * 0.55 - 0.5}
+                L ${mouthX + finalWidth * 0.45} ${mouthY + curveYOffset * 0.55 + 5}
+                L ${mouthX + finalWidth * 0.55} ${mouthY + curveYOffset * 0.55 - 0.5} Z`}
+            fill="#ffffff"
+            stroke="#1c1917"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
+          />
+        )}
       </g>
     );
   } else {
@@ -436,9 +612,33 @@ export const Live2DMouth: React.FC<{
 
     return (
       <g>
+        {/* Lip ring framing the open mouth */}
+        {hasVisibleLips && (
+          <>
+            {lipStyle === 'gradient' && (
+              <defs>
+                <linearGradient id="lip-gradient-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={lipColor} stopOpacity="0.55" />
+                  <stop offset="55%" stopColor={lipColor} stopOpacity="1" />
+                  <stop offset="100%" stopColor={lipColor} stopOpacity="0.75" />
+                </linearGradient>
+              </defs>
+            )}
+            <path
+              d={`M ${mouthX - finalWidth} ${lipTopStartY}
+                  Q ${mouthX} ${lipTopControlY}, ${mouthX + finalWidth} ${lipTopEndY}
+                  Q ${mouthX} ${cavityDepthY}, ${mouthX - finalWidth} ${lipTopStartY} Z`}
+              fill="none"
+              stroke={lipFill}
+              strokeWidth={mouthShape === 'pouty' ? 6 : 4.5}
+              strokeLinejoin="round"
+              opacity={lipOpacity}
+            />
+          </>
+        )}
         <path
-          d={`M ${mouthX - finalWidth} ${lipTopStartY} 
-              Q ${mouthX} ${lipTopControlY}, ${mouthX + finalWidth} ${lipTopEndY} 
+          d={`M ${mouthX - finalWidth} ${lipTopStartY}
+              Q ${mouthX} ${lipTopControlY}, ${mouthX + finalWidth} ${lipTopEndY}
               Q ${mouthX} ${cavityDepthY}, ${mouthX - finalWidth} ${lipTopStartY} Z`}
           fill="#a81a32"
           stroke="#1c1917"
@@ -458,19 +658,77 @@ export const Live2DMouth: React.FC<{
             </clipPath>
           </defs>
 
-          {/* Detailed upper teeth with a center notch */}
-          <path
-            d={`M ${mouthX - finalWidth * 0.8} ${lipTopStartY + 1.2} 
-                Q ${mouthX} ${lipTopControlY + 1.8}, ${mouthX + finalWidth * 0.8} ${lipTopEndY + 1.2} 
-                Q ${mouthX + finalWidth * 0.65} ${lipTopControlY + finalH * 0.3 + 1}, ${mouthX} ${lipTopControlY + finalH * 0.35 + 1}
-                Q ${mouthX - finalWidth * 0.65} ${lipTopControlY + finalH * 0.3 + 1}, ${mouthX - finalWidth * 0.8} ${lipTopStartY + 1.2} Z`}
-            fill="#ffffff"
-            stroke="#1c1917"
-            strokeWidth="0.6"
-          />
+          {/* Upper teeth — silhouette depends on toothStyle */}
+          {teeth === 'sharp-teeth' ? (
+            // Jagged shark-like upper row
+            <path
+              d={`M ${mouthX - finalWidth * 0.85} ${lipTopStartY + 1}
+                  Q ${mouthX} ${lipTopControlY + 1.5}, ${mouthX + finalWidth * 0.85} ${lipTopEndY + 1}
+                  ${[3, 2, 1, 0, -1, -2, -3]
+                    .map((i) => {
+                      const tipX = mouthX + i * finalWidth * 0.24;
+                      const baseX = tipX + finalWidth * 0.12;
+                      return `L ${baseX} ${lipTopStartY + 1.5} L ${tipX} ${lipTopControlY + finalH * 0.42 + 2} `;
+                    })
+                    .join('')}
+                  L ${mouthX - finalWidth * 0.85} ${lipTopStartY + 1} Z`}
+              fill="#ffffff"
+              stroke="#1c1917"
+              strokeWidth="0.7"
+              strokeLinejoin="round"
+            />
+          ) : (
+            <path
+              d={`M ${mouthX - finalWidth * 0.8} ${lipTopStartY + 1.2}
+                  Q ${mouthX} ${lipTopControlY + 1.8}, ${mouthX + finalWidth * 0.8} ${lipTopEndY + 1.2}
+                  Q ${mouthX + finalWidth * 0.65} ${lipTopControlY + finalH * 0.3 + 1}, ${mouthX} ${lipTopControlY + finalH * 0.35 + 1}
+                  Q ${mouthX - finalWidth * 0.65} ${lipTopControlY + finalH * 0.3 + 1}, ${mouthX - finalWidth * 0.8} ${lipTopStartY + 1.2} Z`}
+              fill="#ffffff"
+              stroke="#1c1917"
+              strokeWidth="0.6"
+            />
+          )}
+
+          {/* Gap-tooth: a visible notch between the two front teeth */}
+          {teeth === 'gap-tooth' && (
+            <rect
+              x={mouthX - 1.1}
+              y={lipTopControlY + 1.5}
+              width="2.2"
+              height={Math.max(2.5, finalH * 0.3)}
+              fill="#7a1226"
+              rx="0.8"
+            />
+          )}
+
+          {/* Braces: metallic band with brackets across the upper teeth */}
+          {teeth === 'braces' && (
+            <g id="teeth-braces">
+              <path
+                d={`M ${mouthX - finalWidth * 0.72} ${lipTopStartY + finalH * 0.16 + 1.6}
+                    Q ${mouthX} ${lipTopControlY + finalH * 0.2 + 2}, ${mouthX + finalWidth * 0.72} ${lipTopEndY + finalH * 0.16 + 1.6}`}
+                stroke="#94a3b8"
+                strokeWidth="1.4"
+                fill="none"
+              />
+              {[-0.55, -0.28, 0, 0.28, 0.55].map((f) => (
+                <rect
+                  key={f}
+                  x={mouthX + f * finalWidth - 1.2}
+                  y={lipTopControlY + finalH * 0.2 + 0.8 + Math.abs(f) * 1.2}
+                  width="2.4"
+                  height="2.4"
+                  fill="#cbd5e1"
+                  stroke="#64748b"
+                  strokeWidth="0.4"
+                  rx="0.5"
+                />
+              ))}
+            </g>
+          )}
 
           {/* Vampire Fangs option inside clip */}
-          {hasFangs && (
+          {teeth === 'fangs' && (
             <g id="vampire-fangs">
               <path
                 d={`M ${mouthX - finalWidth * 0.55} ${lipTopStartY + 2}
@@ -513,14 +771,32 @@ export const Live2DMouth: React.FC<{
           </g>
 
           {/* Detailed lower teeth */}
-          <path
-            d={`M ${mouthX - finalWidth * 0.6} ${cavityDepthY - 1} 
-                Q ${mouthX} ${cavityDepthY - finalH * 0.25 - 1.5}, ${mouthX + finalWidth * 0.6} ${cavityDepthY - 1} 
-                Z`}
-            fill="#ffffff"
-            stroke="#1c1917"
-            strokeWidth="0.5"
-          />
+          {teeth === 'sharp-teeth' ? (
+            <path
+              d={`M ${mouthX - finalWidth * 0.65} ${cavityDepthY - 0.5}
+                  ${[-2, -1, 0, 1, 2]
+                    .map((i) => {
+                      const tipX = mouthX + i * finalWidth * 0.26;
+                      const baseX = tipX + finalWidth * 0.13;
+                      return `L ${tipX} ${cavityDepthY - finalH * 0.3 - 2} L ${baseX} ${cavityDepthY - 0.5} `;
+                    })
+                    .join('')}
+                  L ${mouthX + finalWidth * 0.65} ${cavityDepthY - 0.5} Z`}
+              fill="#ffffff"
+              stroke="#1c1917"
+              strokeWidth="0.6"
+              strokeLinejoin="round"
+            />
+          ) : (
+            <path
+              d={`M ${mouthX - finalWidth * 0.6} ${cavityDepthY - 1}
+                  Q ${mouthX} ${cavityDepthY - finalH * 0.25 - 1.5}, ${mouthX + finalWidth * 0.6} ${cavityDepthY - 1}
+                  Z`}
+              fill="#ffffff"
+              stroke="#1c1917"
+              strokeWidth="0.5"
+            />
+          )}
         </g>
 
         {/* External Tongue Out */}

@@ -1,3 +1,6 @@
+# One-off codegen helper: converts absolute eye SVG path coordinates into
+# template literals relative to (cx, cy) for src/components/avatar/Eyes.tsx.
+# Run with `python3 scripts/generate-eye-paths.py` and paste the output.
 import re
 
 paths = {

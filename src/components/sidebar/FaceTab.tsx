@@ -181,26 +181,85 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
 
         <div className="space-y-1">
           <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
-            {isEn ? 'Mouth & Teeth Visual Options' : 'Зовнішній вигляд Рота'}
+            {t.rightSidebar.toothStyleLabel}
           </label>
-          <div
-            className={`flex items-center space-x-2.5 h-10 px-3 rounded border ${
-              theme === 'dark' ? 'bg-[#0a0a0c]/80 border-white/5' : 'bg-slate-50 border-slate-200'
+          <select
+            value={config.toothStyle ?? (config.hasFangs ? 'fangs' : 'normal')}
+            onChange={(e) =>
+              setConfig((prev) => ({
+                ...prev,
+                toothStyle: e.target.value as any,
+                // Keep the legacy boolean in sync for exports/stickers that still read it.
+                hasFangs: e.target.value === 'fangs',
+              }))
+            }
+            className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                : 'bg-white text-slate-700 border-slate-200'
             }`}
           >
-            <input
-              type="checkbox"
-              id="fangs-drawer-checkbox"
-              checked={config.hasFangs ?? false}
-              onChange={(e) => setConfig((prev) => ({ ...prev, hasFangs: e.target.checked }))}
-              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/40 w-4 h-4 cursor-pointer accent-indigo-500"
-            />
-            <label
-              htmlFor="fangs-drawer-checkbox"
-              className={`text-xs cursor-pointer select-none font-medium ${theme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}
+            <option value="normal">{t.rightSidebar.toothOptions.normal}</option>
+            <option value="fangs">{t.rightSidebar.toothOptions.fangs}</option>
+            <option value="gap-tooth">{t.rightSidebar.toothOptions['gap-tooth']}</option>
+            <option value="braces">{t.rightSidebar.toothOptions.braces}</option>
+            <option value="sharp-teeth">{t.rightSidebar.toothOptions['sharp-teeth']}</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {t.rightSidebar.mouthShapeLabel}
+          </label>
+          <select
+            value={config.mouthShape || 'default'}
+            onChange={(e) => setConfig((prev) => ({ ...prev, mouthShape: e.target.value as any }))}
+            className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                : 'bg-white text-slate-700 border-slate-200'
+            }`}
+          >
+            <option value="default">{t.rightSidebar.mouthShapeOptions.default}</option>
+            <option value="small">{t.rightSidebar.mouthShapeOptions.small}</option>
+            <option value="wide">{t.rightSidebar.mouthShapeOptions.wide}</option>
+            <option value="pouty">{t.rightSidebar.mouthShapeOptions.pouty}</option>
+            <option value="thin">{t.rightSidebar.mouthShapeOptions.thin}</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {t.rightSidebar.lipStyleLabel}
+          </label>
+          <div
+            className={`flex items-center space-x-2 p-2 rounded border ${
+              theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
+            }`}
+          >
+            <select
+              value={config.lipStyle || 'natural'}
+              onChange={(e) => setConfig((prev) => ({ ...prev, lipStyle: e.target.value as any }))}
+              className={`flex-1 text-xs font-medium p-2 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                  : 'bg-white text-slate-700 border-slate-200'
+              }`}
             >
-              {isEn ? 'Show Sharp Vampire Fangs' : 'Показувати гострі Ікла (Fangs)'}
-            </label>
+              <option value="natural">{t.rightSidebar.lipStyleOptions.natural}</option>
+              <option value="glossy">{t.rightSidebar.lipStyleOptions.glossy}</option>
+              <option value="dark">{t.rightSidebar.lipStyleOptions.dark}</option>
+              <option value="gradient">{t.rightSidebar.lipStyleOptions.gradient}</option>
+            </select>
+            {(config.lipStyle ?? 'natural') !== 'natural' && (
+              <input
+                type="color"
+                aria-label={t.rightSidebar.lipColor}
+                value={config.lipColor ?? '#d6536d'}
+                onChange={(e) => setConfig((p) => ({ ...p, lipColor: e.target.value }))}
+                className={`w-8 h-8 rounded-sm cursor-pointer shrink-0 ${theme === 'dark' ? 'bg-[#0a0a0c] border border-white/10' : 'bg-white border-slate-200'}`}
+              />
+            )}
           </div>
         </div>
 
@@ -334,6 +393,46 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
           </select>
         </div>
 
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {t.rightSidebar.irisStyleLabel}
+          </label>
+          <select
+            value={config.irisStyle || 'solid'}
+            onChange={(e) => setConfig((prev) => ({ ...prev, irisStyle: e.target.value as any }))}
+            className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                : 'bg-white text-slate-700 border-slate-200'
+            }`}
+          >
+            <option value="solid">{t.rightSidebar.irisOptions.solid}</option>
+            <option value="organic">{t.rightSidebar.irisOptions.organic}</option>
+            <option value="gemstone">{t.rightSidebar.irisOptions.gemstone}</option>
+            <option value="galaxy">{t.rightSidebar.irisOptions.galaxy}</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}>
+            {t.rightSidebar.eyeHighlightLabel}
+          </label>
+          <select
+            value={config.eyeHighlightStyle || 'standard'}
+            onChange={(e) => setConfig((prev) => ({ ...prev, eyeHighlightStyle: e.target.value as any }))}
+            className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                : 'bg-white text-slate-700 border-slate-200'
+            }`}
+          >
+            <option value="standard">{t.rightSidebar.eyeHighlightOptions.standard}</option>
+            <option value="double-spark">{t.rightSidebar.eyeHighlightOptions['double-spark']}</option>
+            <option value="star-glint">{t.rightSidebar.eyeHighlightOptions['star-glint']}</option>
+            <option value="none">{t.rightSidebar.eyeHighlightOptions.none}</option>
+          </select>
+        </div>
+
         <div
           className={`mt-4 p-4 rounded-sm border space-y-4 ${
             theme === 'dark' ? 'bg-[#08080a] border-white/5' : 'bg-slate-50 border-slate-200/60'
@@ -446,6 +545,52 @@ export const FaceTab: React.FC<FaceTabProps> = ({ config, setConfig }) => {
               <option value="cat-whiskers">{t.rightSidebar.facePaintOptions['cat-whiskers']}</option>
               <option value="butterfly">{t.rightSidebar.facePaintOptions.butterfly}</option>
               <option value="under-eye-stripe">{t.rightSidebar.facePaintOptions['under-eye-stripe']}</option>
+            </select>
+          </div>
+
+          {/* Face Scar Selection */}
+          <div className="space-y-1">
+            <label
+              className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+            >
+              {t.rightSidebar.faceScarLabel}
+            </label>
+            <select
+              value={config.faceScar || 'none'}
+              onChange={(e) => setConfig((prev) => ({ ...prev, faceScar: e.target.value as any }))}
+              className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                  : 'bg-white text-slate-700 border-slate-200'
+              }`}
+            >
+              <option value="none">{t.rightSidebar.faceScarOptions.none}</option>
+              <option value="cheek-slash">{t.rightSidebar.faceScarOptions['cheek-slash']}</option>
+              <option value="eye-scar">{t.rightSidebar.faceScarOptions['eye-scar']}</option>
+              <option value="cross-forehead">{t.rightSidebar.faceScarOptions['cross-forehead']}</option>
+            </select>
+          </div>
+
+          {/* Ear Decoration Selection */}
+          <div className="space-y-1">
+            <label
+              className={`text-[11px] block font-semibold ${theme === 'dark' ? 'text-white/75' : 'text-slate-700'}`}
+            >
+              {t.rightSidebar.earDecorationLabel}
+            </label>
+            <select
+              value={config.earDecoration || 'none'}
+              onChange={(e) => setConfig((prev) => ({ ...prev, earDecoration: e.target.value as any }))}
+              className={`w-full text-xs font-medium p-2.5 rounded-sm border focus:outline-none focus:border-indigo-500 cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#0a0a0c] text-[#d1d1d1] border-white/10'
+                  : 'bg-white text-slate-700 border-slate-200'
+              }`}
+            >
+              <option value="none">{t.rightSidebar.earDecorationOptions.none}</option>
+              <option value="piercing">{t.rightSidebar.earDecorationOptions.piercing}</option>
+              <option value="cuff">{t.rightSidebar.earDecorationOptions.cuff}</option>
+              <option value="feather">{t.rightSidebar.earDecorationOptions.feather}</option>
             </select>
           </div>
         </div>

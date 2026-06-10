@@ -60,18 +60,18 @@ npm run dev               # http://localhost:3000
 
 ## Scripts
 
-| Script                     | Description                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `npm run dev`              | Dev server (Express + Vite middleware, HMR)                |
-| `npm run build`            | Build client (Vite) + server (esbuild → `dist/server.cjs`) |
-| `npm run start`            | Serve the production build                                 |
-| `npm run typecheck`        | `tsc --noEmit`                                             |
-| `npm run lint`             | ESLint                                                     |
-| `npm test`                 | Run unit tests (Vitest)                                    |
-| `npm run test:e2e`         | Run Chromium end-to-end tests (Playwright)                 |
-| `npm run test:e2e:install` | Install the local Chromium runner for Playwright           |
-| `npm run format`           | Prettier write                                             |
-| `npm run format:check`     | Verify Prettier formatting                                 |
+| Script                     | Description                                                                                                    |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`              | Dev server (Express + Vite middleware, HMR)                                                                    |
+| `npm run build`            | Build client (Vite) + server (esbuild → `dist/server.cjs`)                                                     |
+| `npm run start`            | Serve the production build                                                                                     |
+| `npm run typecheck`        | `tsc --noEmit`                                                                                                 |
+| `npm run lint`             | ESLint                                                                                                         |
+| `npm test`                 | Run unit tests (Vitest)                                                                                        |
+| `npm run test:e2e`         | Run Chromium end-to-end tests (Playwright)                                                                     |
+| `npm run test:e2e:install` | Install Playwright's Chromium (not needed when system Chrome is present — the config uses `channel: 'chrome'`) |
+| `npm run format`           | Prettier write                                                                                                 |
+| `npm run format:check`     | Verify Prettier formatting                                                                                     |
 
 ## Environment
 

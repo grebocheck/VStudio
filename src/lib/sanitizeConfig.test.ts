@@ -41,6 +41,39 @@ describe('mergeConfig', () => {
     expect(mergeConfig(DEFAULT_CONFIG, { hasFangs: 'yes' as never }).hasFangs).toBe(DEFAULT_CONFIG.hasFangs);
   });
 
+  it('accepts the Phase-1 face detailing enums and rejects junk values', () => {
+    const out = mergeConfig(DEFAULT_CONFIG, {
+      irisStyle: 'galaxy',
+      eyeHighlightStyle: 'double-spark',
+      mouthShape: 'pouty',
+      lipStyle: 'glossy',
+      toothStyle: 'sharp-teeth',
+      faceScar: 'eye-scar',
+      earDecoration: 'piercing',
+    });
+    expect(out.irisStyle).toBe('galaxy');
+    expect(out.eyeHighlightStyle).toBe('double-spark');
+    expect(out.mouthShape).toBe('pouty');
+    expect(out.lipStyle).toBe('glossy');
+    expect(out.toothStyle).toBe('sharp-teeth');
+    expect(out.faceScar).toBe('eye-scar');
+    expect(out.earDecoration).toBe('piercing');
+
+    const bad = mergeConfig(DEFAULT_CONFIG, {
+      irisStyle: 'laser' as never,
+      toothStyle: 'gold' as never,
+      faceScar: 'everywhere' as never,
+    });
+    expect(bad.irisStyle).toBe(DEFAULT_CONFIG.irisStyle);
+    expect(bad.toothStyle).toBe(DEFAULT_CONFIG.toothStyle);
+    expect(bad.faceScar).toBe(DEFAULT_CONFIG.faceScar);
+  });
+
+  it('validates lipColor as HEX', () => {
+    expect(mergeConfig(DEFAULT_CONFIG, { lipColor: '#ff3366' }).lipColor).toBe('#ff3366');
+    expect(mergeConfig(DEFAULT_CONFIG, { lipColor: 'crimson' }).lipColor).toBe(DEFAULT_CONFIG.lipColor);
+  });
+
   it('does not mutate the base config', () => {
     const snapshot = JSON.stringify(DEFAULT_CONFIG);
     mergeConfig(DEFAULT_CONFIG, { hairColor: '#000000', headSize: 1.1 });

@@ -454,7 +454,13 @@ export const HairComponent: React.FC<{
       )}
 
       {backStyle === 'messy-bun' && (
-        <g id="hair-messy-bun">
+        <g
+          id="hair-messy-bun"
+          style={{
+            transform: `scaleY(${1 + hairSwayY * 0.006}) rotate(${hairSwayX * 0.1}deg)`,
+            transformOrigin: '200px 110px',
+          }}
+        >
           {/* Base volume */}
           <path d="M110 130 C100 160, 95 195, 110 215 Q200 225, 290 215 C305 195, 300 160, 290 130 Z" fill={color} />
           {/* Messy bun — irregular shape on top */}
@@ -578,12 +584,12 @@ export const FrontHairComponent: React.FC<{
 
   // Hair styling parameters for multi-layered sway & ahoge
   const leftLockStyle = {
-    transform: `rotate(${hairSwayX * 0.4}deg)`,
+    transform: `rotate(${hairSwayX * 0.4}deg) scaleY(${1 + hairSwayY * 0.005})`,
     transformOrigin: '106px 130px',
     transition: 'transform 0.1s ease-out',
   };
   const rightLockStyle = {
-    transform: `rotate(${hairSwayX * 0.4}deg)`,
+    transform: `rotate(${hairSwayX * 0.4}deg) scaleY(${1 + hairSwayY * 0.005})`,
     transformOrigin: '294px 130px',
     transition: 'transform 0.1s ease-out',
   };

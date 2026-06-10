@@ -48,7 +48,6 @@ export const NeckAndShoulders: React.FC<{
   angleX = 0,
   angleY = 0,
 }) => {
-  const neckShadow = 'rgba(0,0,0,0.15)';
   const shadowOffsetX = -angleX * 0.45;
   const shadowOffsetY = -angleY * 0.3;
 

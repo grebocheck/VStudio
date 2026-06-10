@@ -3,7 +3,6 @@ import type { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import http from 'http';
 import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { WebSocketServer, WebSocket } from 'ws';
 import { randomUUID } from 'node:crypto';
@@ -105,7 +104,8 @@ app.get('/healthz', (_req, res) => {
 
 // API Endpoint for AI generating custom VTuber themes
 app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
-  const { prompt } = req.body ?? {};
+  const { prompt, locale } = req.body ?? {};
+  const lang: 'uk' | 'en' = locale === 'en' ? 'en' : 'uk';
   const requestId = randomUUID();
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
@@ -136,7 +136,12 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
     });
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `Створи детальну художню конфігурацію VTuber аватара відповідно до запиту користувача: "${prompt}".
+      contents:
+        lang === 'en'
+          ? `Create a detailed artistic VTuber avatar configuration matching the user's request: "${prompt}".
+       Return colors strictly in HEX format (e.g., "#ff0077" or "#1a1a2e").
+       Lore and Name must be in English, with detailed, engaging text for a Twitch streamer. The lore should be cozy or creative with a touch of humor.`
+          : `Створи детальну художню конфігурацію VTuber аватара відповідно до запиту користувача: "${prompt}".
        Поверни кольори виключно в форматі HEX (наприклад: "#ff0077" або "#1a1a2e").
        Lore та Name повинні бути українською мовою з детальним, цікавим текстом для Twitch-стрімера. Текст лору повинен бути затишним чи креативним з гумором.`,
       config: {
@@ -275,15 +280,46 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
               description: 'HEX color of the right eye iris, if heterochromia is true',
             },
             eyelashStyle: { type: Type.STRING, enum: ['natural', 'glamour', 'minimal', 'none'] },
+            irisStyle: {
+              type: Type.STRING,
+              enum: ['solid', 'organic', 'gemstone', 'galaxy'],
+              description: 'Iris texture: organic fibers, crystal facets or cosmic nebula',
+            },
+            eyeHighlightStyle: {
+              type: Type.STRING,
+              enum: ['standard', 'double-spark', 'star-glint', 'none'],
+              description: 'Eye specular glint style; "none" reads as serious/villainous',
+            },
+            mouthShape: { type: Type.STRING, enum: ['default', 'small', 'wide', 'pouty', 'thin'] },
+            lipStyle: {
+              type: Type.STRING,
+              enum: ['natural', 'glossy', 'dark', 'gradient'],
+              description: 'Lip makeup; pair "dark" with gothic looks, "gradient" with K-pop/idol looks',
+            },
+            lipColor: { type: Type.STRING, description: 'Lip tint HEX color (used when lipStyle is not natural)' },
+            toothStyle: {
+              type: Type.STRING,
+              enum: ['normal', 'fangs', 'gap-tooth', 'braces', 'sharp-teeth'],
+              description: 'Teeth silhouette; supersedes hasFangs',
+            },
+            faceScar: { type: Type.STRING, enum: ['none', 'cheek-slash', 'eye-scar', 'cross-forehead'] },
+            earDecoration: { type: Type.STRING, enum: ['none', 'piercing', 'cuff', 'feather'] },
             freckles: { type: Type.BOOLEAN, description: 'Whether the character has facial freckles' },
             frecklesDensity: { type: Type.NUMBER, description: 'Freckles density from 0.3 to 1.0' },
             frecklesColor: { type: Type.STRING, description: 'HEX color of the freckles' },
             beautyMark: { type: Type.STRING, enum: ['none', 'left-cheek', 'right-cheek', 'under-eye', 'chin'] },
             facePaint: { type: Type.STRING, enum: ['none', 'tribal', 'cat-whiskers', 'butterfly', 'under-eye-stripe'] },
-            name: { type: Type.STRING, description: "Креативне ім'я для VTuber-а українською мовою" },
+            name: {
+              type: Type.STRING,
+              description:
+                lang === 'en' ? 'A creative VTuber name in English' : "Креативне ім'я для VTuber-а українською мовою",
+            },
             lore: {
               type: Type.STRING,
-              description: 'Коротка, весела та затишна передісторія стрімера українською мовою (2-3 речення).',
+              description:
+                lang === 'en'
+                  ? 'A short, fun, cozy streamer backstory in English (2-3 sentences).'
+                  : 'Коротка, весела та затишна передісторія стрімера українською мовою (2-3 речення).',
             },
           },
           required: [
@@ -344,7 +380,22 @@ app.post('/api/gemini/generate-style', aiLimiter, async (req, res) => {
  * a `status` message with the current overlay count.
  */
 function setupOverlayRelay(server: http.Server) {
-  const wss = new WebSocketServer({ server, path: '/ws' });
+  const MAX_WS_MESSAGE_BYTES = 64 * 1024; // an avatar config + rig frame is well under this
+  const wss = new WebSocketServer({
+    server,
+    path: '/ws',
+    maxPayload: MAX_WS_MESSAGE_BYTES,
+    verifyClient: ({ origin, req }: { origin?: string; req: http.IncomingMessage }) => {
+      // OBS browser sources and non-browser clients may omit Origin entirely;
+      // when present it must match the host we are serving from.
+      if (!origin) return true;
+      try {
+        return new URL(origin).host === req.headers.host;
+      } catch {
+        return false;
+      }
+    },
+  });
   const overlays = new Set<WebSocket>();
   const editors = new Set<WebSocket>();
   let lastConfig: unknown = null;
@@ -399,6 +450,8 @@ function setupOverlayRelay(server: http.Server) {
 // Serve frontend assets
 const startServer = async () => {
   if (process.env.NODE_ENV !== 'production') {
+    // Dev-only dependency: imported lazily so the production bundle never needs vite installed.
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',

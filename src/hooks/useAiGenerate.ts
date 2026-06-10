@@ -36,7 +36,7 @@ function resolveServerError(data: unknown, errors: (typeof en)['errors']): strin
 }
 
 export function useAiGenerate({ mergeIntoConfig, setRig }: AiGenerateDeps): AiGenerate {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function useAiGenerate({ mergeIntoConfig, setRig }: AiGenerateDeps): AiGe
       const response = await fetch('/api/gemini/generate-style', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, locale: language }),
       });
       const data: unknown = await response.json();
       if (!response.ok) {
@@ -71,7 +71,7 @@ export function useAiGenerate({ mergeIntoConfig, setRig }: AiGenerateDeps): AiGe
     } finally {
       setGenerating(false);
     }
-  }, [mergeIntoConfig, prompt, setRig, t]);
+  }, [mergeIntoConfig, prompt, setRig, t, language]);
 
   return {
     prompt,

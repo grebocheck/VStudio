@@ -141,6 +141,22 @@ export const en = {
     'midnight-witch_name': 'Morgana (Midnight Witch)',
     'midnight-witch_lore':
       'A mysterious midnight witch who streams starlit tarot readings, atmospheric RPGs, and nocturnal music. Her cross-shaped pupils mesmerize, and her mystical robe shimmers with stellar patterns.',
+
+    'dragon-knight_name': 'Dragomyra (Dragon Knight)',
+    'dragon-knight_lore':
+      'A dragon-blooded knight who guards her chat like her own hoard of gold. The scar across her eye is a memento of a griffin duel, and her amber gemstone eyes with vertical pupils spot a toxic comment a mile away.',
+
+    'mermaid-princess_name': 'Marina (Mermaid Princess)',
+    'mermaid-princess_lore':
+      'A princess of the underwater kingdom who surfaced for cosplay streams and sea legends. Her hair is woven in a fishtail braid, and her pearl-glossed lips tell tales of sunken ships.',
+
+    'steampunk-inventor_name': 'Greta (Steampunk Inventor)',
+    'steampunk-inventor_lore':
+      'An inventor with brass goggles and sleeves perpetually stained with machine oil. She streams gear-robot builds and steam machines. The gap between her teeth whistles when she laughs at failed prototypes.',
+
+    'galaxy-dj_name': 'Nova (Galaxy DJ)',
+    'galaxy-dj_lore':
+      'A cosmic DJ mixing tracks aboard an orbital station. Real galaxies swirl in her eyes, the neon stripes under them pulse to the beat, and her gradient lips glow in ultraviolet.',
   },
   rightSidebar: {
     params: 'Parameters: ',
@@ -252,6 +268,58 @@ export const en = {
       'cat-whiskers': 'Playful Cat Whiskers',
       butterfly: 'Charming Butterfly decal',
       'under-eye-stripe': 'Cyber Under-eye Stripes',
+    },
+    irisStyleLabel: 'Iris texture style',
+    irisOptions: {
+      solid: 'Solid (Clean color)',
+      organic: 'Organic (Realistic fibers)',
+      gemstone: 'Gemstone (Crystal facets)',
+      galaxy: 'Galaxy (Cosmic nebula)',
+    },
+    eyeHighlightLabel: 'Eye highlight glints',
+    eyeHighlightOptions: {
+      standard: 'Standard (Classic glints)',
+      'double-spark': 'Double Spark ✦✦',
+      'star-glint': 'Star Glint ✦',
+      none: 'None (Matte / Serious)',
+    },
+    mouthShapeLabel: 'Resting mouth shape',
+    mouthShapeOptions: {
+      default: 'Default',
+      small: 'Small (Petite)',
+      wide: 'Wide (Expressive)',
+      pouty: 'Pouty (Full lips)',
+      thin: 'Thin (Subtle line)',
+    },
+    lipStyleLabel: 'Lip makeup style',
+    lipStyleOptions: {
+      natural: 'Natural (No makeup)',
+      glossy: 'Glossy (Shiny gloss)',
+      dark: 'Dark (Bold lipstick)',
+      gradient: 'Gradient (Ombre K-style)',
+    },
+    lipColor: 'Lip tint color',
+    toothStyleLabel: 'Teeth style',
+    toothOptions: {
+      normal: 'Normal teeth',
+      fangs: 'Vampire fangs',
+      'gap-tooth': 'Gap tooth (Cute notch)',
+      braces: 'Braces (Metallic)',
+      'sharp-teeth': 'Shark teeth (Jagged)',
+    },
+    faceScarLabel: 'Battle scar marking',
+    faceScarOptions: {
+      none: 'No scar',
+      'cheek-slash': 'Cheek slash (Stitched)',
+      'eye-scar': 'Across the eye',
+      'cross-forehead': 'Cross mark (Forehead)',
+    },
+    earDecorationLabel: 'Ear decoration',
+    earDecorationOptions: {
+      none: 'No decoration',
+      piercing: 'Gold piercing rings',
+      cuff: 'Silver ear cuffs',
+      feather: 'Hanging feather charm',
     },
     clothesTitle: 'Suit Selection & Streaming Environments',
     clothesSub: 'Switch dress styles, activate head accessories, and choose a room background:',

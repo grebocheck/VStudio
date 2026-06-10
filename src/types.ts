@@ -156,6 +156,18 @@ export interface AvatarConfig {
   eyeColorRight?: string;
   eyelashStyle?: 'natural' | 'glamour' | 'minimal' | 'none';
 
+  // Phase 1 — Deep face detailing
+  irisStyle?: 'solid' | 'organic' | 'gemstone' | 'galaxy';
+  eyeHighlightStyle?: 'standard' | 'double-spark' | 'star-glint' | 'none';
+  /** Resting mouth silhouette; scales width/lip volume. */
+  mouthShape?: 'default' | 'small' | 'wide' | 'pouty' | 'thin';
+  lipStyle?: 'natural' | 'glossy' | 'dark' | 'gradient';
+  lipColor?: string;
+  /** Supersedes `hasFangs` when set ('fangs' keeps the legacy look). */
+  toothStyle?: 'normal' | 'fangs' | 'gap-tooth' | 'braces' | 'sharp-teeth';
+  faceScar?: 'none' | 'cheek-slash' | 'eye-scar' | 'cross-forehead';
+  earDecoration?: 'none' | 'piercing' | 'cuff' | 'feather';
+
   // Custom proportions variables
   headSize?: number; // 0.8 to 1.2
   neckWidth?: number; // 0.6 to 1.4
