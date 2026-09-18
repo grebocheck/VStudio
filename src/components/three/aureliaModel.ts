@@ -14,6 +14,7 @@ import type { AvatarConfig, RigParams } from '../../types';
 import { calculateAvatar3DPose, poseToVrmExpressions } from './avatar3DPose';
 import { addAureliaWardrobe } from './aureliaWardrobe';
 import { bodiceSurface } from './aureliaGarmentShape';
+import { addAureliaHair } from './aureliaHair';
 
 const MODEL_URL = '/models/aurelia-3d/base.vrm';
 
@@ -422,6 +423,7 @@ function styleAurelia(vrm: VRM) {
       pigment(material, 'iris');
     }
   }
+  addAureliaHair(vrm);
   const accessories = celestialAccessories(vrm);
   return { accessories, wardrobe: addAureliaWardrobe(vrm) };
 }
@@ -463,9 +465,9 @@ export async function loadAureliaModel(): Promise<AureliaModel> {
       set('chest', 0, body.y * 0.18, 0);
       set('neck', head.x * 0.25, head.y * 0.28, head.z * 0.24);
       set('head', head.x * 0.75, head.y * 0.72, head.z * 0.76);
-      // VRM rest is a T-pose. Relax arms before applying small breathing/counterbalance gestures.
-      set('leftUpperArm', 0.06, -0.06, -1.24 + pose.armLeftRotation.z);
-      set('rightUpperArm', 0.06, 0.06, 1.24 + pose.armRightRotation.z);
+      // Keep relaxed hands clear of the fuller skirt while retaining breathing/counterbalance gestures.
+      set('leftUpperArm', 0.06, -0.06, -1.18 + pose.armLeftRotation.z);
+      set('rightUpperArm', 0.06, 0.06, 1.18 + pose.armRightRotation.z);
       set('leftLowerArm', -0.13, -0.06, -0.05);
       set('rightLowerArm', -0.13, 0.06, 0.05);
       set('leftHand', 0, 0, -0.06);

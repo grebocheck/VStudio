@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { AureliaCloth } from './aureliaCloth';
-import { bodiceSurface, bodySurface, SKIRT_COLUMNS, SKIRT_ROWS, skirtSurface } from './aureliaGarmentShape';
+import { bodiceSurface, bodyNormal, bodySurface, SKIRT_COLUMNS, SKIRT_ROWS, skirtSurface } from './aureliaGarmentShape';
 
 function create() {
   const points: number[] = [];
@@ -34,6 +34,13 @@ describe('tailored garment', () => {
         const clearance = (cloth.x - skin.x) * Math.sin(phi) + (cloth.z - skin.z) * Math.cos(phi);
         expect(clearance).toBeGreaterThan(0.0044);
       }
+  });
+  it('has no hard normal crease where the chest contours meet at the sternum', () => {
+    for (let y = 1.08; y < 1.24; y += 0.002) {
+      const left = bodyNormal(-0.0001, y);
+      const right = bodyNormal(0.0001, y);
+      expect(left.dot(right)).toBeGreaterThan(0.99999);
+    }
   });
   it('joins the bodice and skirt at the same waist ring around the entire body', () => {
     for (let column = 0; column <= SKIRT_COLUMNS * 2; column++) {

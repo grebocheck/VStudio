@@ -1,8 +1,11 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { VRM } from '@pixiv/three-vrm';
-import { bindAureliaGeometry, getAureliaSkeleton } from './aureliaSkinning';
+import { bindAureliaGeometry, fitAureliaGeometry, getAureliaSkeleton } from './aureliaSkinning';
 import { addAureliaBody } from './aureliaBody';
 import { addAureliaFootwear } from './aureliaFootwear';
+import { createAureliaDressMaterials } from './aureliaDressMaterials';
+import { addAureliaPrincessSleeves } from './aureliaPrincessSleeves';
 import { AureliaCloth, type ClothCapsule } from './aureliaCloth';
 import {
   bodiceSurface,
@@ -18,6 +21,9 @@ interface AnimatedGeometry {
   geometry: THREE.BufferGeometry;
   rest: Float32Array;
   cloth?: { u: number; v: number; offset: THREE.Vector3 }[];
+}
+interface GoldGeometry extends AnimatedGeometry {
+  binding: 'torso' | 'hips' | 'cloth';
 }
 export interface AureliaWardrobe {
   update(delta: number, breathing: number): void;
@@ -64,72 +70,96 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
   const hips = vrm.humanoid.getRawBoneNode('hips')!;
   const hipIndex = skeleton.bones.findIndex((bone) => bone === hips);
   const animated: AnimatedGeometry[] = [];
-  const weighted = (geometry: THREE.BufferGeometry, material: THREE.Material, name: string, skirt = false) => {
+  const weighted = (
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    name: string,
+    skirt = false,
+    fitToBody = !skirt,
+  ) => {
+    // Fit before skinning and before callers capture animation rest positions.
+    if (fitToBody) fitAureliaGeometry(vrm, geometry);
     const mesh = bindAureliaGeometry(vrm, geometry, material, name, skirt ? 'hips' : 'torso');
     mesh.userData.aureliaOuterGarment = true;
     return mesh;
   };
-  const silk = new THREE.MeshPhysicalMaterial({
-    name: 'Aurelia_midnight_silk',
-    color: '#263859',
-    roughness: 0.66,
-    metalness: 0,
-    sheen: 0.42,
-    sheenColor: '#8c83a8',
-    sheenRoughness: 0.72,
-    side: THREE.DoubleSide,
-  });
-  const bodiceMaterial = silk.clone();
-  bodiceMaterial.name = 'Aurelia_tailored_brocade';
-  bodiceMaterial.color.set('white');
-  bodiceMaterial.vertexColors = true;
-  const satin = new THREE.MeshPhysicalMaterial({
-    name: 'Aurelia_ivory_satin',
-    color: '#e6dbc9',
-    roughness: 0.61,
-    sheen: 0.5,
-    sheenColor: '#efddc6',
-    sheenRoughness: 0.55,
-    side: THREE.DoubleSide,
-  });
-  const gold = new THREE.MeshStandardMaterial({
-    name: 'Aurelia_fine_gold_embroidery',
-    color: '#cba564',
-    metalness: 0.67,
-    roughness: 0.35,
-  });
-  const navy = new THREE.Color('#253959'),
-    ivory = new THREE.Color('#e8decb');
+  const materials = createAureliaDressMaterials();
+  const { satin, gold, lace, velvet } = materials;
+  addAureliaPrincessSleeves(vrm, materials);
   const bodice = surface(96, 40, (u, v) => bodiceSurface(u * TAU, v));
-  const colors: number[] = [];
-  const bodiceUV = bodice.getAttribute('uv');
-  for (let i = 0; i < bodiceUV.count; i++) {
-    const phi = bodiceUV.getX(i) * TAU;
-    const panel = THREE.MathUtils.smoothstep(Math.cos(phi), 0.47, 0.6);
-    const color = navy.clone().lerp(ivory, panel);
-    colors.push(color.r, color.g, color.b);
-  }
-  bodice.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-  weighted(bodice, bodiceMaterial, 'Aurelia_Sculpted_Bodice');
+  weighted(bodice, materials.bodice, 'Aurelia_Sculpted_Bodice');
   animated.push({ geometry: bodice, rest: Float32Array.from(bodice.getAttribute('position').array) });
 
+  const neckline = surface(144, 8, (u, v) => {
+    const phi = u * TAU;
+    const t = 1 - v * (0.067 + Math.cos(phi * 24) * 0.011);
+    return bodiceSurface(phi, t).add(new THREE.Vector3(Math.sin(phi) * 0.0022, 0, Math.cos(phi) * 0.0022));
+  });
+  weighted(neckline, lace, 'Aurelia_Scalloped_Neckline_Lace');
+  animated.push({ geometry: neckline, rest: Float32Array.from(neckline.getAttribute('position').array) });
+
   const choker = surface(64, 4, (u, v) => chokerSurface(u * TAU, v));
-  weighted(choker, silk, 'Aurelia_Velvet_Choker');
+  weighted(choker, velvet, 'Aurelia_Velvet_Choker');
   for (const side of [-1, 1]) {
     const strap = surface(8, 32, (u, v) => shoulderStrap(side, v, (u - 0.5) * 2), side < 0);
-    weighted(strap, silk, `Aurelia_Shoulder_Strap_${side}`);
+    weighted(strap, velvet, `Aurelia_Shoulder_Strap_${side}`);
     animated.push({ geometry: strap, rest: Float32Array.from(strap.getAttribute('position').array) });
+    for (const edge of [-1, 1]) {
+      const frill = surface(
+        6,
+        40,
+        (u, v) => {
+          const across = edge * (1 + u * (0.48 + 0.12 * Math.cos(v * Math.PI * 14)));
+          return shoulderStrap(side, v, across).add(new THREE.Vector3(side * 0.001, 0.0015, 0));
+        },
+        side < 0,
+      );
+      weighted(frill, lace, `Aurelia_Shoulder_Lace_${side}_${edge}`);
+      animated.push({ geometry: frill, rest: Float32Array.from(frill.getAttribute('position').array) });
+    }
   }
+  const pendingGold: GoldGeometry[] = [];
+  const sash = surface(144, 5, (u, v) => {
+    const phi = u * TAU;
+    return bodiceSurface(phi, v * 0.064).add(new THREE.Vector3(Math.sin(phi) * 0.003, 0, Math.cos(phi) * 0.003));
+  });
+  weighted(sash, velvet, 'Aurelia_Perwinkle_Waist_Sash', true);
+  animated.push({ geometry: sash, rest: Float32Array.from(sash.getAttribute('position').array) });
+  const bowCenter = bodiceSurface(Math.PI, 0.03).add(new THREE.Vector3(0, 0, -0.01));
+  const bowLoops = [-1, 1].map((side) =>
+    surface(8, 32, (u, v) =>
+      bowCenter
+        .clone()
+        .add(
+          new THREE.Vector3(
+            side * Math.sin(v * Math.PI) * 0.062,
+            Math.sin(v * TAU) * 0.011 + (u - 0.5) * 0.018,
+            -Math.sin(v * Math.PI) * 0.016 + Math.sin(u * Math.PI) * 0.002,
+          ),
+        ),
+    ),
+  );
+  const bow = mergeGeometries(bowLoops)!;
+  weighted(bow, velvet, 'Aurelia_Back_Sash_Bow', true);
+  animated.push({ geometry: bow, rest: Float32Array.from(bow.getAttribute('position').array) });
+  bowLoops.forEach((geometry) => geometry.dispose());
+  const knot = new THREE.SphereGeometry(0.009, 12, 8);
+  knot.scale(0.8, 1.35, 0.65);
+  knot.translate(bowCenter.x, bowCenter.y, bowCenter.z - 0.002);
+  weighted(knot, satin, 'Aurelia_Back_Bow_Knot', true);
   const seam = (
     points: THREE.Vector3[],
     radius: number,
     name: string,
     clothCoordinates?: { u: number; v: number }[],
+    fitToBody = !clothCoordinates,
   ) => {
     const curve = new THREE.CatmullRomCurve3(points);
     const segments = Math.max(32, points.length * 2);
     const geometry = new THREE.TubeGeometry(curve, segments, radius, 5, false);
-    weighted(geometry, gold, name, Boolean(clothCoordinates));
+    geometry.name = name;
+    // Fit individual torso pieces before batching; hips/cloth trim retains its original anchors.
+    if (fitToBody) fitAureliaGeometry(vrm, geometry);
     const rest = Float32Array.from(geometry.getAttribute('position').array);
     if (clothCoordinates) {
       const bindings = Array.from({ length: geometry.getAttribute('position').count }, (_, i) => {
@@ -144,14 +174,25 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
           v = THREE.MathUtils.lerp(a.v, b.v, alpha);
         return { u, v, offset: new THREE.Vector3().fromArray(rest, i * 3).sub(skirtSurface(u * TAU, v)) };
       });
-      animated.push({ geometry, rest, cloth: bindings });
-    } else animated.push({ geometry, rest });
+      pendingGold.push({ geometry, rest, cloth: bindings, binding: 'cloth' });
+    } else pendingGold.push({ geometry, rest, binding: fitToBody ? 'torso' : 'hips' });
   };
   for (const v of [0, 1])
     seam(
       Array.from({ length: 65 }, (_, i) => chokerSurface((i / 64) * TAU, v)),
       0.00065,
       `Aurelia_Choker_Binding_${v}`,
+    );
+  for (const t of [0, 0.064])
+    seam(
+      Array.from({ length: 97 }, (_, i) => {
+        const phi = (i / 96) * TAU;
+        return bodiceSurface(phi, t).add(new THREE.Vector3(Math.sin(phi) * 0.0038, 0, Math.cos(phi) * 0.0038));
+      }),
+      0.001,
+      `Aurelia_Sash_Gold_Edge_${t}`,
+      undefined,
+      false,
     );
   seam(
     Array.from({ length: 97 }, (_, i) => bodiceSurface((i / 96) * TAU, 1).add(new THREE.Vector3(0, 0.0008, 0))),
@@ -219,8 +260,114 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
       }),
     });
   };
-  addSkirt('Aurelia_Cloth_Skirt', silk, 0);
+  addSkirt('Aurelia_Cloth_Skirt', materials.skirt, 0);
   addSkirt('Aurelia_Satin_Lining', satin, 1);
+  const petalHem = (u: number) => 0.57 + 0.155 * Math.cos(u * TAU * 6);
+  const addClothLayer = (
+    name: string,
+    material: THREE.Material,
+    columns: number,
+    rows: number,
+    coordinate: (u: number, v: number) => { u: number; v: number },
+    shape: (point: THREE.Vector3, u: number, v: number) => THREE.Vector3,
+  ) => {
+    const geometry = surface(
+      columns,
+      rows,
+      (u, v) => {
+        const sample = coordinate(u, v);
+        return shape(skirtSurface(sample.u * TAU, sample.v), u, v);
+      },
+      true,
+    );
+    weighted(geometry, material, name, true);
+    const rest = Float32Array.from(geometry.getAttribute('position').array),
+      uv = geometry.getAttribute('uv');
+    animated.push({
+      geometry,
+      rest,
+      cloth: Array.from({ length: uv.count }, (_, i) => {
+        const sample = coordinate(uv.getX(i), uv.getY(i));
+        return {
+          ...sample,
+          offset: new THREE.Vector3().fromArray(rest, i * 3).sub(skirtSurface(sample.u * TAU, sample.v)),
+        };
+      }),
+    });
+  };
+  addClothLayer(
+    'Aurelia_Embroidered_Petal_Overskirt',
+    materials.petals,
+    144,
+    24,
+    (u, v) => ({ u, v: v * petalHem(u) }),
+    (point, u, v) =>
+      point.add(new THREE.Vector3(Math.sin(u * TAU) * (0.003 + v * 0.004), 0, Math.cos(u * TAU) * (0.003 + v * 0.004))),
+  );
+  addClothLayer(
+    'Aurelia_Petal_Openwork_Edging',
+    lace,
+    144,
+    6,
+    (u, v) => ({ u, v: petalHem(u) - 0.012 + v * 0.045 }),
+    (point, u, v) =>
+      point.add(
+        new THREE.Vector3(
+          Math.sin(u * TAU) * (0.008 + Math.sin(v * Math.PI) * 0.002),
+          0,
+          Math.cos(u * TAU) * (0.008 + Math.sin(v * Math.PI) * 0.002),
+        ),
+      ),
+  );
+  for (const side of [-1, 1])
+    addClothLayer(
+      `Aurelia_Back_Bow_Ribbon_${side}`,
+      velvet,
+      6,
+      24,
+      (u, v) => ({
+        u: 0.5 + side * (0.018 + v * 0.025) + (u - 0.5) * 0.014,
+        v: 0.025 + v * (0.28 - 0.025 * (1 - Math.abs(u * 2 - 1))),
+      }),
+      (point) => point.add(new THREE.Vector3(0, 0, -0.012)),
+    );
+  addClothLayer(
+    'Aurelia_Gathered_Ivory_Hem',
+    satin,
+    192,
+    8,
+    (u, v) => ({ u, v: 0.93 + v * 0.07 }),
+    (point, u, v) => {
+      const radius = 0.003 + v * (0.006 + Math.cos(u * TAU * 48) * 0.003);
+      return point.add(new THREE.Vector3(Math.sin(u * TAU) * radius, -v * 0.016, Math.cos(u * TAU) * radius));
+    },
+  );
+  addClothLayer(
+    'Aurelia_Scalloped_Hem_Lace',
+    lace,
+    192,
+    8,
+    (u, v) => ({ u, v: 0.97 + v * 0.03 }),
+    (point, u, v) => {
+      const radius = 0.011 + v * (0.003 + Math.cos(u * TAU * 48) * 0.002);
+      return point.add(
+        new THREE.Vector3(
+          Math.sin(u * TAU) * radius,
+          -0.011 - v * (0.018 + Math.cos(u * TAU * 24) * 0.002),
+          Math.cos(u * TAU) * radius,
+        ),
+      );
+    },
+  );
+  const petalCoordinates = Array.from({ length: 145 }, (_, i) => ({ u: i / 144, v: petalHem(i / 144) }));
+  seam(
+    petalCoordinates.map(({ u, v }) =>
+      skirtSurface(u * TAU, v).add(new THREE.Vector3(Math.sin(u * TAU) * 0.008, 0, Math.cos(u * TAU) * 0.008)),
+    ),
+    0.0012,
+    'Aurelia_Petal_Gold_Binding',
+    petalCoordinates,
+  );
   for (const v of [0.015, 0.035, 0.965]) {
     const coords = Array.from({ length: 97 }, (_, i) => ({ u: i / 96, v }));
     seam(
@@ -230,27 +377,23 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
       coords,
     );
   }
-  // Repeating stitched constellations are attached to material coordinates, not separate bones.
-  for (let i = 0; i < 12; i++) {
-    const u = i / 12,
-      v = 0.81;
-    for (const vertical of [true, false]) {
-      const coords = vertical
-        ? [
-            { u, v: v - 0.018 },
-            { u, v: v + 0.018 },
-          ]
-        : [
-            { u: u - 0.0038, v },
-            { u: u + 0.0038, v },
-          ];
-      seam(
-        coords.map(({ u, v }) => skirtSurface(u * TAU, v).multiply(new THREE.Vector3(1.013, 1, 1.013))),
-        0.00095,
-        `Aurelia_Cloth_Stitch_${i}_${vertical}`,
-        coords,
-      );
-    }
+  // Gold binding is batched by deformation mode: rich detailing without one draw call per stitch.
+  for (const { binding, name } of [
+    { binding: 'torso', name: 'Aurelia_Bodice_Goldwork' },
+    { binding: 'hips', name: 'Aurelia_Sash_Goldwork' },
+    { binding: 'cloth', name: 'Aurelia_Cloth_Goldwork' },
+  ] as const) {
+    const entries = pendingGold.filter((entry) => entry.binding === binding);
+    if (!entries.length) continue;
+    const geometry = mergeGeometries(entries.map((entry) => entry.geometry));
+    if (!geometry) throw new Error(`Could not merge ${name} geometry.`);
+    weighted(geometry, gold, name, binding !== 'torso', false);
+    animated.push({
+      geometry,
+      rest: Float32Array.from(geometry.getAttribute('position').array),
+      ...(binding === 'cloth' ? { cloth: entries.flatMap((entry) => entry.cloth!) } : {}),
+    });
+    entries.forEach((entry) => entry.geometry.dispose());
   }
   const hipTransform = new THREE.Matrix4(),
     scratch = new THREE.Vector3();

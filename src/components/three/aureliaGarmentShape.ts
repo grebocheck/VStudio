@@ -8,15 +8,18 @@ const smooth = (x: number) => THREE.MathUtils.smoothstep(x, 0, 1);
 
 /** Smooth, measured cross-sections, in the source humanoid's meter-scale bind space. */
 const sections = [
-  [0.948, 0.141, 0.104, 0.086],
-  [1.015, 0.112, 0.113, 0.078],
-  [1.075, 0.107, 0.116, 0.072],
-  [1.13, 0.12, 0.121, 0.073],
-  [1.185, 0.139, 0.118, 0.077],
-  [1.25, 0.142, 0.092, 0.072],
-  [1.275, 0.122, 0.076, 0.058],
-  [1.3, 0.084, 0.052, 0.045],
-  [1.325, 0.033, 0.036, 0.036],
+  [0.948, 0.1245, 0.089, 0.089],
+  [1.015, 0.0991, 0.0726, 0.0726],
+  [1.055, 0.0895, 0.069, 0.069],
+  [1.095, 0.098, 0.077, 0.075],
+  [1.14, 0.123, 0.1, 0.075],
+  [1.185, 0.126, 0.096, 0.076],
+  [1.225, 0.123, 0.087, 0.073],
+  [1.255, 0.119, 0.074, 0.065],
+  [1.278, 0.108, 0.062, 0.055],
+  [1.3, 0.083, 0.047, 0.043],
+  [1.318, 0.044, 0.037, 0.037],
+  [1.331, 0.0333, 0.0356, 0.0356],
   [1.344, 0.0332, 0.0356, 0.0356],
 ];
 
@@ -26,12 +29,24 @@ function section(y: number, component: number) {
   const a = sections[index],
     b = sections[index + 1];
   const t = THREE.MathUtils.clamp((y - a[0]) / (b[0] - a[0]), 0, 1);
-  // Hermite slopes preserve a rounded silhouette across section boundaries.
-  const before = sections[Math.max(0, index - 1)],
-    after = sections[Math.min(sections.length - 1, index + 2)];
+  // Shape-preserving Hermite tangents avoid overshoot at the waist, ribs and neck.
+  const slope = (at: number) => {
+    if (at === 0 || at === sections.length - 1) return 0;
+    const left = sections[at - 1],
+      current = sections[at],
+      right = sections[at + 1];
+    const d0 = (current[component] - left[component]) / (current[0] - left[0]);
+    const d1 = (right[component] - current[component]) / (right[0] - current[0]);
+    if (d0 * d1 <= 0) return 0;
+    const h0 = current[0] - left[0],
+      h1 = right[0] - current[0];
+    const w0 = 2 * h1 + h0,
+      w1 = h1 + 2 * h0;
+    return (w0 + w1) / (w0 / d0 + w1 / d1);
+  };
   const span = b[0] - a[0];
-  const m0 = ((b[component] - before[component]) / (b[0] - before[0])) * span;
-  const m1 = ((after[component] - a[component]) / (after[0] - a[0])) * span;
+  const m0 = slope(index) * span,
+    m1 = slope(index + 1) * span;
   return (
     (2 * t * t * t - 3 * t * t + 1) * a[component] +
     (t * t * t - 2 * t * t + t) * m0 +
@@ -52,18 +67,23 @@ export function bodySurface(phi: number, y: number, out = new THREE.Vector3()) {
     cos = Math.cos(phi);
   const x = sin * section(y, 1);
   const neck = THREE.MathUtils.smoothstep(y, 1.24, 1.325);
-  const centerZ = THREE.MathUtils.lerp(0.004, -0.027, neck);
+  const lowerCenter = 0.014 + 0.03 * THREE.MathUtils.smoothstep(y, 0.948, 1.055);
+  const waistCenter = THREE.MathUtils.lerp(lowerCenter, 0.004, THREE.MathUtils.smoothstep(y, 1.065, 1.155));
+  const centerZ = THREE.MathUtils.lerp(waistCenter, -0.027, neck);
   let z = centerZ + cos * section(y, cos >= 0 ? 2 : 3);
-  if (cos > 0 && y > 1.09 && y < 1.245) {
-    const u = (y - 1.09) / 0.155;
-    // Broad lower fullness and a long, shallow upper transition form a modest pear profile.
-    const peak = 1.05 / (1.05 + 1.75);
-    const vertical = (Math.pow(u, 1.05) * Math.pow(1 - u, 1.75)) / (Math.pow(peak, 1.05) * Math.pow(1 - peak, 1.75));
-    const width = 0.066 * (1 - 0.32 * THREE.MathUtils.smoothstep(u, 0.48, 1));
+  if (cos > 0) {
+    // C2 compact lobes merge into the rib cage without a centre ridge or a hard lower shelf.
+    // Wider lower tissue and a shallower, longer upper pole keep the silhouette modest.
+    const upper = THREE.MathUtils.smoothstep(y, 1.14, 1.235);
+    const width = THREE.MathUtils.lerp(0.071, 0.051, upper);
+    const height = THREE.MathUtils.lerp(0.07, 0.098, THREE.MathUtils.smoothstep(y, 1.13, 1.17));
+    const vertical = (y - 1.148) / height;
     let fullness = 0;
     for (const side of [-1, 1]) {
-      const q = (x - side * (0.054 - 0.008 * u)) / width;
-      fullness = Math.max(fullness, 0.031 * vertical * Math.pow(Math.max(0, 1 - q * q), 1.35));
+      const center = side * THREE.MathUtils.lerp(0.057, 0.05, upper);
+      const horizontal = (x - center) / width;
+      const support = Math.max(0, 1 - horizontal * horizontal - vertical * vertical);
+      fullness += 0.039 * Math.pow(support, 2.5);
     }
     z += fullness * smooth(cos / 0.45);
   }
@@ -82,8 +102,10 @@ export function bodiceSurface(phi: number, t: number, out = new THREE.Vector3())
   bodySurface(phi, y, out);
   const cos = Math.cos(phi),
     sin = Math.sin(phi);
-  out.x += sin * 0.0045;
-  out.z += cos * 0.0055;
+  // The lower dress also encloses the fitted shorts and the pelvis' squarer cross-section.
+  const hipEase = 0.014 * (1 - THREE.MathUtils.smoothstep(y, 0.995, 1.065));
+  out.x += sin * (0.0045 + hipEase);
+  out.z += cos * (0.0055 + hipEase);
   if (cos > 0) {
     const width = section(y, 1);
     const anchorPhi = Math.asin(Math.min(0.054 / width, 0.9));
@@ -106,14 +128,16 @@ export function chokerSurface(phi: number, v: number, out = new THREE.Vector3())
 
 /** V=0 is the pinned waist; V=1 is the free, scalloped hem. */
 export function skirtSurface(phi: number, v: number, out = new THREE.Vector3()) {
-  const fullness = Math.pow(v, 0.78);
+  const fullness = Math.pow(v, 0.88);
   const waist = bodiceSurface(phi, 0);
-  const fold = Math.cos(phi * 12) * Math.pow(v, 1.4) * 0.009;
-  const hem = 0.627 + 0.004 * Math.cos(phi * 12) + 0.008 * Math.cos(phi);
+  const fold =
+    (Math.cos(phi * 12 + 0.18 * Math.sin(v * Math.PI)) * 0.009 + Math.cos(phi * 24 - v * 0.45) * 0.0025) *
+    Math.pow(v, 1.25);
+  const hem = 0.59 + 0.004 * Math.cos(phi * 12) + 0.008 * Math.cos(phi);
   return out.set(
-    THREE.MathUtils.lerp(waist.x, Math.sin(phi) * 0.255, fullness) + Math.sin(phi) * fold,
+    THREE.MathUtils.lerp(waist.x, Math.sin(phi) * 0.272, fullness) + Math.sin(phi) * fold,
     THREE.MathUtils.lerp(GARMENT_WAIST, hem, v),
-    THREE.MathUtils.lerp(waist.z, 0.004 + Math.cos(phi) * 0.178, fullness) + Math.cos(phi) * fold * 0.82,
+    THREE.MathUtils.lerp(waist.z, 0.004 + Math.cos(phi) * 0.19, fullness) + Math.cos(phi) * fold * 0.82,
   );
 }
 
@@ -130,7 +154,7 @@ export function shoulderStrap(side: number, t: number, across: number, out = new
 }
 
 export function skirtCoordinates(point: THREE.Vector3) {
-  const phi = Math.atan2(point.x / 0.255, (point.z - 0.004) / 0.178);
+  const phi = Math.atan2(point.x / 0.272, (point.z - 0.004) / 0.19);
   return {
     u: (((phi / TAU) % 1) + 1) % 1,
     v: THREE.MathUtils.clamp((GARMENT_WAIST - point.y) / (GARMENT_WAIST - skirtSurface(phi, 1).y), 0, 1),
