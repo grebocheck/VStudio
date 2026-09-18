@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Download, RotateCcw, Rotate3D, ScanLine } from 'lucide-react';
+import { Download, RotateCcw, Rotate3D, ScanLine, Shirt } from 'lucide-react';
 import type { AvatarConfig, RigParams } from '../../types';
 import type { Avatar3DScene } from './avatar3DScene';
 import { registerAvatar3DSurface } from './avatar3DRegistry';
@@ -24,6 +24,7 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
   const [error, setError] = useState('');
   const [turntable, setTurntable] = useState(false);
   const [wireframe, setWireframe] = useState(false);
+  const [dressVisible, setDressVisible] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const bindProxy = useCallback((node: SVGSVGElement | null) => {
@@ -104,6 +105,9 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
   useEffect(() => {
     controller.current?.setWireframe(wireframe || onScreenBuster);
   }, [wireframe, onScreenBuster, status]);
+  useEffect(() => {
+    controller.current?.setDressVisible(dressVisible);
+  }, [dressVisible, status]);
   const exportGlb = async () => {
     if (!controller.current) return;
     setExporting(true);
@@ -197,6 +201,18 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
             onClick={() => setWireframe(!wireframe)}
           >
             <ScanLine size={15} />
+          </button>
+          <button
+            title={
+              en ? (dressVisible ? 'Hide dress' : 'Show dress') : dressVisible ? 'Приховати сукню' : 'Показати сукню'
+            }
+            aria-label={
+              en ? (dressVisible ? 'Hide dress' : 'Show dress') : dressVisible ? 'Приховати сукню' : 'Показати сукню'
+            }
+            aria-pressed={dressVisible}
+            onClick={() => setDressVisible((value) => !value)}
+          >
+            <Shirt size={15} />
           </button>
           <button
             title={en ? 'Download GLB' : 'Завантажити GLB'}

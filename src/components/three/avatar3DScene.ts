@@ -13,6 +13,7 @@ export interface Avatar3DScene {
   resetView(): void;
   setTurntable(value: boolean): void;
   setWireframe(value: boolean): void;
+  setDressVisible(value: boolean): void;
   drawToCanvas(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void;
   exportGlb(): Promise<Blob>;
   dispose(): void;
@@ -146,6 +147,11 @@ export async function createAvatar3DScene(
     setTurntable(value) {
       controls.autoRotate = value;
     },
+    setDressVisible(value) {
+      model.vrm.scene.traverse((object) => {
+        if (object.userData.aureliaOuterGarment) object.visible = value;
+      });
+    },
     setWireframe(value) {
       for (const material of materials) if ('wireframe' in material) material.wireframe = value;
     },
@@ -207,7 +213,7 @@ export async function createAvatar3DScene(
       model.dispose();
       environment.dispose();
       renderer.dispose();
-      renderer.forceContextLoss();
+      // Dispose GPU resources while allowing React refresh/retry to reuse this canvas context.
     },
   };
 }

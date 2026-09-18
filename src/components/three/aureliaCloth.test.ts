@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { AureliaCloth } from './aureliaCloth';
-import { bodiceSurface, SKIRT_COLUMNS, SKIRT_ROWS, skirtSurface } from './aureliaGarmentShape';
+import { bodiceSurface, bodySurface, SKIRT_COLUMNS, SKIRT_ROWS, skirtSurface } from './aureliaGarmentShape';
 
 function create() {
   const points: number[] = [];
@@ -12,17 +12,28 @@ function create() {
 }
 
 describe('tailored garment', () => {
-  it('has continuous paired chest volume, symmetric seams and a fitted waist', () => {
-    const a = bodiceSurface(0.44, 0.77),
-      b = bodiceSurface(-0.44, 0.77),
-      waist = bodiceSurface(0.44, 0);
-    expect(a.z).toBeGreaterThan(0.17);
+  it('keeps the smaller pear-shaped anatomy symmetric with a fitted waist', () => {
+    const a = bodySurface(0.44, 1.16),
+      b = bodySurface(-0.44, 1.16),
+      waist = bodySurface(0.44, 0.948);
+    expect(a.z).toBeGreaterThan(0.13);
+    expect(a.z).toBeLessThan(0.155);
     expect(a.x).toBeCloseTo(-b.x, 8);
     expect(a.z).toBeCloseTo(b.z, 8);
-    expect(a.z - waist.z).toBeGreaterThan(0.065);
+    expect(a.z - waist.z).toBeGreaterThan(0.018);
     const atSeam = bodiceSurface(2 * Math.PI, 0.6),
       front = bodiceSurface(0, 0.6);
     expect(atSeam.distanceTo(front)).toBeLessThan(1e-8);
+  });
+  it('keeps eased cloth outside the complete torso around the entire garment', () => {
+    for (let ring = 0; ring <= 32; ring++)
+      for (let column = 0; column < 96; column++) {
+        const phi = (column / 96) * Math.PI * 2;
+        const cloth = bodiceSurface(phi, ring / 32);
+        const skin = bodySurface(phi, cloth.y);
+        const clearance = (cloth.x - skin.x) * Math.sin(phi) + (cloth.z - skin.z) * Math.cos(phi);
+        expect(clearance).toBeGreaterThan(0.0044);
+      }
   });
   it('joins the bodice and skirt at the same waist ring around the entire body', () => {
     for (let column = 0; column <= SKIRT_COLUMNS * 2; column++) {

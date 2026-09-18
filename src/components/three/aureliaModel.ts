@@ -49,6 +49,48 @@ function tube(points: THREE.Vector3[], radius: number, material: THREE.Material)
   return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 32, radius, 6, false), material);
 }
 
+function teardropSetting(gold: THREE.Material, jewel: THREE.Material) {
+  const setting = new THREE.Group();
+  const outline = [
+    [0, 0.012],
+    [0.0046, 0.004],
+    [0.0065, -0.003],
+    [0.0052, -0.008],
+    [0.0028, -0.011],
+    [-0.0028, -0.011],
+    [-0.0052, -0.008],
+    [-0.0065, -0.003],
+    [-0.0046, 0.004],
+  ];
+  const shape = new THREE.Shape(outline.map(([x, y]) => new THREE.Vector2(x, y)));
+  shape.closePath();
+  setting.add(
+    new THREE.Mesh(
+      new THREE.ExtrudeGeometry(shape, {
+        depth: 0.0018,
+        bevelEnabled: true,
+        bevelThickness: 0.0006,
+        bevelSize: 0.0006,
+        bevelSegments: 2,
+        steps: 1,
+      }),
+      gold,
+    ),
+  );
+  // A solid faceted stone has depth from every angle, including the back of the setting.
+  const positions: number[] = [];
+  for (let i = 0; i < outline.length; i++) {
+    const a = outline[i],
+      b = outline[(i + 1) % outline.length];
+    positions.push(0, -0.002, 0.005, b[0] * 0.86, b[1] * 0.86, 0.0022, a[0] * 0.86, a[1] * 0.86, 0.0022);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.computeVertexNormals();
+  setting.add(new THREE.Mesh(geometry, jewel));
+  return setting;
+}
+
 /** Reuse authored pupil/strand detail while changing pigment in the shader, without editing source images. */
 function pigment(material: MToonMaterial, kind: 'hair' | 'iris') {
   const compile = material.onBeforeCompile.bind(material);
@@ -87,9 +129,9 @@ function fitHairCollisions(vrm: VRM) {
   for (const side of [-1, 1]) {
     // Source colliders followed a flat shirt. These volumes cover the new garment's actual bust,
     // with the authored strand hit-radius providing its small clearance above the cloth.
-    const bust = new VRMSpringBoneCollider(new VRMSpringBoneColliderShapeSphere({ radius: 0.072 }));
+    const bust = new VRMSpringBoneCollider(new VRMSpringBoneColliderShapeSphere({ radius: 0.045 }));
     bust.name = `Aurelia_Bodice_Hair_Collider_${side < 0 ? 'R' : 'L'}`;
-    bust.position.copy(chest.worldToLocal(new THREE.Vector3(side * 0.057, 1.176, 0.118)));
+    bust.position.copy(chest.worldToLocal(new THREE.Vector3(side * 0.053, 1.15, 0.095)));
     chest.add(bust);
     colliders.push(bust);
     const shoulder = new VRMSpringBoneCollider(
@@ -141,7 +183,6 @@ function celestialAccessories(vrm: VRM) {
   crown.name = 'Aurelia_Celestial_Crown';
   head.add(crown);
   crown.quaternion.copy(head.getWorldQuaternion(new THREE.Quaternion()).invert());
-  const top = box.max.y - headWorld.y;
   const hair: THREE.Mesh[] = [];
   vrm.scene.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return;
@@ -203,30 +244,56 @@ function celestialAccessories(vrm: VRM) {
   clasp.position.copy(fittedPoint(Math.PI, bandY + 0.003));
   clasp.rotation.y = Math.PI;
   crown.add(clasp);
-  for (const side of [-1, 1]) {
-    const earring = new THREE.Group();
-    earring.name = `Aurelia_Earring_${side < 0 ? 'R' : 'L'}`;
-    earring.position.copy(head.worldToLocal(new THREE.Vector3(side * 0.096, headWorld.y + top - 0.2, 0.03)));
-    earring.quaternion.copy(head.getWorldQuaternion(new THREE.Quaternion()).invert());
-    earring.add(
-      tube(
-        [new THREE.Vector3(), new THREE.Vector3(side * 0.007, -0.025, 0.004), new THREE.Vector3(0, -0.065, 0.008)],
-        0.0015,
-        gold,
-      ),
-    );
-    const drop = gem(jewel, 0.013);
-    drop.position.set(0, -0.073, 0.008);
-    earring.add(drop);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.014, 0.0015, 6, 20), gold);
-    rim.position.set(0, -0.073, 0.008);
-    rim.scale.set(0.65, 1.25, 1);
-    earring.add(rim);
-    const bead = new THREE.Mesh(new THREE.SphereGeometry(0.004, 10, 8), pearl);
-    bead.position.y = -0.026;
-    earring.add(bead);
-    head.add(earring);
-  }
+  const headRestInverse = head.getWorldQuaternion(new THREE.Quaternion()).invert();
+  const earrings = [-1, 1].map((side) => {
+    const anchor = new THREE.Group();
+    anchor.name = `Aurelia_Earring_${side < 0 ? 'R' : 'L'}`;
+    // Measured on the source ear mesh: the old +Z anchor was on the cheek, 57 mm ahead of the lobe.
+    anchor.position.copy(head.worldToLocal(new THREE.Vector3(side * 0.084, 1.41, -0.027)));
+    anchor.quaternion
+      .copy(headRestInverse)
+      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), side * 0.8));
+    const stud = new THREE.Mesh(new THREE.SphereGeometry(0.0034, 16, 10), gold);
+    stud.scale.z = 0.5;
+    anchor.add(stud);
+    const inset = gem(jewel, 0.0025);
+    inset.position.z = 0.0018;
+    anchor.add(inset);
+    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.0007, 0.0007, 0.005, 8), gold);
+    pin.rotation.x = Math.PI / 2;
+    pin.position.z = -0.0025;
+    anchor.add(pin);
+    const hinge = new THREE.Mesh(new THREE.TorusGeometry(0.0022, 0.00065, 8, 20), gold);
+    hinge.position.y = -0.0038;
+    anchor.add(hinge);
+    const dangle = new THREE.Group();
+    dangle.name = 'Aurelia_Earring_Pendulum';
+    dangle.position.y = -0.0055;
+    for (let i = 0; i < 2; i++) {
+      const link = new THREE.Mesh(new THREE.TorusGeometry(0.0025, 0.00065, 8, 20), gold);
+      link.position.y = -0.0025 - i * 0.0043;
+      link.rotation.y = i * (Math.PI / 2);
+      dangle.add(link);
+    }
+    const setting = teardropSetting(gold, jewel);
+    setting.position.y = -0.022;
+    dangle.add(setting);
+    anchor.add(dangle);
+    head.add(anchor);
+    return {
+      anchor,
+      dangle,
+      side,
+      initialized: false,
+      previousPosition: new THREE.Vector3(),
+      previousVelocity: new THREE.Vector3(),
+      acceleration: new THREE.Vector3(),
+      angleX: 0,
+      angleZ: 0,
+      velocityX: 0,
+      velocityZ: 0,
+    };
+  });
   const chest = vrm.humanoid.getRawBoneNode('chest')!;
   const brooch = new THREE.Group();
   brooch.name = 'Aurelia_Starlight_Brooch';
@@ -254,7 +321,62 @@ function celestialAccessories(vrm: VRM) {
     }
   }
   chest.add(brooch);
-  return { gold, jewel, pearl };
+  brooch.traverse((object) => {
+    object.userData.aureliaOuterGarment = true;
+  });
+  const position = new THREE.Vector3();
+  const velocity = new THREE.Vector3();
+  const acceleration = new THREE.Vector3();
+  const forward = new THREE.Vector3();
+  const up = new THREE.Vector3(0, 1, 0);
+  const rotation = new THREE.Quaternion();
+  const inverseParent = new THREE.Quaternion();
+  const targetRotation = new THREE.Quaternion();
+  const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  return {
+    update(delta: number) {
+      const dt = THREE.MathUtils.clamp(Number.isFinite(delta) ? delta : 0, 0, 0.05);
+      head.getWorldQuaternion(rotation).multiply(headRestInverse);
+      forward.set(0, 0, 1).applyQuaternion(rotation);
+      const headYaw = Math.atan2(forward.x, forward.z);
+      for (const state of earrings) {
+        state.dangle.getWorldPosition(position);
+        const yaw = headYaw + state.side * 0.25;
+        if (!state.initialized || position.distanceToSquared(state.previousPosition) > 0.04 * 0.04) {
+          state.previousPosition.copy(position);
+          state.previousVelocity.set(0, 0, 0);
+          state.acceleration.set(0, 0, 0);
+          state.angleX = state.angleZ = state.velocityX = state.velocityZ = 0;
+          state.initialized = true;
+        }
+        if (dt > 0) {
+          velocity.subVectors(position, state.previousPosition).divideScalar(dt);
+          acceleration.subVectors(velocity, state.previousVelocity).divideScalar(dt).clampLength(0, 2.5);
+          state.acceleration.lerp(acceleration, 1 - Math.exp(-dt * 16));
+          acceleration.copy(state.acceleration).applyAxisAngle(up, -yaw);
+          const targetX = THREE.MathUtils.clamp(acceleration.z / 9.81, -0.14, 0.14);
+          const targetZ = THREE.MathUtils.clamp(-acceleration.x / 9.81, -0.14, 0.14);
+          // Short, damped 2-axis pendulum. Substeps keep the same behavior at uneven rendering rates.
+          const steps = Math.ceil(dt / (1 / 120));
+          const step = dt / steps;
+          for (let i = 0; i < steps; i++) {
+            state.velocityX += ((targetX - state.angleX) * 196 - state.velocityX * 14) * step;
+            state.velocityZ += ((targetZ - state.angleZ) * 196 - state.velocityZ * 14) * step;
+            state.angleX += state.velocityX * step;
+            state.angleZ += state.velocityZ * step;
+          }
+          state.previousVelocity.copy(velocity);
+        } else {
+          state.previousVelocity.set(0, 0, 0);
+        }
+        state.previousPosition.copy(position);
+        // Only the stud tilts with the earlobe. The hanging part stays aligned with world gravity.
+        targetRotation.setFromEuler(euler.set(state.angleX, yaw, state.angleZ, 'YXZ'));
+        state.anchor.getWorldQuaternion(inverseParent).invert();
+        state.dangle.quaternion.copy(inverseParent).multiply(targetRotation);
+      }
+    },
+  };
 }
 
 function styleAurelia(vrm: VRM) {
@@ -300,8 +422,8 @@ function styleAurelia(vrm: VRM) {
       pigment(material, 'iris');
     }
   }
-  celestialAccessories(vrm);
-  return addAureliaWardrobe(vrm);
+  const accessories = celestialAccessories(vrm);
+  return { accessories, wardrobe: addAureliaWardrobe(vrm) };
 }
 
 export interface AureliaModel {
@@ -319,7 +441,7 @@ export async function loadAureliaModel(): Promise<AureliaModel> {
   VRMUtils.removeUnnecessaryVertices(vrm.scene);
   vrm.scene.name = 'Aurelia_Starlight_3D';
   vrm.scene.updateMatrixWorld(true);
-  const wardrobe = styleAurelia(vrm);
+  const { wardrobe, accessories } = styleAurelia(vrm);
   fitHairCollisions(vrm);
   vrm.scene.traverse((object) => {
     object.frustumCulled = false;
@@ -360,6 +482,7 @@ export async function loadAureliaModel(): Promise<AureliaModel> {
         vrm.expressionManager?.setValue(name, value);
       vrm.update(Math.min(0.05, Math.max(0, delta)));
       wardrobe.update(Math.min(0.05, Math.max(0, delta)), pose.chestScaleY - 1);
+      accessories.update(delta);
     },
     dispose() {
       VRMUtils.deepDispose(vrm.scene);

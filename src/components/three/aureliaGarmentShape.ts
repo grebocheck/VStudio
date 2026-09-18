@@ -13,7 +13,11 @@ const sections = [
   [1.075, 0.107, 0.116, 0.072],
   [1.13, 0.12, 0.121, 0.073],
   [1.185, 0.139, 0.118, 0.077],
-  [1.25, 0.145, 0.098, 0.074],
+  [1.25, 0.142, 0.092, 0.072],
+  [1.275, 0.122, 0.076, 0.058],
+  [1.3, 0.084, 0.052, 0.045],
+  [1.325, 0.033, 0.036, 0.036],
+  [1.344, 0.0332, 0.0356, 0.0356],
 ];
 
 function section(y: number, component: number) {
@@ -42,18 +46,62 @@ export function bodiceTop(phi: number) {
   return 1.246 - 0.039 * Math.pow(side, 4) - front * 0.018 * Math.exp(-Math.pow(Math.sin(phi) / 0.4, 2));
 }
 
-/** A continuous clothed torso with two softly bridged bust volumes, not attached spheres. */
-export function bodiceSurface(phi: number, t: number, out = new THREE.Vector3()) {
-  const y = THREE.MathUtils.lerp(GARMENT_WAIST, bodiceTop(phi), t);
+/** Anatomical bind-space surface shared by the full torso and its fitted garments. */
+export function bodySurface(phi: number, y: number, out = new THREE.Vector3()) {
   const sin = Math.sin(phi),
     cos = Math.cos(phi);
   const x = sin * section(y, 1);
-  const front = Math.max(0, cos);
-  const upper = Math.exp(-Math.pow((y - 1.176) / 0.057, 2));
-  const lobes = Math.exp(-Math.pow((x - 0.059) / 0.052, 2)) + Math.exp(-Math.pow((x + 0.059) / 0.052, 2));
-  const volume = 0.069 * upper * lobes * smooth(front / 0.6);
-  const z = 0.004 + cos * section(y, cos >= 0 ? 2 : 3) + volume;
+  const neck = THREE.MathUtils.smoothstep(y, 1.24, 1.325);
+  const centerZ = THREE.MathUtils.lerp(0.004, -0.027, neck);
+  let z = centerZ + cos * section(y, cos >= 0 ? 2 : 3);
+  if (cos > 0 && y > 1.09 && y < 1.245) {
+    const u = (y - 1.09) / 0.155;
+    // Broad lower fullness and a long, shallow upper transition form a modest pear profile.
+    const peak = 1.05 / (1.05 + 1.75);
+    const vertical = (Math.pow(u, 1.05) * Math.pow(1 - u, 1.75)) / (Math.pow(peak, 1.05) * Math.pow(1 - peak, 1.75));
+    const width = 0.066 * (1 - 0.32 * THREE.MathUtils.smoothstep(u, 0.48, 1));
+    let fullness = 0;
+    for (const side of [-1, 1]) {
+      const q = (x - side * (0.054 - 0.008 * u)) / width;
+      fullness = Math.max(fullness, 0.031 * vertical * Math.pow(Math.max(0, 1 - q * q), 1.35));
+    }
+    z += fullness * smooth(cos / 0.45);
+  }
   return out.set(x, y, z);
+}
+
+export function bodyNormal(phi: number, y: number, out = new THREE.Vector3()) {
+  const tangent = bodySurface(phi + 0.0005, y).sub(bodySurface(phi - 0.0005, y));
+  const vertical = bodySurface(phi, y + 0.0001).sub(bodySurface(phi, y - 0.0001));
+  return out.crossVectors(tangent, vertical).normalize();
+}
+
+/** A gently draped shell with ease, a centre bridge and shallow material folds. */
+export function bodiceSurface(phi: number, t: number, out = new THREE.Vector3()) {
+  const y = THREE.MathUtils.lerp(GARMENT_WAIST, bodiceTop(phi), t);
+  bodySurface(phi, y, out);
+  const cos = Math.cos(phi),
+    sin = Math.sin(phi);
+  out.x += sin * 0.0045;
+  out.z += cos * 0.0055;
+  if (cos > 0) {
+    const width = section(y, 1);
+    const anchorPhi = Math.asin(Math.min(0.054 / width, 0.9));
+    const bridge = bodySurface(anchorPhi, y).z + 0.006;
+    const span = 1 - THREE.MathUtils.smoothstep(Math.abs(out.x), 0.038, 0.082);
+    const upperDrape = THREE.MathUtils.smoothstep(y, 1.04, 1.095) * (1 - THREE.MathUtils.smoothstep(y, 1.2, 1.245));
+    out.z += Math.max(0, bridge - out.z) * span * upperDrape;
+    const ease = 0.006 * Math.exp(-Math.pow((y - 1.068) / 0.058, 2));
+    const foldEnvelope = Math.sin(Math.PI * t) ** 2 * smooth(cos / 0.5);
+    const folds = 0.0013 * (1 + Math.cos(phi * 18 + (y - 1) * 32)) * foldEnvelope;
+    out.z += ease * smooth(cos / 0.65) + folds;
+  }
+  return out;
+}
+
+export function chokerSurface(phi: number, v: number, out = new THREE.Vector3()) {
+  const y = 1.331 + v * 0.009;
+  return bodySurface(phi, y, out).addScaledVector(bodyNormal(phi, y), 0.0016);
 }
 
 /** V=0 is the pinned waist; V=1 is the free, scalloped hem. */
@@ -70,18 +118,15 @@ export function skirtSurface(phi: number, v: number, out = new THREE.Vector3()) 
 }
 
 export function shoulderStrap(side: number, t: number, across: number, out = new THREE.Vector3()) {
-  // Cubic Bezier over the shoulder joins front and rear bodice without sealing the armhole.
-  const front = bodiceSurface(side * 0.78, 1);
-  const back = bodiceSurface(side * (Math.PI - 0.78), 1);
-  const curve = new THREE.CubicBezierCurve3(
-    front,
-    new THREE.Vector3(side * 0.106, 1.325, 0.072),
-    new THREE.Vector3(side * 0.103, 1.325, -0.082),
-    back,
-  );
-  curve.getPoint(t, out);
-  out.x += side * across * 0.016;
-  return out;
+  // Follow the shoulder surface with constant clearance, including both attachment edges.
+  const phi = side * THREE.MathUtils.lerp(0.78, Math.PI - 0.78, t) + across * 0.115;
+  const end = bodiceTop(phi);
+  const y = THREE.MathUtils.lerp(end, 1.29, Math.sin(Math.PI * t));
+  bodySurface(phi, y, out).addScaledVector(bodyNormal(phi, y), 0.0022);
+  const edge = Math.pow(Math.abs(2 * t - 1), 8);
+  const attach = bodiceSurface(phi, 1);
+  const bodyAtEdge = bodySurface(phi, end).addScaledVector(bodyNormal(phi, end), 0.0022);
+  return out.addScaledVector(attach.sub(bodyAtEdge), edge);
 }
 
 export function skirtCoordinates(point: THREE.Vector3) {

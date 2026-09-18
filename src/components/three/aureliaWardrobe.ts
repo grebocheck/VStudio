@@ -1,7 +1,17 @@
 import * as THREE from 'three';
-import { MToonMaterial, type VRM } from '@pixiv/three-vrm';
+import type { VRM } from '@pixiv/three-vrm';
+import { bindAureliaGeometry, getAureliaSkeleton } from './aureliaSkinning';
+import { addAureliaBody } from './aureliaBody';
+import { addAureliaFootwear } from './aureliaFootwear';
 import { AureliaCloth, type ClothCapsule } from './aureliaCloth';
-import { bodiceSurface, shoulderStrap, SKIRT_COLUMNS, SKIRT_ROWS, skirtSurface } from './aureliaGarmentShape';
+import {
+  bodiceSurface,
+  chokerSurface,
+  shoulderStrap,
+  SKIRT_COLUMNS,
+  SKIRT_ROWS,
+  skirtSurface,
+} from './aureliaGarmentShape';
 
 const TAU = Math.PI * 2;
 interface AnimatedGeometry {
@@ -41,93 +51,22 @@ function surface(columns: number, rows: number, sample: (u: number, v: number) =
 
 /** Tailored bodice, open shoulders and a separate waist-pinned cloth skirt. */
 export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
-  let skeleton: THREE.Skeleton | undefined;
-  let skinSource: MToonMaterial | undefined;
+  // Keep a complete body and fitted underlayer before constructing the removable outer dress.
   vrm.scene.traverse((object) => {
     if (!(object instanceof THREE.SkinnedMesh)) return;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     if (materials.some((material) => material.name.includes('Tops') || material.name.includes('Bottoms')))
       object.visible = false;
-    if (materials.some((material) => material.name === 'Body_00_SKIN')) {
-      skinSource = materials.find((material) => material.name === 'Body_00_SKIN') as MToonMaterial;
-      // One continuous body pigment avoids painted shirt-edge shadows on the new open neckline.
-      skinSource.map = null;
-      skinSource.shadeMultiplyTexture = null;
-      skinSource.color.set('#f8e3da');
-      skinSource.shadeColorFactor.set('#e2c0c9');
-      for (const material of materials)
-        if (material instanceof MToonMaterial && material.isOutline) material.visible = false;
-      // The source has no torso under its T-shirt. Mask the remaining lower body
-      // only where the opaque dress covers it, preserving shoulders/arms and knees.
-      const geometry = object.geometry.clone(),
-        index = geometry.getIndex();
-      if (index) {
-        const points = Array.from({ length: geometry.getAttribute('position').count }, (_, i) =>
-          object.localToWorld(object.getVertexPosition(i, new THREE.Vector3())),
-        );
-        const visible: number[] = [];
-        for (let i = 0; i < index.count; i += 3) {
-          const a = index.getX(i),
-            b = index.getX(i + 1),
-            c = index.getX(i + 2);
-          const center = points[a]
-            .clone()
-            .add(points[b])
-            .add(points[c])
-            .multiplyScalar(1 / 3);
-          if (center.y > 0.647 && center.y < 1.2 && Math.abs(center.x) < 0.17) continue;
-          const lowest = Math.min(points[a].y, points[b].y, points[c].y);
-          const widest = Math.max(Math.abs(points[a].x), Math.abs(points[b].x), Math.abs(points[c].x));
-          if (lowest > 1.2 && lowest < 1.328 && widest < 0.105) continue;
-          visible.push(a, b, c);
-        }
-        const oldGroups = geometry.groups.map((group) => ({ ...group }));
-        geometry.setIndex(visible);
-        geometry.clearGroups();
-        for (const group of oldGroups) geometry.addGroup(0, visible.length, group.materialIndex);
-        object.geometry = geometry;
-      }
-    }
-    if (!skeleton && object.skeleton.bones.some((bone) => bone === vrm.humanoid.getRawBoneNode('chest')))
-      skeleton = object.skeleton;
   });
-  if (!skeleton) return { update() {} };
+  addAureliaBody(vrm);
+  addAureliaFootwear(vrm);
+  const skeleton = getAureliaSkeleton(vrm);
   const hips = vrm.humanoid.getRawBoneNode('hips')!;
   const hipIndex = skeleton.bones.findIndex((bone) => bone === hips);
-  const joints = (['hips', 'spine', 'chest', 'upperChest', 'neck'] as const)
-    .map((name, jointIndex) => {
-      const bone = vrm.humanoid.getRawBoneNode(name)!;
-      return {
-        index: skeleton!.bones.findIndex((candidate) => candidate === bone),
-        y: [0.975, 1.065, 1.145, 1.245, 1.319][jointIndex],
-      };
-    })
-    .filter((joint) => joint.index >= 0);
   const animated: AnimatedGeometry[] = [];
   const weighted = (geometry: THREE.BufferGeometry, material: THREE.Material, name: string, skirt = false) => {
-    const positions = geometry.getAttribute('position'),
-      indices: number[] = [],
-      weights: number[] = [];
-    for (let i = 0; i < positions.count; i++) {
-      const y = positions.getY(i);
-      let lower = joints[0],
-        upper = joints[1];
-      for (let j = 0; j < joints.length - 1; j++)
-        if (y >= joints[j].y) {
-          lower = joints[j];
-          upper = joints[j + 1];
-        }
-      const t = THREE.MathUtils.smoothstep(y, lower.y, upper.y);
-      indices.push(skirt ? hipIndex : lower.index, skirt ? hipIndex : upper.index, 0, 0);
-      weights.push(skirt ? 1 : 1 - t, skirt ? 0 : t, 0, 0);
-    }
-    geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(indices, 4));
-    geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(weights, 4));
-    const mesh = new THREE.SkinnedMesh(geometry, material);
-    mesh.name = name;
-    mesh.frustumCulled = false;
-    vrm.scene.add(mesh);
-    mesh.bind(skeleton!, new THREE.Matrix4());
+    const mesh = bindAureliaGeometry(vrm, geometry, material, name, skirt ? 'hips' : 'torso');
+    mesh.userData.aureliaOuterGarment = true;
     return mesh;
   };
   const silk = new THREE.MeshPhysicalMaterial({
@@ -174,32 +113,7 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
   weighted(bodice, bodiceMaterial, 'Aurelia_Sculpted_Bodice');
   animated.push({ geometry: bodice, rest: Float32Array.from(bodice.getAttribute('position').array) });
 
-  // Authored shoulder/clavicle bridge fills the torso deliberately absent in the source VRM.
-  if (skinSource) {
-    const skin = skinSource.clone();
-    skin.name = 'Aurelia_Clavicle_Skin';
-    // The shoulder bridge and exposed source limbs share the same skin pigment.
-    skin.isOutline = false;
-    skin.side = THREE.DoubleSide;
-    const patch = surface(64, 24, (u, v) => {
-      const phi = u * TAU,
-        cos = Math.cos(phi),
-        sin = Math.sin(phi);
-      const y = THREE.MathUtils.lerp(1.208, 1.344, v);
-      const taper = THREE.MathUtils.smoothstep(y, 1.23, 1.327);
-      const rx = THREE.MathUtils.lerp(0.143, 0.031, THREE.MathUtils.smoothstep(y, 1.249, 1.34));
-      const rz = THREE.MathUtils.lerp(cos >= 0 ? 0.118 : 0.076, 0.037, taper);
-      return new THREE.Vector3(sin * rx, y, THREE.MathUtils.lerp(0.002, -0.027, taper) + cos * rz);
-    });
-    const pigmentUV = patch.getAttribute('uv') as THREE.BufferAttribute;
-    for (let i = 0; i < pigmentUV.count; i++) pigmentUV.setXY(i, 0.5, 0.1128);
-    weighted(patch, skin, 'Aurelia_Clavicle_and_Shoulders');
-  }
-  const choker = surface(
-    64,
-    4,
-    (u, v) => new THREE.Vector3(Math.sin(u * TAU) * 0.032, 1.331 + v * 0.01, -0.027 + Math.cos(u * TAU) * 0.038),
-  );
+  const choker = surface(64, 4, (u, v) => chokerSurface(u * TAU, v));
   weighted(choker, silk, 'Aurelia_Velvet_Choker');
   for (const side of [-1, 1]) {
     const strap = surface(8, 32, (u, v) => shoulderStrap(side, v, (u - 0.5) * 2), side < 0);
@@ -233,14 +147,11 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
       animated.push({ geometry, rest, cloth: bindings });
     } else animated.push({ geometry, rest });
   };
-  for (const y of [1.331, 1.341])
+  for (const v of [0, 1])
     seam(
-      Array.from(
-        { length: 65 },
-        (_, i) => new THREE.Vector3(Math.sin((i / 64) * TAU) * 0.0325, y, -0.027 + Math.cos((i / 64) * TAU) * 0.0385),
-      ),
-      0.0008,
-      `Aurelia_Choker_Binding_${y}`,
+      Array.from({ length: 65 }, (_, i) => chokerSurface((i / 64) * TAU, v)),
+      0.00065,
+      `Aurelia_Choker_Binding_${v}`,
     );
   seam(
     Array.from({ length: 97 }, (_, i) => bodiceSurface((i / 96) * TAU, 1).add(new THREE.Vector3(0, 0.0008, 0))),
@@ -372,7 +283,7 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
             scratch.fromArray(entry.rest, i * 3);
             const front = THREE.MathUtils.smoothstep(scratch.z, 0.025, 0.13);
             const expansion = Math.exp(-Math.pow((scratch.y - 1.17) / 0.085, 2)) * front;
-            scratch.z += breath * 0.32 * expansion;
+            scratch.z += breath * 0.18 * expansion;
             scratch.y += breath * 0.12 * expansion;
           }
           positions.setXYZ(i, scratch.x, scratch.y, scratch.z);

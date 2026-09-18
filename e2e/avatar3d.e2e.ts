@@ -119,6 +119,104 @@ test('renders a volumetric WebGL avatar from front, side and back and exposes wo
   expect(errors).toEqual([]);
 });
 
+test('keeps an opaque torso, shorts and both complete legs when the dress is hidden and restored', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(90_000);
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  const canvas = await openAurelia(page);
+  const stage = page.locator('.avatar-viewport');
+  await page.getByRole('button', { name: 'Full body', exact: true }).click();
+  await stage.getByRole('button', { name: 'Front view', exact: true }).click();
+  await page.waitForTimeout(400);
+  const dressed = await pixels(canvas);
+  expect(dressed.webgl).toBe(true);
+  await canvas.screenshot({ path: testInfo.outputPath('aurelia-dress-visible.png') });
+
+  await stage.getByRole('button', { name: 'Hide dress', exact: true }).click();
+  await expect(stage.getByRole('button', { name: 'Show dress', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(async () => changedPixels(dressed.rgba, (await pixels(canvas)).rgba)).toBeGreaterThan(0.015);
+  const hidden = await pixels(canvas);
+  const coverage = await canvas.evaluate((source: HTMLCanvasElement) => {
+    const size = 384;
+    const sample = document.createElement('canvas');
+    sample.width = sample.height = size;
+    const context = sample.getContext('2d')!;
+    context.drawImage(source, 0, 0, size, size);
+    const { data } = context.getImageData(0, 0, size, size);
+    const opaque = (x: number, y: number) => data[(y * size + x) * 4 + 3] >= 230;
+    let minX = size,
+      minY = size,
+      maxX = -1,
+      maxY = -1;
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        if (!opaque(x, y)) continue;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    const width = maxX - minX + 1,
+      height = maxY - minY + 1,
+      center = (minX + maxX) / 2;
+    const row = (fraction: number) => Math.round(minY + height * fraction);
+    const column = (fraction: number) => Math.round(center + width * fraction);
+    const count = (y: number, from: number, to: number) => {
+      let result = 0;
+      for (let x = from; x <= to; x++) if (opaque(x, y)) result++;
+      return result;
+    };
+    // A central strip avoids side hair and arms, which could conceal a missing torso in total-alpha checks.
+    const torsoLeft = column(-0.1),
+      torsoRight = column(0.1);
+    let minimumTorsoRow = 1;
+    for (let y = row(0.28); y <= row(0.48); y++)
+      minimumTorsoRow = Math.min(minimumTorsoRow, count(y, torsoLeft, torsoRight) / (torsoRight - torsoLeft + 1));
+
+    // From the upper thighs downward, both halves need an opaque leg on every row, including the knees.
+    let minimumLeftLeg = size,
+      minimumRightLeg = size;
+    for (let y = row(0.48); y <= row(0.91); y++) {
+      minimumLeftLeg = Math.min(minimumLeftLeg, count(y, column(-0.32), column(-0.015)));
+      minimumRightLeg = Math.min(minimumRightLeg, count(y, column(0.015), column(0.32)));
+    }
+    // The permanent navy shorts must remain over the opaque hips when the outer garment is removed.
+    let shortsSamples = 0,
+      darkOpaqueShorts = 0;
+    for (let y = row(0.42); y <= row(0.47); y++)
+      for (let x = torsoLeft; x <= torsoRight; x++) {
+        const offset = (y * size + x) * 4;
+        shortsSamples++;
+        if (opaque(x, y) && (data[offset] + data[offset + 1] + data[offset + 2]) / 3 < 130) darkOpaqueShorts++;
+      }
+    return {
+      visibleHeight: height / size,
+      minimumTorsoRow,
+      minimumLeftLeg: minimumLeftLeg / width,
+      minimumRightLeg: minimumRightLeg / width,
+      shortsCoverage: darkOpaqueShorts / shortsSamples,
+    };
+  });
+  await testInfo.attach('aurelia-body-coverage', { body: JSON.stringify(coverage), contentType: 'application/json' });
+  expect(coverage.visibleHeight).toBeGreaterThan(0.7);
+  expect(coverage.minimumTorsoRow, 'every central torso row stays opaque').toBeGreaterThan(0.95);
+  expect(coverage.minimumLeftLeg, 'left leg has no missing horizontal section').toBeGreaterThan(0.035);
+  expect(coverage.minimumRightLeg, 'right leg has no missing horizontal section').toBeGreaterThan(0.035);
+  expect(coverage.shortsCoverage, 'navy shorts remain on the hips').toBeGreaterThan(0.8);
+  await canvas.screenshot({ path: testInfo.outputPath('aurelia-dress-hidden.png') });
+
+  await stage.getByRole('button', { name: 'Show dress', exact: true }).click();
+  await expect(stage.getByRole('button', { name: 'Hide dress', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(async () => changedPixels(hidden.rgba, (await pixels(canvas)).rgba)).toBeGreaterThan(0.015);
+  await expect.poll(async () => changedPixels(dressed.rgba, (await pixels(canvas)).rgba)).toBeLessThan(0.006);
+  expect(errors).toEqual([]);
+});
+
 interface GlbDocument {
   asset: { version: string };
   nodes: { mesh?: number; skin?: number }[];
