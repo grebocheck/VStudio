@@ -12,12 +12,21 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('vstudio_theme');
-    return saved === 'light' || saved === 'dark' ? saved : 'dark';
+    try {
+      const saved = localStorage.getItem('vstudio_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {
+      /* Storage is optional. */
+    }
+    return 'dark';
   });
 
   useEffect(() => {
-    localStorage.setItem('vstudio_theme', theme);
+    try {
+      localStorage.setItem('vstudio_theme', theme);
+    } catch {
+      /* Keep the in-memory choice. */
+    }
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
       document.documentElement.style.colorScheme = 'dark';

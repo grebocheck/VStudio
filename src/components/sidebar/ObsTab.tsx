@@ -5,6 +5,7 @@ import { AvatarRecorderPanel } from '../AvatarRecorderPanel';
 import { Tv } from 'lucide-react';
 import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme/ThemeContext';
+import { buildOverlayUrl, getStudioSession } from '../../lib/overlaySession';
 
 export interface ObsTabProps {
   config: AvatarConfig;
@@ -19,14 +20,16 @@ export const ObsTab: React.FC<ObsTabProps> = ({ config, setConfig, avatarSvgRef,
   const isEn = language === 'en';
 
   const [copied, setCopied] = React.useState(false);
-  const overlayUrl = typeof window !== 'undefined' ? `${window.location.origin}/overlay` : '/overlay';
+  const [overlayUrl] = React.useState(() => buildOverlayUrl(window.location.origin, getStudioSession()));
+  const [copyError, setCopyError] = React.useState(false);
   const copyOverlayUrl = async () => {
     try {
       await navigator.clipboard.writeText(overlayUrl);
       setCopied(true);
+      setCopyError(false);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard blocked — ignore */
+      setCopyError(true);
     }
   };
 
@@ -83,6 +86,17 @@ export const ObsTab: React.FC<ObsTabProps> = ({ config, setConfig, avatarSvgRef,
           </button>
         </div>
 
+        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-white/55">
+          {isEn
+            ? 'This URL is paired with this studio. Keep the studio tab open while streaming.'
+            : 'Це посилання прив’язане до цієї студії. Залишайте вкладку студії відкритою під час трансляції.'}
+        </p>
+        {copyError && (
+          <p role="alert" className="text-xs text-amber-600 dark:text-amber-300">
+            {isEn ? 'Select the URL above and copy it manually.' : 'Виділіть посилання вище та скопіюйте його вручну.'}
+          </p>
+        )}
+
         <a
           href={overlayUrl}
           target="_blank"
@@ -135,7 +149,11 @@ export const ObsTab: React.FC<ObsTabProps> = ({ config, setConfig, avatarSvgRef,
         </div>
       </div>
 
-      <AvatarExportPanel sourceRef={avatarSvgRef} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
+      <AvatarExportPanel
+        sourceRef={avatarSvgRef}
+        modelId={config.modelId}
+        fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')}
+      />
 
       <AvatarRecorderPanel sourceRef={avatarSvgRef} fileBaseName={config.name || (isEn ? 'Personal' : 'Особистий')} />
 

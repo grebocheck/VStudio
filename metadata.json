@@ -1,6 +1,6 @@
 {
-  "name": "VTuber Customizer & Live Rigging Studio",
-  "description": "An interactive VTuber Avatar Builder, Rigging simulator, and OBS Overlay with AI styling and Live tracking.",
+  "name": "V-Studio — Character & Sticker Studio",
+  "description": "Create editable characters, export Telegram sticker packs and animate your avatar for OBS.",
   "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -2,19 +2,28 @@ import React, { useState } from 'react';
 import { Download, FileCode2, ImageDown } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
-import { avatarExportFileName, avatarSvgToPngBlob, downloadBlob, serializeAvatarSvg } from '../lib/avatarExport';
+import type { AvatarConfig } from '../types';
+import {
+  avatarExportFileName,
+  avatarSvgToPngBlob,
+  downloadBlob,
+  embedSvgImages,
+  serializeAvatarSvg,
+} from '../lib/avatarExport';
 
 interface AvatarExportPanelProps {
   sourceRef: React.RefObject<SVGSVGElement | null>;
   fileBaseName: string;
+  modelId?: AvatarConfig['modelId'];
 }
 
-export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef, fileBaseName }) => {
-  const { t } = useI18n();
+export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef, fileBaseName, modelId }) => {
+  const { t, language } = useI18n();
   const { theme } = useTheme();
   const copy = t.rightSidebar.avatarExport;
   const [isExporting, setIsExporting] = useState<'png' | 'svg' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const is3D = modelId === 'aurelia-3d';
 
   const getSourceSvg = () => {
     if (!sourceRef.current) {
@@ -23,15 +32,17 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
     return sourceRef.current;
   };
 
-  const exportSvg = () => {
+  const exportSvg = async () => {
     setError(null);
     setIsExporting('svg');
     try {
-      const serialized = serializeAvatarSvg(getSourceSvg(), {
-        width: 800,
-        height: 800,
-        transparent: true,
-      });
+      const serialized = await embedSvgImages(
+        serializeAvatarSvg(getSourceSvg(), {
+          width: 800,
+          height: 800,
+          transparent: true,
+        }),
+      );
       downloadBlob(
         new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' }),
         avatarExportFileName(fileBaseName, 'svg'),
@@ -88,8 +99,8 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
         </button>
         <button
           type="button"
-          onClick={exportSvg}
-          disabled={isExporting !== null}
+          onClick={() => void exportSvg()}
+          disabled={isExporting !== null || is3D}
           className={`w-full py-2.5 rounded-sm border font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none ${
             theme === 'dark'
               ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
@@ -102,6 +113,13 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
       </div>
 
       <p className="text-[9px] text-slate-500 dark:text-white/45 font-mono leading-relaxed">{copy.note}</p>
+      {is3D && (
+        <p className="text-[10px] leading-relaxed text-slate-500 dark:text-white/55">
+          {language === 'en'
+            ? 'Aurelia exports as PNG here. For the complete 3D model, use Download GLB in the viewer; SVG is not available for 3D scenes.'
+            : 'Тут Аврелія експортується в PNG. Повну 3D-модель можна завантажити кнопкою GLB у переглядачі; SVG недоступний для 3D-сцен.'}
+        </p>
+      )}
 
       {error && (
         <p

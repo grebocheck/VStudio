@@ -1,4 +1,7 @@
-import React from 'react';
+import { MiyaNocturne } from './premium/MiyaNocturne';
+import { ThreeAvatar } from './three/ThreeAvatar';
+import React, { useId, useMemo } from 'react';
+import { createSvgScope, SvgScopeContext } from './avatar/SvgScope';
 import { AvatarConfig, RigParams } from '../types';
 import { calculateAvatarFrameStyles } from '../lib/avatarFrame';
 import { AccessoryComponent } from './avatar/Accessories';
@@ -23,7 +26,7 @@ interface VTuberAvatarProps {
   fps?: number | null;
 }
 
-export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
+const ParametricAvatar: React.FC<VTuberAvatarProps> = ({
   config,
   rig,
   onScreenBuster = false,
@@ -95,107 +98,200 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
     tongueOut = 0,
   } = rig;
 
+  const instanceId = useId();
+  const svgScope = useMemo(() => createSvgScope(`avatar-${instanceId.replace(/[^a-zA-Z0-9_-]/g, '')}`), [instanceId]);
   const effectiveEmotion = rigActiveEmotion && rigActiveEmotion !== 'none' ? rigActiveEmotion : activeEmotion;
-  const hairFillColor = getHairFillColor(hairGradient, hairColor);
-  const frontHairFillColor = getHairFillColor(hairGradient, hairColor, true);
+  const hairFillColor = svgScope.svgUrl(getHairFillColor(hairGradient, hairColor));
+  const frontHairFillColor = svgScope.svgUrl(getHairFillColor(hairGradient, hairColor, true));
   const frame = calculateAvatarFrameStyles(config, rig);
   const { headRotation, physicsSwayX, physicsSwayY } = frame;
 
   return (
-    <div
-      className={`relative overflow-hidden w-full max-w-[400px] aspect-square group ${
-        transparent ? '' : 'rounded border border-white/10 shadow-2xl bg-[#0a0a0c]'
-      }`}
-    >
-      <svg
-        ref={svgRef}
-        viewBox="0 0 400 400"
-        className="w-full h-full select-none"
-        xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label={`${config.name || 'VTuber'} avatar`}
+    <SvgScopeContext.Provider value={svgScope}>
+      <div
+        className={`relative overflow-hidden w-full max-w-[400px] aspect-square group ${
+          transparent ? '' : 'rounded border border-white/10 shadow-2xl bg-[#0a0a0c]'
+        }`}
       >
-        <AvatarDefs hairGradient={hairGradient} hairColor={hairColor} hairHighlightColor={hairHighlightColor} />
-        <AvatarBackground backgroundStyle={backgroundStyle} transparent={transparent} />
-
-        <g
-          data-rig-node="back-hair"
-          style={{
-            transform: frame.backHairTransform,
-            transformOrigin: '200px 220px',
-          }}
+        <svg
+          ref={svgRef}
+          viewBox="0 0 400 400"
+          className="w-full h-full select-none"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label={`${config.name || 'VTuber'} avatar`}
         >
-          <HairComponent
-            bangStyle={hairStyleBang}
-            backStyle={hairStyleBack}
-            color={hairFillColor}
-            highlightColor={hairHighlightColor}
-            angleY={angleY}
-            breath={breath}
-            hairSwayX={physicsSwayX}
-            hairSwayY={physicsSwayY}
-            artStyle={artStyle}
-          />
-        </g>
+          <AvatarDefs hairGradient={hairGradient} hairColor={hairColor} hairHighlightColor={hairHighlightColor} />
+          <AvatarBackground backgroundStyle={backgroundStyle} transparent={transparent} />
 
-        <g data-rig-node="chest" style={{ transform: frame.chestTransform, transformOrigin: '200px 380px' }}>
-          <NeckAndShoulders
-            skinColor={skinColor}
-            clothingStyle={clothingStyle}
-            color1={clothingColor1}
-            color2={clothingColor2}
-            angleZ={headRotation}
-            bodyX={bodyX}
-            neckWidth={neckWidth}
-            neckHeight={neckHeight}
-            shoulderWidth={shoulderWidth}
-            clothingPrint={clothingPrint}
-            artStyle={artStyle}
-            angleX={rig.angleX}
-            angleY={rig.angleY}
-          />
-        </g>
-
-        <g
-          id="rigged-head-module"
-          data-rig-node="head"
-          style={{
-            transform: frame.headTransform,
-            transformOrigin: '200px 220px',
-          }}
-        >
-          <g data-rig-node="head-outline" style={{ transform: frame.headOutlineTransform }}>
-            <HeadBase
-              skinColor={skinColor}
-              blushOpacity={blushOpacity}
-              blushColor={blushColor}
-              earStyle={earStyle}
+          <g
+            data-rig-node="back-hair"
+            style={{
+              transform: frame.backHairTransform,
+              transformOrigin: '200px 220px',
+            }}
+          >
+            <HairComponent
+              bangStyle={hairStyleBang}
+              backStyle={hairStyleBack}
+              color={hairFillColor}
+              highlightColor={hairHighlightColor}
+              angleY={angleY}
+              breath={breath}
+              hairSwayX={physicsSwayX}
+              hairSwayY={physicsSwayY}
               artStyle={artStyle}
-              faceShape={faceShape}
-              freckles={freckles}
-              frecklesDensity={frecklesDensity}
-              frecklesColor={frecklesColor}
-              beautyMark={beautyMark}
-              facePaint={facePaint}
-              faceScar={faceScar}
-              earDecoration={earDecoration}
             />
-            <FaceFlushOverlay emotion={effectiveEmotion} />
           </g>
 
-          {artStyle === 'anime' && (
+          <g data-rig-node="chest" style={{ transform: frame.chestTransform, transformOrigin: '200px 380px' }}>
+            <NeckAndShoulders
+              skinColor={skinColor}
+              clothingStyle={clothingStyle}
+              color1={clothingColor1}
+              color2={clothingColor2}
+              angleZ={headRotation}
+              bodyX={bodyX}
+              neckWidth={neckWidth}
+              neckHeight={neckHeight}
+              shoulderWidth={shoulderWidth}
+              clothingPrint={clothingPrint}
+              artStyle={artStyle}
+              angleX={rig.angleX}
+              angleY={rig.angleY}
+            />
+          </g>
+
+          <g
+            id="rigged-head-module"
+            data-rig-node="head"
+            style={{
+              transform: frame.headTransform,
+              transformOrigin: '200px 220px',
+            }}
+          >
+            <g data-rig-node="head-outline" style={{ transform: frame.headOutlineTransform }}>
+              <HeadBase
+                skinColor={skinColor}
+                blushOpacity={blushOpacity}
+                blushColor={blushColor}
+                earStyle={earStyle}
+                artStyle={artStyle}
+                faceShape={faceShape}
+                freckles={freckles}
+                frecklesDensity={frecklesDensity}
+                frecklesColor={frecklesColor}
+                beautyMark={beautyMark}
+                facePaint={facePaint}
+                faceScar={faceScar}
+                earDecoration={earDecoration}
+              />
+              <FaceFlushOverlay emotion={effectiveEmotion} />
+            </g>
+
+            {artStyle === 'anime' && (
+              <g
+                data-rig-node="front-hair-shadow"
+                style={{
+                  transform: frame.frontHairShadowTransform,
+                  transformOrigin: '200px 140px',
+                  opacity: 0.15,
+                }}
+              >
+                <FrontHairComponent
+                  bangStyle={hairStyleBang}
+                  color="#0f172a"
+                  highlightColor="none"
+                  angleY={angleY}
+                  artStyle={artStyle}
+                  hairSwayX={physicsSwayX}
+                  hairSwayY={physicsSwayY}
+                  breath={breath}
+                />
+              </g>
+            )}
+
             <g
-              data-rig-node="front-hair-shadow"
+              id="parallax-facial-features"
+              data-rig-node="face"
               style={{
-                transform: frame.frontHairShadowTransform,
+                transform: frame.faceTransform,
+              }}
+            >
+              <EyebrowSVG
+                style={eyebrowStyle}
+                color={eyebrowColor}
+                isLeft={true}
+                eyebrowY={eyebrowY}
+                artStyle={artStyle}
+                activeEmotion={effectiveEmotion}
+              />
+              <EyebrowSVG
+                style={eyebrowStyle}
+                color={eyebrowColor}
+                isLeft={false}
+                eyebrowY={eyebrowY}
+                artStyle={artStyle}
+                activeEmotion={effectiveEmotion}
+              />
+              <EyeSVG
+                eyeColor={eyeColor}
+                pupilStyle={pupilStyle}
+                pupilColor={pupilColor}
+                isLeft={true}
+                blink={eyeLOpen}
+                pupilX={pupilX}
+                pupilY={pupilY}
+                artStyle={artStyle}
+                activeEmotion={effectiveEmotion}
+                eyeShape={eyeShape}
+                breath={breath}
+                eyelashStyle={eyelashStyle}
+                irisStyle={irisStyle}
+                eyeHighlightStyle={eyeHighlightStyle}
+              />
+              <EyeSVG
+                eyeColor={heterochromia ? eyeColorRight : eyeColor}
+                pupilStyle={pupilStyle}
+                pupilColor={pupilColor}
+                isLeft={false}
+                blink={eyeROpen}
+                pupilX={pupilX}
+                pupilY={pupilY}
+                artStyle={artStyle}
+                activeEmotion={effectiveEmotion}
+                eyeShape={eyeShape}
+                breath={breath}
+                eyelashStyle={eyelashStyle}
+                irisStyle={irisStyle}
+                eyeHighlightStyle={eyeHighlightStyle}
+              />
+              <Live2DMouth
+                openAmount={mouthOpen}
+                form={effectiveEmotion === 'angry' ? Math.min(-0.85, mouthForm) : mouthForm}
+                hasFangs={hasFangs}
+                artStyle={artStyle}
+                tongueOut={tongueOut}
+                animationPhase={breath}
+                faceShape={faceShape}
+                mouthShape={mouthShape}
+                lipStyle={lipStyle}
+                lipColor={lipColor}
+                toothStyle={toothStyle}
+              />
+            </g>
+
+            <g
+              data-rig-node="front-hair"
+              style={{
+                transform: frame.frontHairTransform,
                 transformOrigin: '200px 140px',
-                opacity: 0.15,
               }}
             >
               <FrontHairComponent
                 bangStyle={hairStyleBang}
-                color="#0f172a"
-                highlightColor="none"
+                color={frontHairFillColor}
+                highlightColor={hairHighlightColor}
                 angleY={angleY}
                 artStyle={artStyle}
                 hairSwayX={physicsSwayX}
@@ -203,122 +299,43 @@ export const VTuberAvatar: React.FC<VTuberAvatarProps> = ({
                 breath={breath}
               />
             </g>
-          )}
 
-          <g
-            id="parallax-facial-features"
-            data-rig-node="face"
-            style={{
-              transform: frame.faceTransform,
-            }}
-          >
-            <EyebrowSVG
-              style={eyebrowStyle}
-              color={eyebrowColor}
-              isLeft={true}
-              eyebrowY={eyebrowY}
-              artStyle={artStyle}
-              activeEmotion={effectiveEmotion}
-            />
-            <EyebrowSVG
-              style={eyebrowStyle}
-              color={eyebrowColor}
-              isLeft={false}
-              eyebrowY={eyebrowY}
-              artStyle={artStyle}
-              activeEmotion={effectiveEmotion}
-            />
-            <EyeSVG
-              eyeColor={eyeColor}
-              pupilStyle={pupilStyle}
-              pupilColor={pupilColor}
-              isLeft={true}
-              blink={eyeLOpen}
-              pupilX={pupilX}
-              pupilY={pupilY}
-              artStyle={artStyle}
-              activeEmotion={effectiveEmotion}
-              eyeShape={eyeShape}
-              breath={breath}
-              eyelashStyle={eyelashStyle}
-              irisStyle={irisStyle}
-              eyeHighlightStyle={eyeHighlightStyle}
-            />
-            <EyeSVG
-              eyeColor={heterochromia ? eyeColorRight : eyeColor}
-              pupilStyle={pupilStyle}
-              pupilColor={pupilColor}
-              isLeft={false}
-              blink={eyeROpen}
-              pupilX={pupilX}
-              pupilY={pupilY}
-              artStyle={artStyle}
-              activeEmotion={effectiveEmotion}
-              eyeShape={eyeShape}
-              breath={breath}
-              eyelashStyle={eyelashStyle}
-              irisStyle={irisStyle}
-              eyeHighlightStyle={eyeHighlightStyle}
-            />
-            <Live2DMouth
-              openAmount={mouthOpen}
-              form={effectiveEmotion === 'angry' ? Math.min(-0.85, mouthForm) : mouthForm}
-              hasFangs={hasFangs}
-              artStyle={artStyle}
-              tongueOut={tongueOut}
-              faceShape={faceShape}
-              mouthShape={mouthShape}
-              lipStyle={lipStyle}
-              lipColor={lipColor}
-              toothStyle={toothStyle}
-            />
+            <g
+              data-rig-node="accessory"
+              style={{
+                transform: frame.accessoryTransform,
+                transformOrigin: '200px 140px',
+              }}
+              filter={svgScope.svgUrl('url(#drop-shadow)')}
+            >
+              <AccessoryComponent
+                style={accessoryStyle}
+                color={accessoryColor}
+                angleX={0}
+                accessoryGlow={accessoryGlow}
+              />
+            </g>
+
+            <g data-rig-node="overlay">
+              <EmotionOverlays emotion={effectiveEmotion} />
+            </g>
           </g>
 
-          <g
-            data-rig-node="front-hair"
-            style={{
-              transform: frame.frontHairTransform,
-              transformOrigin: '200px 140px',
-            }}
-          >
-            <FrontHairComponent
-              bangStyle={hairStyleBang}
-              color={frontHairFillColor}
-              highlightColor={hairHighlightColor}
-              angleY={angleY}
-              artStyle={artStyle}
-              hairSwayX={physicsSwayX}
-              hairSwayY={physicsSwayY}
-              breath={breath}
-            />
-          </g>
+          {onScreenBuster && <AvatarDebugOverlay frame={frame} />}
+          {artStyle === 'anime' && effectiveEmotion === 'starry' && <AnimeSparkles />}
+        </svg>
 
-          <g
-            data-rig-node="accessory"
-            style={{
-              transform: frame.accessoryTransform,
-              transformOrigin: '200px 140px',
-            }}
-            filter="url(#drop-shadow)"
-          >
-            <AccessoryComponent
-              style={accessoryStyle}
-              color={accessoryColor}
-              angleX={0}
-              accessoryGlow={accessoryGlow}
-            />
-          </g>
-
-          <g data-rig-node="overlay">
-            <EmotionOverlays emotion={effectiveEmotion} />
-          </g>
-        </g>
-
-        {onScreenBuster && <AvatarDebugOverlay frame={frame} />}
-        {artStyle === 'anime' && <AnimeSparkles />}
-      </svg>
-
-      {!transparent && <AvatarHud fps={fps} />}
-    </div>
+        {!transparent && onScreenBuster && <AvatarHud fps={fps} />}
+      </div>
+    </SvgScopeContext.Provider>
   );
 };
+
+export const VTuberAvatar: React.FC<VTuberAvatarProps> = (props) =>
+  props.config.modelId === 'aurelia-3d' ? (
+    <ThreeAvatar {...props} />
+  ) : props.config.modelId === 'miya-nocturne' ? (
+    <MiyaNocturne {...props} />
+  ) : (
+    <ParametricAvatar {...props} />
+  );

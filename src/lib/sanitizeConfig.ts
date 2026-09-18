@@ -6,6 +6,26 @@ import { AvatarConfig } from '../types';
  * JSON) without letting invalid values break the SVG renderer.
  */
 const ENUMS = {
+  modelId: ['parametric', 'miya-nocturne', 'aurelia-3d'],
+  modelFraming: ['portrait', 'halfbody', 'full'],
+  activeEmotion: [
+    'none',
+    'happy',
+    'angry',
+    'cry',
+    'shocked',
+    'smug',
+    'love',
+    'starry',
+    'squint',
+    'depressed',
+    'dizzy',
+    'cool',
+    'scared',
+    'sleepy',
+    'shy',
+    'relaxed',
+  ],
   pupilStyle: [
     'round',
     'star',
@@ -125,7 +145,7 @@ const isHex = (v: unknown): v is string => typeof v === 'string' && HEX_RE.test(
  * result is always a fully-valid AvatarConfig safe to render.
  */
 export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> | null | undefined): AvatarConfig {
-  if (!partial || typeof partial !== 'object') return base;
+  if (!partial || typeof partial !== 'object' || Array.isArray(partial)) return base;
   const out: AvatarConfig = { ...base };
   const p = partial as Record<string, unknown>;
 
@@ -162,18 +182,25 @@ export function mergeConfig(base: AvatarConfig, partial: Partial<AvatarConfig> |
   if (typeof p.lore === 'string') out.lore = p.lore.slice(0, 1200);
 
   // Booleans
+  if (typeof p.modelGlow === 'boolean') out.modelGlow = p.modelGlow;
   if (typeof p.hasFangs === 'boolean') out.hasFangs = p.hasFangs;
   if (typeof p.accessoryGlow === 'boolean') out.accessoryGlow = p.accessoryGlow;
   if (typeof p.freckles === 'boolean') out.freckles = p.freckles;
   if (typeof p.heterochromia === 'boolean') out.heterochromia = p.heterochromia;
 
   // Numeric ranges
-  if (typeof p.blushOpacity === 'number') out.blushOpacity = clamp(p.blushOpacity, 0, 1);
-  if (typeof p.headSize === 'number') out.headSize = clamp(p.headSize, 0.8, 1.2);
-  if (typeof p.neckWidth === 'number') out.neckWidth = clamp(p.neckWidth, 0.6, 1.4);
-  if (typeof p.neckHeight === 'number') out.neckHeight = clamp(p.neckHeight, 0.4, 1.4);
-  if (typeof p.shoulderWidth === 'number') out.shoulderWidth = clamp(p.shoulderWidth, 0.7, 1.3);
-  if (typeof p.frecklesDensity === 'number') out.frecklesDensity = clamp(p.frecklesDensity, 0.3, 1.0);
+  for (const [key, min, max] of [
+    ['motionIntensity', 0.35, 1.5],
+    ['blushOpacity', 0, 1],
+    ['headSize', 0.8, 1.2],
+    ['neckWidth', 0.6, 1.4],
+    ['neckHeight', 0.4, 1.4],
+    ['shoulderWidth', 0.7, 1.3],
+    ['frecklesDensity', 0.3, 1],
+  ] as const) {
+    const value = p[key];
+    if (typeof value === 'number' && Number.isFinite(value)) out[key] = clamp(value, min, max);
+  }
 
   return out;
 }

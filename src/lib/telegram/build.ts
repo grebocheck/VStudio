@@ -17,6 +17,12 @@ import { TELEGRAM_STICKER_FPS, TELEGRAM_STICKER_SIZE, FRAME_COUNT } from './core
 import type { LottieValue, TelegramStickerSpec } from './core';
 
 export function buildTelegramStickerLottie(config: AvatarConfig, spec: TelegramStickerSpec): LottieValue {
+  if (config.modelId === 'aurelia-3d') {
+    throw new Error('Aurelia is a 3D model. Export PNG stickers; TGS supports vector artwork only.');
+  }
+  if (config.modelId === 'miya-nocturne') {
+    throw new Error('Miya Nocturne uses illustrated artwork. Export PNG stickers; TGS supports vectors only.');
+  }
   const preset = TELEGRAM_EMOTION_ANIMATION_PRESETS[spec.slug];
   const stickerConfig = { ...config, activeEmotion: spec.emotion, backgroundStyle: 'dark-studio' as const };
 

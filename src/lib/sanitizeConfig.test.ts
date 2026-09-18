@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mergeConfig } from './sanitizeConfig';
-import { DEFAULT_CONFIG } from '../presets';
+import { DEFAULT_CONFIG, MIYA_NOCTURNE_PRESET } from '../presets';
 
 describe('mergeConfig', () => {
   it('returns the base unchanged for null/garbage input', () => {
@@ -19,6 +19,28 @@ describe('mergeConfig', () => {
     expect(bad.pupilStyle).toBe(DEFAULT_CONFIG.pupilStyle);
   });
 
+  it('round-trips authored model settings while rejecting unsupported assets and framing', () => {
+    const illustrated = mergeConfig(DEFAULT_CONFIG, {
+      ...MIYA_NOCTURNE_PRESET.config,
+      modelFraming: 'halfbody',
+      modelGlow: true,
+    });
+    expect(illustrated.modelId).toBe('miya-nocturne');
+    expect(illustrated.modelFraming).toBe('halfbody');
+    expect(illustrated.modelGlow).toBe(true);
+    const invalid = mergeConfig(illustrated, {
+      modelId: 'https://example.com/model.svg' as never,
+      modelFraming: 'unknown' as never,
+      modelGlow: 'yes' as never,
+    });
+    expect(invalid).toEqual(illustrated);
+    expect(mergeConfig(DEFAULT_CONFIG, { name: 'Old project' }).modelId).toBe('parametric');
+    expect(mergeConfig(DEFAULT_CONFIG, { modelId: 'aurelia-3d', modelFraming: 'full' })).toMatchObject({
+      modelId: 'aurelia-3d',
+      modelFraming: 'full',
+    });
+  });
+
   it('accepts valid HEX colors and rejects malformed ones', () => {
     expect(mergeConfig(DEFAULT_CONFIG, { hairColor: '#abc' }).hairColor).toBe('#abc');
     expect(mergeConfig(DEFAULT_CONFIG, { hairColor: '#aabbccdd' }).hairColor).toBe('#aabbccdd');
@@ -31,6 +53,30 @@ describe('mergeConfig', () => {
     expect(mergeConfig(DEFAULT_CONFIG, { blushOpacity: -2 }).blushOpacity).toBe(0);
     expect(mergeConfig(DEFAULT_CONFIG, { headSize: 99 }).headSize).toBe(1.2);
     expect(mergeConfig(DEFAULT_CONFIG, { headSize: 0 }).headSize).toBe(0.8);
+  });
+
+  it('bounds motion energy and preserves the natural value on invalid imports', () => {
+    const model = MIYA_NOCTURNE_PRESET.config;
+    expect(mergeConfig(model, { motionIntensity: 0.55 }).motionIntensity).toBe(0.55);
+    expect(mergeConfig(model, { motionIntensity: -1 }).motionIntensity).toBe(0.35);
+    expect(mergeConfig(model, { motionIntensity: 90 }).motionIntensity).toBe(1.5);
+    for (const value of [NaN, Infinity, -Infinity, 'high', null]) {
+      expect(mergeConfig(model, { motionIntensity: value as never }).motionIntensity).toBe(1);
+    }
+  });
+
+  it('ignores non-finite numbers instead of letting NaN reach SVG geometry', () => {
+    for (const value of [NaN, Infinity, -Infinity]) {
+      expect(mergeConfig(DEFAULT_CONFIG, { headSize: value }).headSize).toBe(DEFAULT_CONFIG.headSize);
+      expect(mergeConfig(DEFAULT_CONFIG, { blushOpacity: value }).blushOpacity).toBe(DEFAULT_CONFIG.blushOpacity);
+    }
+  });
+
+  it('round-trips valid expressions and rejects unknown expressions', () => {
+    expect(mergeConfig(DEFAULT_CONFIG, { activeEmotion: 'happy' }).activeEmotion).toBe('happy');
+    expect(mergeConfig(DEFAULT_CONFIG, { activeEmotion: 'invalid' as never }).activeEmotion).toBe(
+      DEFAULT_CONFIG.activeEmotion,
+    );
   });
 
   it('caps free-text length and coerces booleans', () => {

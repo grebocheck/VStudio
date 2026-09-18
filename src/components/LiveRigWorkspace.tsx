@@ -22,6 +22,8 @@ import { RightSidebar } from './RightSidebar';
 interface LiveRigWorkspaceProps {
   config: AvatarConfig;
   setConfig: React.Dispatch<React.SetStateAction<AvatarConfig>>;
+  onRandomize: () => void;
+  onSelectTab: (tab: SidebarTab) => void;
   mergeIntoConfig: (partial: Partial<AvatarConfig>) => void;
   activeSidebarTab: SidebarTab;
   trackingMode: TrackingMode;
@@ -57,6 +59,8 @@ export const LiveRigWorkspace: React.FC<LiveRigWorkspaceProps> = ({
   config,
   setConfig,
   mergeIntoConfig,
+  onRandomize,
+  onSelectTab,
   activeSidebarTab,
   trackingMode,
   setTrackingMode,
@@ -132,6 +136,11 @@ export const LiveRigWorkspace: React.FC<LiveRigWorkspaceProps> = ({
       <CenterStage
         config={config}
         setConfig={setConfig}
+        onRandomize={onRandomize}
+        onSelectTab={onSelectTab}
+        setTrackingMode={setTrackingMode}
+        micActive={micActive}
+        setMicActive={setMicActive}
         rig={rig}
         onScreenBuster={onScreenBuster}
         trackingMode={trackingMode}

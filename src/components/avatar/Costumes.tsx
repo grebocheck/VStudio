@@ -1,3 +1,4 @@
+import { useSvgScope } from './SvgScope';
 import React from 'react';
 
 export const NeckAndShoulders: React.FC<{
@@ -48,6 +49,7 @@ export const NeckAndShoulders: React.FC<{
   angleX = 0,
   angleY = 0,
 }) => {
+  const { svgId, svgUrl } = useSvgScope();
   const shadowOffsetX = -angleX * 0.45;
   const shadowOffsetY = -angleY * 0.3;
 
@@ -63,7 +65,7 @@ export const NeckAndShoulders: React.FC<{
   const neckYTop = 195;
   const neckYBottom = 285 + (nh - 1.0) * 15;
 
-  const torsoTransform = `scale(${sw}, 1.0)`;
+  const torsoTransform = `translateY(-10px) scale(${sw}, 1.08)`;
 
   return (
     <g
@@ -76,9 +78,9 @@ export const NeckAndShoulders: React.FC<{
       />
 
       {/* Dynamic Head-Neck Shadow */}
-      <g clipPath="url(#neck-clip)">
+      <g clipPath={svgUrl('url(#neck-clip)')}>
         <defs>
-          <clipPath id="neck-clip">
+          <clipPath id={svgId('neck-clip')}>
             <path
               d={`M${neckTopL} ${neckYTop} L${neckBottomL} ${neckYBottom} L${neckBottomR} ${neckYBottom} L${neckTopR} ${neckYTop} Z`}
             />
@@ -92,7 +94,7 @@ export const NeckAndShoulders: React.FC<{
                ${210 + shadowOffsetX} ${250 + nh * 10 + shadowOffsetY}, 
                ${neckTopR + 5} ${245 + nh * 8} 
               L${neckTopR + 10} ${neckYTop - 5} Z`}
-          fill="rgba(15, 23, 42, 0.22)"
+          fill="rgba(126, 68, 62, 0.18)"
           style={{
             transform: `translate(${shadowOffsetX}px, ${shadowOffsetY}px)`,
             transformOrigin: '200px 195px',
@@ -105,7 +107,7 @@ export const NeckAndShoulders: React.FC<{
       {artStyle === 'anime' && (
         <path
           d={`M 191 ${neckYTop + 24} L 200 ${neckYTop + 65} L 209 ${neckYTop + 24} Z`}
-          fill="rgba(15, 23, 42, 0.23)"
+          fill="rgba(126, 68, 62, 0.08)"
         />
       )}
 
@@ -115,11 +117,17 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'hoodie' && (
           <g id="torso-hoodie">
             {/* Ambient drop shadow behind hoodie fold */}
-            <path d="M115 285 C95 325, 30 375, 0 405 L400 405 C370 375, 305 325, 285 285 Z" fill="rgba(0,0,0,0.2)" />
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill="rgba(0,0,0,0.2)"
+            />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Outer hoodie fold stitch */}
-            <path d="M125 280 C110 325, 60 365, 0 395" stroke="rgba(255,255,255,0.08)" strokeWidth="2" fill="none" />
-            <path d="M275 280 C290 325, 340 365, 400 395" stroke="rgba(255,255,255,0.08)" strokeWidth="2" fill="none" />
+            <path d="M108 288 C91 317, 83 350, 85 400" stroke="rgba(255,255,255,0.08)" strokeWidth="2" fill="none" />
+            <path d="M292 288 C309 317, 317 350, 315 400" stroke="rgba(255,255,255,0.08)" strokeWidth="2" fill="none" />
             {/* Hood interior with soft lining gradient effect */}
             <path d="M140 270 C150 250, 250 250, 260 270 C280 290, 120 290, 140 270 Z" fill={color2} opacity="0.9" />
             <path d="M146 272 C154 256, 246 256, 254 272 C270 286, 130 286, 146 272 Z" fill="rgba(0,0,0,0.15)" />
@@ -145,13 +153,37 @@ export const NeckAndShoulders: React.FC<{
             <path d="M 217 274 Q 225 300, 215 320" stroke={color2} strokeWidth="3" fill="none" strokeLinecap="round" />
             <circle cx="215" cy="323" r="5.5" fill={color2} />
             <circle cx="215" cy="323" r="3.5" fill="rgba(0,0,0,0.15)" />
+            <path
+              d="M152 351 Q200 357 248 351 L263 395 Q200 401 137 395 Z"
+              fill="rgba(0,0,0,0.09)"
+              stroke="rgba(255,255,255,0.12)"
+              strokeWidth="1.2"
+            />
+            <path
+              d="M151 356 L141 388 M249 356 L259 388"
+              stroke={color2}
+              strokeWidth="2"
+              opacity="0.45"
+              strokeLinecap="round"
+            />
+            <path
+              d="M107 302 Q120 325 110 353 M293 302 Q280 325 290 353"
+              fill="none"
+              stroke="rgba(0,0,0,0.13)"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <rect x="237" y="306" width="13" height="5" rx="1" fill={color2} opacity="0.7" />
           </g>
         )}
 
         {/* Kimono option */}
         {clothingStyle === 'kimono' && (
           <g id="torso-kimono">
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Delicate multi-layered shadow collar */}
             <path
               d="M165 270 L200 320 L235 270"
@@ -172,7 +204,10 @@ export const NeckAndShoulders: React.FC<{
         {/* Suit option */}
         {clothingStyle === 'suit' && (
           <g id="torso-suit">
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* White dress shirt collared V */}
             <path d="M170 270 L200 320 L230 270 Z" fill="#ffffff" />
             <path d="M170 270 L200 320" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
@@ -196,7 +231,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'cyber-armor' && (
           <g id="torso-cyber">
             {/* Dark base chassis with metallic sheen */}
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill="#151421" />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill="#151421"
+            />
             <path d="M130 285 C115 320, 60 365, 10 395" stroke="#1d1b33" strokeWidth="4" fill="none" />
             {/* Modular armor plating */}
             <path d="M130 290 L180 300 L180 360 L120 370 Z" fill={color1} stroke="#09090f" strokeWidth="2.5" />
@@ -221,7 +259,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'goth-dress' && (
           <g id="torso-goth">
             {/* Dark dress body with subtle fabric shadows */}
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Frilly lace shoulder pads with custom loops */}
             <path
               d="M 103 293 C 118 276, 142 276, 153 303"
@@ -272,7 +313,10 @@ export const NeckAndShoulders: React.FC<{
         {/* Druid Cloak option */}
         {clothingStyle === 'druid-cloak' && (
           <g id="torso-druid">
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Flawless high-res leafy shoulder layers */}
             <path
               d="M115 285 C110 300, 130 320, 155 310 C165 300, 150 285, 125 285 Z"
@@ -309,10 +353,13 @@ export const NeckAndShoulders: React.FC<{
         {/* Sailor-School Uniform (High School DxD favorite style!) */}
         {clothingStyle === 'sailor-fuku' && (
           <g id="torso-sailor">
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color2} />{' '}
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color2}
+            />{' '}
             {/* immaculate white linen fabric */}
-            <path d="M125 280 C110 325, 60 365, 0 395" stroke="rgba(0,0,0,0.04)" strokeWidth="2.5" fill="none" />
-            <path d="M275 280 C290 325, 340 365, 400 395" stroke="rgba(0,0,0,0.04)" strokeWidth="2.5" fill="none" />
+            <path d="M108 288 C91 317, 83 350, 85 400" stroke="rgba(0,0,0,0.04)" strokeWidth="2.5" fill="none" />
+            <path d="M292 288 C309 317, 317 350, 315 400" stroke="rgba(0,0,0,0.04)" strokeWidth="2.5" fill="none" />
             {/* Classic Sailor Marine-Blue Collar Flap */}
             <path d="M140 280 L200 330 L260 280 L285 295 L200 350 L115 295 Z" fill={color1} />
             <path d="M148 283 L200 325 L252 283" stroke="#ffffff" strokeWidth="2.8" fill="none" />
@@ -508,12 +555,15 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'royal-knight' && (
           <g id="torso-royal-knight">
             {/* Base tunic */}
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Metallic Pauldrons (Shoulder Armor) */}
             <path d="M100 280 Q 70 300, 50 340 L 120 330 Z" fill={color2} stroke="rgba(0,0,0,0.3)" strokeWidth="2" />
             <path d="M300 280 Q 330 300, 350 340 L 280 330 Z" fill={color2} stroke="rgba(0,0,0,0.3)" strokeWidth="2" />
-            <path d="M100 280 Q 70 300, 50 340 L 120 330 Z" fill="url(#anime-iris-overlay-l)" opacity="0.5" />
-            <path d="M300 280 Q 330 300, 350 340 L 280 330 Z" fill="url(#anime-iris-overlay-r)" opacity="0.5" />
+            <path d="M100 280 Q 70 300, 50 340 L 120 330 Z" fill={svgUrl('url(#fabric-shading)')} opacity="0.5" />
+            <path d="M300 280 Q 330 300, 350 340 L 280 330 Z" fill={svgUrl('url(#fabric-shading)')} opacity="0.5" />
             {/* Chest Plate */}
             <path
               d="M150 280 L200 320 L250 280 L230 400 L170 400 Z"
@@ -521,7 +571,11 @@ export const NeckAndShoulders: React.FC<{
               stroke="rgba(0,0,0,0.2)"
               strokeWidth="3"
             />
-            <path d="M150 280 L200 320 L250 280 L230 400 L170 400 Z" fill="url(#anime-iris-overlay-l)" opacity="0.3" />
+            <path
+              d="M150 280 L200 320 L250 280 L230 400 L170 400 Z"
+              fill={svgUrl('url(#fabric-shading)')}
+              opacity="0.3"
+            />
             {/* Golden trim & accents */}
             <path d="M165 280 L200 310 L235 280" stroke="#fbbf24" strokeWidth="6" fill="none" strokeLinecap="round" />
             <path d="M200 320 V400" stroke="#fbbf24" strokeWidth="4" />
@@ -537,7 +591,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'cyber-ninja' && (
           <g id="torso-cyber-ninja">
             {/* Stealth base suit */}
-            <path d="M125 280 C105 320, 40 370, 0 400 L400 400 C360 370, 295 320, 275 280 Z" fill="#0f172a" />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill="#0f172a"
+            />
             {/* Tech harness straps */}
             <path d="M 150 280 L 120 400" stroke="#334155" strokeWidth="12" />
             <path d="M 250 280 L 280 400" stroke="#334155" strokeWidth="12" />
@@ -566,7 +623,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'lolita-dress' && (
           <g id="torso-lolita">
             {/* Puffy dress base */}
-            <path d="M125 280 C 105 320, 20 350, 0 400 L400 400 C 380 350, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
 
             {/* Lace Peter Pan Collar */}
             <path
@@ -615,7 +675,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'school-blazer' && (
           <g id="torso-school-blazer">
             {/* Base blazer body */}
-            <path d="M125 280 C 105 320, 30 370, 0 400 L400 400 C 370 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* White shirt inner collar */}
             <path d="M 160 270 L 175 285 L 200 280 L 225 285 L 240 270 L 200 295 Z" fill="#ffffff" />
             {/* Tie / Ribbon */}
@@ -639,7 +702,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'chinese-dress' && (
           <g id="torso-chinese-dress">
             {/* Fitted dress body */}
-            <path d="M125 280 C 110 320, 45 365, 10 400 L390 400 C 355 365, 290 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Mandarin Collar */}
             <path
               d="M 155 264 Q 200 282, 245 264 L 245 273 Q 200 292, 155 273 Z"
@@ -702,7 +768,10 @@ export const NeckAndShoulders: React.FC<{
             <path d="M 190 315 L 200 335 L 210 315 Z" fill="#cbd5e1" />
 
             {/* Coat base */}
-            <path d="M125 280 C 105 320, 30 370, 0 400 L400 400 C 370 370, 295 320, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Open coat lapels (wide cuffs) */}
             <path
               d="M 155 270 L 175 400 M 245 270 L 225 400"
@@ -752,7 +821,10 @@ export const NeckAndShoulders: React.FC<{
         {clothingStyle === 'angel-dress' && (
           <g id="torso-angel-dress">
             {/* Flowy base */}
-            <path d="M125 280 C 100 310, 20 340, 0 400 L400 400 C 380 340, 300 310, 275 280 Z" fill={color1} />
+            <path
+              d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+              fill={color1}
+            />
             {/* Semi-translucent layered chiffon overlay */}
             <path d="M130 280 C 110 320, 30 350, 0 395 L200 400 Z" fill="rgba(255,255,255,0.45)" />
             <path d="M270 280 C 290 320, 370 350, 400 395 L200 400 Z" fill="rgba(255,255,255,0.45)" />
@@ -853,24 +925,29 @@ export const NeckAndShoulders: React.FC<{
           </g>
         )}
 
+        <path
+          d="M165 270 C150 274, 108 276, 88 296 C63 322, 51 366, 45 410 L355 410 C349 366, 337 322, 312 296 C292 276, 250 274, 235 270 Z"
+          fill={svgUrl('url(#fabric-shading)')}
+        />
+
         {/* Shoulder Rim Lights */}
         <path
-          d="M 0 395 C 45 365, 105 315, 125 280"
+          d="M 57 387 C 62 350, 74 317, 93 300"
           fill="none"
           stroke="#ffffff"
           strokeWidth="4.5"
           strokeLinecap="round"
-          opacity="0.25"
-          filter="url(#rim-blur)"
+          opacity="0.12"
+          filter={svgUrl('url(#rim-blur)')}
         />
         <path
-          d="M 400 395 C 355 365, 295 315, 275 280"
+          d="M 343 387 C 338 350, 326 317, 307 300"
           fill="none"
           stroke="#ffffff"
           strokeWidth="4.5"
           strokeLinecap="round"
-          opacity="0.18"
-          filter="url(#rim-blur)"
+          opacity="0.1"
+          filter={svgUrl('url(#rim-blur)')}
         />
       </g>
     </g>

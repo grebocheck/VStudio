@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { AvatarConfig, RigParams } from '../types';
+import { getStudioSession, overlaySessionFromSearch } from '../lib/overlaySession';
+import { mergeConfig } from '../lib/sanitizeConfig';
+import { DEFAULT_CONFIG } from '../presets';
+import { sanitizeOverlayRig } from '../lib/overlayFrames';
 
 const RIG_SEND_INTERVAL_MS = 33; // ~30fps is plenty smooth for an overlay
 const RECONNECT_DELAY_MS = 1500;
@@ -16,6 +20,7 @@ function wsUrl(): string {
  */
 export function useOverlayBroadcast(config: AvatarConfig, rig: RigParams): number {
   const [overlayCount, setOverlayCount] = useState(0);
+  const [session] = useState(getStudioSession);
 
   const configRef = useRef(config);
   const rigRef = useRef(rig);
@@ -47,7 +52,7 @@ export function useOverlayBroadcast(config: AvatarConfig, rig: RigParams): numbe
       socketRef.current = socket;
 
       socket.onopen = () => {
-        socket?.send(JSON.stringify({ t: 'hello', role: 'editor' }));
+        socket?.send(JSON.stringify({ t: 'hello', role: 'editor', session }));
         // Force a config resend on (re)connect.
         lastConfigJsonRef.current = '';
         socket?.send(JSON.stringify({ t: 'config', config: configRef.current }));
@@ -63,16 +68,17 @@ export function useOverlayBroadcast(config: AvatarConfig, rig: RigParams): numbe
       socket.onmessage = (e) => {
         try {
           const msg = JSON.parse(e.data);
-          if (msg.t === 'status') setOverlayCount(msg.overlays ?? 0);
+          if (msg.t === 'status' && Number.isInteger(msg.overlays)) setOverlayCount(msg.overlays);
         } catch {
           /* ignore */
         }
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
         if (rigTimer) clearInterval(rigTimer);
+        if (closed) return;
         setOverlayCount(0);
-        if (!closed) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+        if (event.code !== 1008) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
       };
 
       socket.onerror = () => socket?.close();
@@ -87,7 +93,7 @@ export function useOverlayBroadcast(config: AvatarConfig, rig: RigParams): numbe
       socket?.close();
       socketRef.current = null;
     };
-  }, []);
+  }, [session]);
 
   return overlayCount;
 }
@@ -96,6 +102,8 @@ export interface OverlayState {
   config: AvatarConfig | null;
   rig: RigParams | null;
   connected: boolean;
+  sourceConnected: boolean;
+  pairingError: boolean;
 }
 
 /**
@@ -103,9 +111,17 @@ export interface OverlayState {
  * returns the latest config + rig pushed by the editor.
  */
 export function useOverlayReceiver(): OverlayState {
-  const [state, setState] = useState<OverlayState>({ config: null, rig: null, connected: false });
+  const [session] = useState(() => overlaySessionFromSearch(window.location.search));
+  const [state, setState] = useState<OverlayState>({
+    config: null,
+    rig: null,
+    connected: false,
+    sourceConnected: false,
+    pairingError: !session,
+  });
 
   useEffect(() => {
+    if (!session) return;
     let socket: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let closed = false;
@@ -113,21 +129,26 @@ export function useOverlayReceiver(): OverlayState {
     const connect = () => {
       socket = new WebSocket(wsUrl());
       socket.onopen = () => {
-        socket?.send(JSON.stringify({ t: 'hello', role: 'overlay' }));
-        setState((s) => ({ ...s, connected: true }));
+        socket?.send(JSON.stringify({ t: 'hello', role: 'overlay', session }));
       };
       socket.onmessage = (e) => {
         try {
           const msg = JSON.parse(e.data);
-          if (msg.t === 'config') setState((s) => ({ ...s, config: msg.config }));
-          else if (msg.t === 'rig') setState((s) => ({ ...s, rig: msg.rig }));
+          if (msg.t === 'status')
+            setState((s) => ({ ...s, connected: true, sourceConnected: msg.editors > 0, pairingError: false }));
+          else if (msg.t === 'config') setState((s) => ({ ...s, config: mergeConfig(DEFAULT_CONFIG, msg.config) }));
+          else if (msg.t === 'rig') {
+            const frame = sanitizeOverlayRig(msg.rig);
+            if (frame) setState((s) => ({ ...s, rig: frame }));
+          }
         } catch {
           /* ignore */
         }
       };
-      socket.onclose = () => {
-        setState((s) => ({ ...s, connected: false }));
-        if (!closed) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+      socket.onclose = (event) => {
+        if (closed) return;
+        setState((s) => ({ ...s, connected: false, sourceConnected: false, pairingError: event.code === 1008 }));
+        if (event.code !== 1008) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
       };
       socket.onerror = () => socket?.close();
     };
@@ -139,7 +160,7 @@ export function useOverlayReceiver(): OverlayState {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       socket?.close();
     };
-  }, []);
+  }, [session]);
 
   return state;
 }

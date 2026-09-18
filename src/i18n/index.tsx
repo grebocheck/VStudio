@@ -16,12 +16,22 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
-    const saved = localStorage.getItem('vstudio_lang');
-    return saved === 'uk' || saved === 'en' ? saved : 'en';
+    try {
+      const saved = localStorage.getItem('vstudio_lang');
+      if (saved === 'uk' || saved === 'en') return saved;
+    } catch {
+      /* Storage can be blocked in private / embedded browsers. */
+    }
+    return navigator.language.toLowerCase().startsWith('uk') ? 'uk' : 'en';
   });
 
   useEffect(() => {
-    localStorage.setItem('vstudio_lang', language);
+    try {
+      localStorage.setItem('vstudio_lang', language);
+    } catch {
+      /* Keep the in-memory choice. */
+    }
+    document.documentElement.lang = language;
   }, [language]);
 
   const value = {

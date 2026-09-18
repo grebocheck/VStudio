@@ -180,25 +180,51 @@ export const HairComponent: React.FC<{
       )}
 
       {backStyle === 'wavy' && (
-        <path
-          d="M102 130 
-             Q70 170, 75 220
-             T 60 300
-             T 85 365
-             Q105 370, 115 340
-             C120 300, 110 240, 118 200
-             L282 200
-             C290 240, 280 300, 285 340
-             Q295 370, 315 365
-             T 340 300
-             T 325 220
-             Q330 170, 298 130 Z"
-          fill={color}
+        <g
+          id="hair-wavy"
           style={{
-            transform: `scaleY(${1 + bounce * 0.007 + hairSwayY * 0.01}) scaleX(${1 - hairSwayY * 0.004}) rotate(${hairSwayX * 0.15}deg)`,
+            transform: `scaleY(${1 + hairSwayY * 0.01}) rotate(${hairSwayX * 0.15}deg)`,
             transformOrigin: '200px 100px',
           }}
-        />
+        >
+          <path
+            d="M108 117 C78 150 72 192 80 232 C90 277 48 296 62 336 C67 352 82 367 92 364 C103 354 111 337 112 316 C114 281 108 242 121 204 L279 204 C292 242 286 281 288 316 C289 337 297 354 308 364 C318 367 333 352 338 336 C352 296 310 277 320 232 C328 192 322 150 292 117 Z"
+            fill={color}
+            stroke="rgba(29,22,41,0.3)"
+            strokeWidth="1.4"
+          />
+          {[false, true].map((mirror) => (
+            <g key={String(mirror)} transform={mirror ? 'translate(400 0) scale(-1 1)' : undefined}>
+              <path
+                d="M101 150 C81 195 100 216 97 247 C96 283 68 306 76 331 C74 307 107 284 107 249 C113 218 91 191 108 152 Z"
+                fill={highlightColor}
+                opacity="0.18"
+              />
+              <path
+                d="M94 175 C84 208 100 232 93 261 C88 288 69 307 72 326"
+                stroke={highlightColor}
+                strokeWidth="2.2"
+                fill="none"
+                strokeLinecap="round"
+                opacity="0.27"
+              />
+              <path
+                d="M111 201 C100 246 119 293 94 347"
+                stroke="rgba(24,18,38,0.26)"
+                strokeWidth="1.4"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <path
+                d="M88 285 C77 311 90 331 86 350"
+                stroke="rgba(24,18,38,0.2)"
+                strokeWidth="1"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+        </g>
       )}
 
       {backStyle === 'tails' && (
@@ -579,436 +605,130 @@ export const FrontHairComponent: React.FC<{
   hairSwayY?: number;
   breath?: number;
 }> = ({ bangStyle, color, highlightColor, angleY, artStyle = 'classic', hairSwayX = 0, hairSwayY = 0, breath = 0 }) => {
-  const offset = angleY * 0.15;
-  const isAnime = artStyle === 'anime';
-
-  // Hair styling parameters for multi-layered sway & ahoge
-  const leftLockStyle = {
-    transform: `rotate(${hairSwayX * 0.4}deg) scaleY(${1 + hairSwayY * 0.005})`,
-    transformOrigin: '106px 130px',
-    transition: 'transform 0.1s ease-out',
+  // Each fringe has its own silhouette; flowing internal strands share the same light source.
+  const shell =
+    'M106 148 C95 112 110 75 144 64 C168 49 208 49 238 57 C279 62 303 91 296 146 L282 163 C276 114 252 86 216 81 C170 74 133 101 119 164 Z';
+  const fringes: Record<typeof bangStyle, string> = {
+    classic:
+      'M115 117 C135 81 174 69 208 76 C199 104 183 131 171 151 L169 128 C155 145 144 151 132 153 L137 136 L115 154 Z M208 76 C250 76 277 102 289 140 L269 154 L270 130 L253 155 C237 143 216 119 208 76 Z',
+    side: 'M112 123 C131 78 178 62 231 75 C209 109 189 138 153 157 L162 139 C141 150 130 152 115 154 Z M231 75 C268 93 285 114 289 151 C264 146 246 123 231 75 Z',
+    'center-part':
+      'M112 134 C123 91 165 64 204 77 C192 106 172 135 137 159 L144 139 L119 160 Z M204 77 C240 70 278 99 289 137 L279 163 L258 143 L265 162 C232 142 214 111 204 77 Z',
+    short:
+      'M113 128 C138 88 175 68 211 76 C248 75 277 102 287 137 L272 144 L265 132 L249 146 L235 132 L218 149 L207 128 L188 147 L178 128 L160 143 L151 129 L131 148 L130 132 L114 150 Z',
+    hime: 'M113 119 C142 72 249 63 284 123 L282 147 Q267 152 243 148 L241 139 L238 150 L208 150 L205 139 L202 151 L170 149 L166 139 L163 150 Q132 151 116 146 Z',
+    spiky:
+      'M113 128 C148 77 179 67 210 77 C246 78 278 107 288 140 L270 151 L269 130 L246 159 L241 135 L221 158 L209 124 L190 156 L182 130 L157 156 L153 133 L128 153 L132 135 L110 153 Z',
+    'curly-bangs':
+      'M113 125 C143 73 247 66 286 124 C291 153 268 159 257 141 C262 166 228 169 219 140 C214 166 179 166 174 140 C160 166 139 158 145 140 C122 160 110 150 113 125 Z',
+    'cross-bangs':
+      'M112 128 C137 76 174 68 207 76 C201 111 182 132 155 155 L164 132 L126 158 Z M206 76 C246 75 278 103 290 146 L269 158 L270 131 L250 157 C228 137 212 111 206 76 Z M192 103 Q206 125 219 160 L204 150 L199 161 L181 133 Z',
+    'wolf-cut':
+      'M111 132 C133 87 179 67 213 78 C249 76 280 108 289 142 L273 158 L275 139 L255 162 L250 141 L232 156 L221 130 L204 156 L197 133 L177 159 L174 138 L151 157 L155 137 L129 160 L134 142 L112 160 Z',
+    'curtain-bangs':
+      'M112 137 C122 95 168 66 201 77 C195 101 185 128 157 147 C147 154 137 158 125 158 L139 143 L115 153 Z M201 77 C240 69 279 101 289 139 L283 155 L264 144 L274 160 C238 153 211 120 201 77 Z',
+    asymmetric:
+      'M111 131 C134 84 172 65 226 78 C216 118 184 151 152 168 L160 147 L129 167 L135 146 L113 155 Z M226 78 C259 86 282 109 289 145 L269 150 C250 132 235 108 226 78 Z',
+    'blunt-bangs':
+      'M112 126 C137 71 256 68 287 127 L283 152 Q259 157 233 153 L232 144 L229 154 L201 156 L173 154 L171 143 L168 154 Q139 157 117 152 Z',
+    messy:
+      'M111 131 C135 80 173 68 211 75 C251 76 282 108 288 140 L270 159 L273 137 L251 154 L252 133 L229 160 L221 138 L202 153 L194 127 L172 157 L176 135 L150 153 L154 133 L127 158 L131 140 L111 155 Z',
+    'braided-bangs':
+      'M112 131 C132 89 169 70 205 77 C193 110 167 137 132 157 L139 140 L117 156 Z M205 77 C244 74 278 104 288 143 L274 158 C256 137 224 108 205 77 Z',
   };
-  const rightLockStyle = {
-    transform: `rotate(${hairSwayX * 0.4}deg) scaleY(${1 + hairSwayY * 0.005})`,
-    transformOrigin: '294px 130px',
-    transition: 'transform 0.1s ease-out',
-  };
-  const ahogeRotation = hairSwayX * 0.8 + Math.sin(breath * Math.PI * 2) * 2.5;
-  const ahogeStyle = {
-    transform: `rotate(${ahogeRotation}deg)`,
-    transformOrigin: '200px 80px',
-    transition: 'transform 0.08s ease-out',
-  };
-
+  const straight = bangStyle === 'hime' || bangStyle === 'blunt-bangs';
+  const short = bangStyle === 'short' || bangStyle === 'spiky';
+  const lock = straight
+    ? 'M113 118 C109 156 111 194 118 224 L136 224 C127 188 125 153 131 126 Z'
+    : short
+      ? 'M112 120 C103 153 109 186 125 204 L123 184 L135 192 C126 163 125 140 133 121 Z'
+      : 'M113 117 C98 159 101 206 122 243 L129 221 L136 230 C126 199 117 154 134 123 Z';
+  const shadow = highlightColor === 'none';
   return (
-    <g id="front-hair" style={{ transform: `translateY(${offset}px)` }}>
-      {/* Cowlick strand (Ahoge) */}
-      {isAnime && (
-        <g style={ahogeStyle}>
-          <path
-            d="M200 80 C190 30, 150 25, 140 30 C165 42, 192 50, 203 76 Z"
-            fill={color}
-            stroke="rgba(0,0,0,0.15)"
-            strokeWidth="1.2"
-          />
-        </g>
-      )}
-
-      {/* Solid capping head shell */}
+    <g id="front-hair" style={{ transform: `translateY(${angleY * 0.1}px)` }}>
       <path
-        d="M102 140 
-           C100 45, 300 45, 298 140
-           Q200 165, 102 140 Z"
+        d={shell}
         fill={color}
+        stroke={shadow ? 'none' : 'rgba(28,23,45,0.5)'}
+        strokeWidth={artStyle === 'retro' ? 3 : 1.5}
       />
-
-      {isAnime && (
-        <g id="anime-hair-texture">
-          {/* Hair strand lines for texture */}
-          <path d="M 120 70 Q 150 140 140 160" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
-          <path d="M 150 60 Q 180 140 170 165" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
-          <path d="M 280 70 Q 250 140 260 160" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
-          <path d="M 250 60 Q 220 140 230 165" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" />
-        </g>
-      )}
-
-      {/* Bangs selection patterns */}
-      {bangStyle === 'classic' && (
-        <g id="bangs-classic">
-          <path
-            d="M106 130 
-               L115 149 L125 149
-               L135 153 L145 146
-               L160 155 L175 149
-               L190 156 L200 147 L210 156
-               L225 149 L240 155
-               L255 146 L265 153
-               L275 144 L285 149
-               L294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            <path d="M106 130 C100 160, 110 210, 122 230 L132 210 Q118 160, 120 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C300 160, 290 210, 278 230 L268 210 Q282 160, 280 135 Z" fill={color} />
+      {(['left', 'right'] as const).map((side) => (
+        <g key={side} transform={side === 'right' ? 'translate(400 0) scale(-1 1)' : undefined}>
+          <g
+            style={{
+              transform: `rotate(${hairSwayX * (side === 'left' ? 0.35 : -0.35)}deg) scaleY(${1 + hairSwayY * 0.004})`,
+              transformOrigin: '116px 125px',
+            }}
+          >
+            <path d={lock} fill={color} stroke={shadow ? 'none' : 'rgba(28,23,45,0.45)'} strokeWidth="1.3" />
+            {!shadow && (
+              <path
+                d={short ? 'M116 143 Q113 167 124 185' : 'M116 142 C110 175 118 205 126 220'}
+                stroke={highlightColor}
+                strokeWidth="3.5"
+                opacity="0.32"
+                fill="none"
+                strokeLinecap="round"
+              />
+            )}
           </g>
         </g>
-      )}
-
-      {bangStyle === 'side' && (
-        <g id="bangs-side">
+      ))}
+      <path
+        d={fringes[bangStyle]}
+        fill={color}
+        stroke={shadow ? 'none' : 'rgba(28,23,45,0.4)'}
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      {!shadow && (
+        <>
+          {/* Broad silk reflections follow the crown instead of a floating dotted halo. */}
+          <path d="M124 106 C145 82 173 72 199 74 C174 78 149 91 134 111 Z" fill={highlightColor} opacity="0.38" />
           <path
-            d="M106 130 
-               C115 137, 130 147, 150 144
-               C180 139, 210 165, 235 165
-               C260 165, 280 142, 294 130
-               L260 125 C220 128, 185 120, 155 122 Z"
-            fill={color}
+            d="M222 74 C249 79 268 92 279 112 L273 116 C258 96 242 85 222 74 Z"
+            fill={highlightColor}
+            opacity="0.24"
           />
-          <g style={leftLockStyle}>
-            <path d="M106 130 C100 160, 105 210, 118 240 L126 215 Q115 170, 124 133 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C300 170, 285 220, 280 250 L270 215 Q282 170, 280 133 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'center-part' && (
-        <g id="bangs-center-part">
           <path
-            d="M106 130 
-               C120 128, 140 136, 155 160 L165 147
-               C180 138, 190 138, 200 138
-               C210 138, 220 138, 235 147 L245 160
-               C260 136, 280 128, 294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            <path d="M106 130 C95 160, 112 210, 125 245 L135 220 Q120 170, 124 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C305 160, 288 210, 275 245 L265 220 Q280 170, 276 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'short' && (
-        <g id="bangs-short">
-          <path
-            d="M106 130 
-               L120 145 L130 140
-               L145 148 L155 140
-               L175 150 L185 140 L200 152 L215 140
-               L225 150 L235 140 L255 148
-               L270 140 L280 145
-               L294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            <path d="M106 130 C100 150, 108 180, 115 200 L123 185 Q115 150, 118 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C300 150, 292 180, 285 200 L277 185 Q285 150, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'hime' && (
-        <g id="bangs-hime">
-          <path
-            d="M106 130 
-               L108 148
-               H 292
-               L294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            <path d="M105 130 L107 225 L118 225 L116 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M295 130 L293 225 L282 225 L284 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'spiky' && (
-        <g id="bangs-spiky">
-          <path
-            d="M106 130 
-               L115 152 L124 133
-               L138 158 L146 135
-               L162 164 L172 138
-               L185 162 L195 128 L205 162
-               L218 138 L228 164
-               L244 135 L252 158
-               L266 133 L275 152
-               L294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            <path d="M106 130 Q92 170, 110 215 L120 195 Q108 160, 118 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 Q308 170, 290 215 L280 195 Q292 160, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'curly-bangs' && (
-        <g id="bangs-curly-bangs">
-          <path
-            d="M106 130
-               C112 147, 137 154, 142 144
-               C147 134, 153 150, 168 160
-               C183 170, 197 147, 200 147
-               C203 147, 217 170, 232 160
-               C247 150, 253 134, 258 144
-               C263 154, 288 147, 294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            <path d="M106 130 Q90 160, 102 205 Q115 220, 122 195 Q110 175, 118 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 Q310 160, 298 205 Q285 220, 278 195 Q290 175, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'cross-bangs' && (
-        <g id="bangs-cross-bangs">
-          <path
-            d="M106 130
-               L138 162 L146 152 L158 127
-               L178 167 L182 157 C190 147, 210 147, 218 157 L222 167
-               L242 127 L254 152 L262 162
-               L294 130 Z"
-            fill={color}
-          />
-          <path d="M192 120 L212 164 L198 164 L185 140 Z" fill={color} opacity="0.95" />
-          <path
-            d="M208 120 L188 164 L202 164 L215 140 Z"
-            fill={color}
-            opacity="0.95"
-            stroke={highlightColor}
-            strokeWidth="1"
-          />
-          <g style={leftLockStyle}>
-            <path d="M106 130 Q88 170, 115 225 L125 195 Q106 160, 118 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 Q312 170, 285 225 L275 195 Q294 160, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'wolf-cut' && (
-        <g id="bangs-wolf-cut">
-          {/* Layered choppy bangs with jagged edges */}
-          <path
-            d="M106 130
-               L118 155 L128 140
-               L140 160 L150 143
-               L165 165 L172 145
-               L185 163 L195 133 L205 163
-               L228 145 L235 165
-               L250 143 L260 160
-               L272 140 L282 155
-               L294 130 Z"
-            fill={color}
-          />
-          {/* Secondary choppy texture layer */}
-          <path d="M115 140 L128 160 L135 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
-          <path d="M265 140 L272 160 L280 147" stroke={highlightColor} strokeWidth="1.5" fill="none" opacity="0.5" />
-          <g style={leftLockStyle}>
-            {/* Side face-framing layers (longer pieces) */}
-            <path d="M106 130 Q88 175, 100 240 L112 215 Q98 170, 118 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 Q312 175, 300 240 L288 215 Q302 170, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'curtain-bangs' && (
-        <g id="bangs-curtain">
-          {/* Soft curtain bangs parted in the center, flowing to the sides */}
-          <path
-            d="M106 130
-               C118 133, 135 146, 155 160
-               C170 168, 185 156, 195 143
-               C198 138, 200 136, 200 136
-               C200 136, 202 138, 205 143
-               C215 156, 230 168, 245 160
-               C265 146, 282 133, 294 130 Z"
-            fill={color}
-          />
-          {/* Soft highlight curves */}
-          <path
-            d="M140 133 Q165 153, 190 143"
-            stroke={highlightColor}
+            d="M135 103 C148 90 167 81 183 79"
+            stroke="#ffffff"
             strokeWidth="2"
+            opacity="0.38"
             fill="none"
-            opacity="0.45"
             strokeLinecap="round"
           />
-          <path
-            d="M260 133 Q235 153, 210 143"
-            stroke={highlightColor}
-            strokeWidth="2"
-            fill="none"
-            opacity="0.45"
-            strokeLinecap="round"
-          />
-          <g style={leftLockStyle}>
-            {/* Side face-framing curtains */}
-            <path d="M106 130 C95 165, 100 210, 112 245 L122 220 Q108 175, 120 135 Z" fill={color} />
+          <g stroke="rgba(24,18,41,0.2)" strokeWidth="1.2" fill="none" strokeLinecap="round">
+            <path d="M184 80 Q157 93 145 121" />
+            <path d="M197 79 Q176 109 170 129" />
+            <path d="M220 82 Q249 103 258 126" />
           </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C305 165, 300 210, 288 245 L278 220 Q292 175, 280 135 Z" fill={color} />
-          </g>
-        </g>
+        </>
       )}
-
-      {bangStyle === 'asymmetric' && (
-        <g id="bangs-asymmetric">
-          {/* Long side on left, short on right */}
-          <path
-            d="M106 130
-               C115 135, 135 152, 155 168
-               C175 178, 195 155, 200 145
-               C205 138, 215 140, 230 148
-               C250 142, 275 135, 294 130 Z"
-            fill={color}
-          />
-          <g style={leftLockStyle}>
-            {/* Extra-long left face-framing piece */}
-            <path d="M106 130 C90 170, 95 230, 110 270 L122 240 Q105 185, 120 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C300 155, 292 175, 285 195 L277 180 Q285 155, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'blunt-bangs' && (
-        <g id="bangs-blunt">
-          {/* Perfectly straight-cut blunt bangs */}
-          <path
-            d="M106 130
-               L108 152 H292 L294 130 Z"
-            fill={color}
-          />
-          {/* Subtle strand separation lines */}
-          <line x1="140" y1="132" x2="140" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
-          <line x1="170" y1="132" x2="170" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
-          <line x1="200" y1="132" x2="200" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
-          <line x1="230" y1="132" x2="230" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
-          <line x1="260" y1="132" x2="260" y2="150" stroke="rgba(0,0,0,0.08)" strokeWidth="1.5" />
-          <g style={leftLockStyle}>
-            <path d="M106 130 C100 155, 108 195, 118 220 L126 200 Q114 165, 120 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 C300 155, 292 195, 282 220 L274 200 Q286 165, 280 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'messy' && (
-        <g id="bangs-messy">
-          {/* Chaotic strands going in different directions */}
-          <path
-            d="M106 130
-               L112 158 L120 142 L130 162
-               L140 138 L152 165 L160 140
-               L172 160 L180 135 L190 158
-               L200 130 L210 158 L220 135
-               L228 160 L240 140 L248 165
-               L260 138 L270 162 L280 142
-               L288 158 L294 130 Z"
-            fill={color}
-          />
-          {/* Extra wild strands */}
-          <path d="M150 130 Q145 118, 155 112" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round" />
-          <path d="M250 130 Q255 115, 245 110" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round" />
-          <g style={leftLockStyle}>
-            <path d="M106 130 Q85 175, 105 230 L118 205 Q100 165, 118 135 Z" fill={color} />
-          </g>
-          <g style={rightLockStyle}>
-            <path d="M294 130 Q315 175, 295 230 L282 205 Q300 165, 282 135 Z" fill={color} />
-          </g>
-        </g>
-      )}
-
-      {bangStyle === 'braided-bangs' && (
-        <g id="bangs-braided">
-          {/* Base bang shape */}
-          <path
-            d="M106 130
-               C120 128, 140 140, 160 155
-               C180 142, 195 138, 200 138
-               C205 138, 220 142, 240 155
-               C260 140, 280 128, 294 130 Z"
-            fill={color}
-          />
-          {/* Left side braided strand */}
-          <g style={leftLockStyle}>
-            <path d="M106 130 C95 160, 100 210, 112 250 L122 225 Q108 175, 120 135 Z" fill={color} />
-            <path
-              d="M110 150 Q100 160, 108 175 Q96 185, 104 200 Q92 210, 100 225 Q88 235, 96 245"
-              stroke="rgba(0,0,0,0.12)"
-              strokeWidth="2.5"
-              fill="none"
+      {bangStyle === 'braided-bangs' && !shadow && (
+        <g fill={color} stroke={highlightColor} strokeWidth="1.1">
+          {Array.from({ length: 7 }, (_, i) => (
+            <ellipse
+              key={i}
+              cx={220 + i * 8}
+              cy={91 + i * 7}
+              rx="7"
+              ry="4"
+              transform={`rotate(35 ${220 + i * 8} ${91 + i * 7})`}
             />
-          </g>
-          {/* Right side braided strand */}
-          <g style={rightLockStyle}>
-            <path d="M294 130 C305 160, 300 210, 288 250 L278 225 Q292 175, 280 135 Z" fill={color} />
-            <path
-              d="M290 150 Q300 160, 292 175 Q304 185, 296 200 Q308 210, 300 225 Q312 235, 304 245"
-              stroke="rgba(0,0,0,0.12)"
-              strokeWidth="2.5"
-              fill="none"
-            />
-          </g>
-          {/* Tiny braid ties */}
-          <rect x="94" y="242" width="10" height="5" fill={highlightColor} rx="1" />
-          <rect x="296" y="242" width="10" height="5" fill={highlightColor} rx="1" />
+          ))}
         </g>
       )}
-
-      {/* Glossy multi-segmented ring halo shine */}
-      {isAnime ? (
-        <g id="anime-hair-shine-halo">
-          <path
-            d="M125 116 Q200 90, 275 116"
-            stroke="rgba(0,0,0,0.18)"
-            strokeWidth="7"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <path
-            d="M130 112 Q200 86, 270 112"
-            stroke={highlightColor}
-            strokeWidth="5"
-            strokeDasharray="18 6 4 5 35 7"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.82"
-          />
-          <path d="M 160 102 L 165 92 L 170 102 L 165 106 Z" fill="#ffffff" opacity="0.9" />
-          <path d="M 235 102 L 240 92 L 245 102 L 240 106 Z" fill="#ffffff" opacity="0.9" />
-        </g>
-      ) : (
+      {['messy', 'wolf-cut', 'spiky'].includes(bangStyle) && (
         <path
-          d="M130 110 Q200 85, 270 110"
-          stroke={highlightColor}
-          strokeWidth="4"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.55"
+          d="M194 61 C179 40 172 40 158 43 C178 44 185 50 193 65"
+          fill={color}
+          stroke={shadow ? 'none' : 'rgba(28,23,45,0.4)'}
+          strokeWidth="1.2"
+          style={{
+            transform: `rotate(${hairSwayX * 0.6 + Math.sin(breath * Math.PI * 2)}deg)`,
+            transformOrigin: '194px 61px',
+          }}
         />
       )}
     </g>

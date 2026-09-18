@@ -43,6 +43,12 @@ export interface NamedCameraCalibrationProfile {
 }
 
 export interface AvatarConfig {
+  /** Missing in older projects, which continue to use the parametric renderer. */
+  modelId?: 'parametric' | 'miya-nocturne' | 'aurelia-3d';
+  modelFraming?: 'portrait' | 'halfbody' | 'full';
+  modelGlow?: boolean;
+  /** Model movement amplitude; 1 is the natural default. */
+  motionIntensity?: number;
   skinColor: string;
   eyeColor: string;
   pupilStyle:
@@ -196,6 +202,8 @@ export interface RigParams {
   hairSwayX?: number; // Physics secondary sway
   hairSwayY?: number; // Physics vertical bounce
   activeEmotion?: Emotion;
+  /** 0..1 transition weight; absent in legacy/static frames means full expression. */
+  emotionStrength?: number;
   tongueOut?: number; // 0 to 1
 }
 

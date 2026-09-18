@@ -6,19 +6,21 @@ import { FaceTracking } from './useFaceTracking';
 import { ActiveEmote } from './useEmotes';
 import { classifyEmotion } from '../lib/emotionClassifier';
 import { cameraResponseFromSmoothing, expressionResponseFromSmoothing } from '../lib/cameraCalibration';
-import { advanceHairPhysics, INITIAL_HAIR_PHYSICS } from '../lib/hairPhysics';
+import {
+  advanceAvatarMotion,
+  advanceEmotionTransition,
+  createAvatarMotionState,
+  MAX_MOTION_ELAPSED_MS,
+  responseForElapsed,
+} from '../lib/animation/avatarMotion';
 import { shouldPublishRigFrame } from '../lib/avatarFrame';
 import {
-  AUTO_LOOK,
-  BLINK,
-  BREATHING,
   CAMERA,
   DIZZINESS,
   DROWSINESS,
   EMOTION_STABILIZATION,
   EXPRESSION,
   MIC,
-  MOUSE,
   PITCH_COMPENSATION,
 } from '../engine/constants';
 
@@ -86,13 +88,9 @@ export function useAnimationEngine({
     onFrameRef.current = onFrame;
   }, [onFrame]);
 
-  // Blink state machine
-  const blinkTimer = useRef(0);
-  const isBlinking = useRef(false);
-  const blinkPhase = useRef(0); // 0 idle, 1 closing, 2 opening
-
-  // Spring-mass hair physics + angular look memory for inertial drag
-  const hairPhysicsRef = useRef(INITIAL_HAIR_PHYSICS);
+  // Gaze intentions, blink schedules and springs share one refresh-rate-independent clock.
+  const motionStateRef = useRef<ReturnType<typeof createAvatarMotionState> | null>(null);
+  const pointerTargetRef = useRef({ x: 0, y: 0 });
 
   // Emotion stabilization / interactive state
   const emotionFrameCountersRef = useRef<Record<string, number>>({});
@@ -105,17 +103,20 @@ export function useAnimationEngine({
   const starryTriggeredUntilRef = useRef<number>(0);
 
   useEffect(() => {
-    const cameraResponse = cameraResponseFromSmoothing(cameraCalibration.smoothing);
-    const expressionResponse = expressionResponseFromSmoothing(cameraCalibration.smoothing);
+    const paused = trackingMode === 'manual' && !micActive;
+    const cameraResponseAt60Hz = cameraResponseFromSmoothing(cameraCalibration.smoothing);
+    const expressionResponseAt60Hz = expressionResponseFromSmoothing(cameraCalibration.smoothing);
     const headSensitivity = cameraCalibration.headSensitivity;
     const expressionSensitivity = cameraCalibration.expressionSensitivity;
 
     lastTime.current = Date.now();
     const loop = () => {
       const now = Date.now();
-      const elapsed = now - lastTime.current;
+      const elapsed = Math.max(0, Math.min(MAX_MOTION_ELAPSED_MS, now - lastTime.current));
       lastTime.current = now;
-      const timeSec = now / 1000;
+      const cameraResponse = responseForElapsed(cameraResponseAt60Hz, elapsed);
+      const expressionResponse = responseForElapsed(expressionResponseAt60Hz, elapsed);
+      const frameUnits = elapsed / (1000 / 60);
 
       dizzinessAccumulatorRef.current = Math.max(
         0,
@@ -128,57 +129,35 @@ export function useAnimationEngine({
 
       const updated = (() => {
         const prev = rigRef.current;
-        const updated = { ...prev };
-        updated.activeEmotion = 'none';
 
-        // 1. Breathing
-        updated.breath = (timeSec * BREATHING.PHASE_SPEED) % 1.0;
-
-        // 2. Procedural blinking (off in camera mode — eyes are user-driven)
-        if (trackingMode !== 'camera') {
-          blinkTimer.current += elapsed;
-          if (!isBlinking.current && blinkTimer.current > Math.random() * BLINK.IDLE_RANDOM_MS + BLINK.IDLE_BASE_MS) {
-            isBlinking.current = true;
-            blinkPhase.current = 1;
-          }
-          if (isBlinking.current) {
-            if (blinkPhase.current === 1) {
-              updated.eyeLOpen = Math.max(0, updated.eyeLOpen - BLINK.CLOSE_STEP);
-              updated.eyeROpen = Math.max(0, updated.eyeROpen - BLINK.CLOSE_STEP);
-              if (updated.eyeLOpen === 0) blinkPhase.current = 2;
-            } else if (blinkPhase.current === 2) {
-              updated.eyeLOpen = Math.min(1.0, updated.eyeLOpen + BLINK.OPEN_STEP);
-              updated.eyeROpen = Math.min(1.0, updated.eyeROpen + BLINK.OPEN_STEP);
-              if (updated.eyeLOpen === 1.0) {
-                isBlinking.current = false;
-                blinkTimer.current = 0;
-              }
-            }
-          }
+        // A paused/manual pose must not keep breathing, blinking or moving its hair.
+        // Preserve identity between expression changes so idle frames do no DOM or
+        // React work. Slider updates already publish through commitRig themselves.
+        if (paused) {
+          const emote = emoteRef.current;
+          const emotion = emote && now < emote.until ? emote.emotion : 'none';
+          return (prev.activeEmotion ?? 'none') === emotion
+            ? prev
+            : { ...prev, activeEmotion: emotion, emotionStrength: emotion === 'none' ? 0 : 1 };
         }
 
-        // 3. Microphone mouth-flap sync
+        // Sample inputs once; the runtime follows targets without input-event pose jumps.
+        let voice: number | undefined;
         if (micActive && analyserRef.current && dataArrayRef.current) {
           analyserRef.current.getByteFrequencyData(dataArrayRef.current);
           let sum = 0;
           for (let i = 0; i < dataArrayRef.current.length; i++) sum += dataArrayRef.current[i];
           const average = sum / dataArrayRef.current.length;
-          const volumeOpenVal = Math.min(1, average / MIC.VOLUME_FULL_OPEN);
-          updated.mouthOpen = volumeOpenVal;
-          updated.mouthForm = MIC.FORM_BASE + volumeOpenVal * MIC.FORM_VOLUME_GAIN;
+          voice = Math.min(1, average / MIC.VOLUME_FULL_OPEN);
         }
-
-        // 4. AFK auto-look
-        if (trackingMode === 'auto') {
-          updated.angleX = Math.sin(timeSec * AUTO_LOOK.YAW_FREQ) * AUTO_LOOK.YAW_AMP;
-          updated.angleY = Math.cos(timeSec * AUTO_LOOK.PITCH_FREQ) * AUTO_LOOK.PITCH_AMP;
-          updated.angleZ = Math.sin(timeSec * AUTO_LOOK.ROLL_FREQ) * AUTO_LOOK.ROLL_AMP;
-          updated.bodyX = Math.sin(timeSec * AUTO_LOOK.BODY_FREQ) * AUTO_LOOK.BODY_AMP;
-          updated.pupilX = Math.sin(timeSec * AUTO_LOOK.PUPIL_X_FREQ) * AUTO_LOOK.PUPIL_X_AMP;
-          updated.pupilY = Math.cos(timeSec * AUTO_LOOK.PUPIL_Y_FREQ) * AUTO_LOOK.PUPIL_Y_AMP;
-          if (!micActive)
-            updated.mouthOpen = Math.max(0, Math.sin(timeSec * AUTO_LOOK.MOUTH_FREQ) * AUTO_LOOK.MOUTH_AMP);
-        }
+        const motion = advanceAvatarMotion(
+          motionStateRef.current ?? createAvatarMotionState(prev),
+          prev,
+          { mode: trackingMode, pointer: pointerTargetRef.current, voice },
+          elapsed,
+        );
+        motionStateRef.current = motion.state;
+        const updated = { ...motion.rig, activeEmotion: 'none' as Emotion };
 
         if (trackingMode !== 'camera') {
           previousCheekDistRef.current = null;
@@ -246,7 +225,9 @@ export function useAnimationEngine({
 
                 updated.pupilX = (updated.angleX / CAMERA.YAW_LIMIT) * CAMERA.PUPIL_X_FACTOR;
                 updated.pupilY = (updated.angleY / CAMERA.PITCH_LIMIT) * CAMERA.PUPIL_Y_FACTOR;
-                updated.bodyX += (updated.angleX * CAMERA.BODY_FOLLOW - updated.bodyX) * CAMERA.BODY_RESPONSE;
+                updated.bodyX +=
+                  (updated.angleX * CAMERA.BODY_FOLLOW - updated.bodyX) *
+                  responseForElapsed(CAMERA.BODY_RESPONSE, elapsed);
               }
 
               if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
@@ -318,12 +299,12 @@ export function useAnimationEngine({
 
                 // Dizziness: only fast deliberate head shaking accumulates
                 const headVelocity =
-                  Math.abs(updated.angleX - hairPhysicsRef.current.previousAngleX) +
-                  Math.abs(updated.angleY - hairPhysicsRef.current.previousAngleY);
+                  (Math.abs(updated.angleX - prev.angleX) + Math.abs(updated.angleY - prev.angleY)) /
+                  Math.max(0.01, frameUnits);
                 if (headVelocity > DIZZINESS.VELOCITY_THRESHOLD) {
                   dizzinessAccumulatorRef.current = Math.min(
                     DIZZINESS.MAX,
-                    dizzinessAccumulatorRef.current + headVelocity * DIZZINESS.VELOCITY_GAIN,
+                    dizzinessAccumulatorRef.current + headVelocity * DIZZINESS.VELOCITY_GAIN * frameUnits,
                   );
                 }
                 if (dizzinessAccumulatorRef.current > DIZZINESS.TRIGGER) {
@@ -340,7 +321,7 @@ export function useAnimationEngine({
                 if (blinkAvg > DROWSINESS.BLINK_MIN && blinkAvg < DROWSINESS.BLINK_MAX) {
                   drowsinessAccumulatorRef.current = Math.min(
                     DROWSINESS.MAX,
-                    drowsinessAccumulatorRef.current + DROWSINESS.GAIN,
+                    drowsinessAccumulatorRef.current + DROWSINESS.GAIN * frameUnits,
                   );
                 }
                 const isTrulySleepy =
@@ -366,14 +347,14 @@ export function useAnimationEngine({
                   isLeaningIn,
                 });
 
-                // Debounce / hysteresis via per-emotion frame counters
+                // Confidence is measured in equivalent 60 Hz frames, not actual RAF count.
                 const counters = emotionFrameCountersRef.current;
                 ALL_EMOTIONS.forEach((emo) => {
                   if (counters[emo] === undefined) counters[emo] = 0;
                   counters[emo] =
                     emo === detected
-                      ? Math.min(EMOTION_STABILIZATION.COUNTER_MAX, counters[emo] + 1)
-                      : Math.max(0, counters[emo] - 1);
+                      ? Math.min(EMOTION_STABILIZATION.COUNTER_MAX, counters[emo] + frameUnits)
+                      : Math.max(0, counters[emo] - frameUnits);
                 });
 
                 const currentTime = Date.now();
@@ -421,26 +402,26 @@ export function useAnimationEngine({
           }
         }
 
-        // 6. Spring-mass hair physics with look-velocity impulses
-        const hairPhysics = advanceHairPhysics(hairPhysicsRef.current, updated);
-        hairPhysicsRef.current = hairPhysics;
-        updated.hairSwayX = hairPhysics.swayX;
-        updated.hairSwayY = hairPhysics.swayY;
-
-        // 7. Manual emote override (streamer hotkeys / panel) wins while active.
+        // Manual emote override (streamer hotkeys / panel) wins while active.
         const emote = emoteRef.current;
         if (emote && now < emote.until) {
           updated.activeEmotion = emote.emotion;
         }
 
+        Object.assign(updated, advanceEmotionTransition(prev, updated.activeEmotion, elapsed));
+
         return updated;
       })();
 
-      rigRef.current = updated;
-      onFrameRef.current?.(updated);
-      if (shouldPublishRigFrame(lastPublishedAt.current, now)) {
-        lastPublishedAt.current = now;
-        setRig(updated);
+      if (updated !== rigRef.current) {
+        rigRef.current = updated;
+        onFrameRef.current?.(updated);
+        // A paused expression changes only once. Publish immediately rather than
+        // losing it when it arrives inside the live-animation throttle window.
+        if (paused || shouldPublishRigFrame(lastPublishedAt.current, now)) {
+          lastPublishedAt.current = now;
+          setRig(updated);
+        }
       }
 
       animationFrameId.current = requestAnimationFrame(loop);
@@ -463,28 +444,18 @@ export function useAnimationEngine({
     setRig,
   ]);
 
-  // Mouse-driven head tracking
+  // Pointer events set intention only. RAF gives eyes, head and body their own response.
   useEffect(() => {
     if (trackingMode !== 'mouse') return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const dx = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
-      const dy = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-      const updated = {
-        ...rigRef.current,
-        angleX: dx * MOUSE.YAW,
-        angleY: -dy * MOUSE.PITCH,
-        angleZ: dx * MOUSE.ROLL,
-        pupilX: dx * MOUSE.PUPIL_X,
-        pupilY: dy * MOUSE.PUPIL_Y,
-        bodyX: dx * MOUSE.BODY_X,
+      pointerTargetRef.current = {
+        x: clamp((e.clientX - window.innerWidth / 2) / Math.max(1, window.innerWidth / 2), -1, 1),
+        y: clamp((e.clientY - window.innerHeight / 2) / Math.max(1, window.innerHeight / 2), -1, 1),
       };
-      rigRef.current = updated;
-      onFrameRef.current?.(updated);
-      setRig(updated);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [trackingMode, rigRef, setRig]);
+  }, [trackingMode]);
 }

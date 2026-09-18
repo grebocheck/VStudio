@@ -1,3 +1,4 @@
+import { useSvgScope } from './SvgScope';
 import React from 'react';
 import { Emotion } from '../../types';
 
@@ -98,6 +99,7 @@ export const EyeSVG: React.FC<{
   irisStyle = 'solid',
   eyeHighlightStyle = 'standard',
 }) => {
+  const { svgId, svgUrl } = useSvgScope();
   // Center coordinates: Symmetrical local coordinates where both eyes are defined at 156.
   // The right eye utilizes scale(-1, 1) translate(-400, 0) to align itself perfectly at 244.
   const cx = 156;
@@ -199,13 +201,13 @@ export const EyeSVG: React.FC<{
       return (
         <g>
           <defs>
-            <radialGradient id={`iris-galaxy-${side}`} cx="0.5" cy="0.45" r="0.65">
+            <radialGradient id={svgId(`iris-galaxy-${side}`)} cx="0.5" cy="0.45" r="0.65">
               <stop offset="0%" stopColor="#312e81" stopOpacity="0.0" />
               <stop offset="55%" stopColor="#1e1b4b" stopOpacity="0.55" />
               <stop offset="100%" stopColor="#0c0a2a" stopOpacity="0.9" />
             </radialGradient>
           </defs>
-          <ellipse cx={icx} cy={icy} rx={irx} ry={iry} fill={`url(#iris-galaxy-${side})`} />
+          <ellipse cx={icx} cy={icy} rx={irx} ry={iry} fill={svgUrl(`url(#iris-galaxy-${side})`)} />
           <path
             d={`M ${icx - irx * 0.55} ${icy + iry * 0.25} Q ${icx} ${icy - iry * 0.7}, ${icx + irx * 0.6} ${icy - iry * 0.05}`}
             stroke="rgba(196,181,253,0.55)"
@@ -252,7 +254,7 @@ export const EyeSVG: React.FC<{
           <circle
             cx={cx + px * -0.2 + 6.5 * scale}
             cy={cy + py * -0.2 + 6 * scale}
-            r={1.6 * scale}
+            r={1.1 * scale}
             fill="#ffffff"
             opacity="0.7"
           />
@@ -265,21 +267,21 @@ export const EyeSVG: React.FC<{
         <circle
           cx={cx + px * 0.4 - 5.5 * scale}
           cy={cy + py * 0.4 - 6.5 * scale}
-          r={5.2 * scale}
+          r={3.5 * scale}
           fill="#ffffff"
           opacity="0.96"
         />
         <circle
           cx={cx + px * -0.2 + 6.5 * scale}
           cy={cy + py * -0.2 + 5 * scale}
-          r={3.2 * scale}
+          r={1.8 * scale}
           fill="#ffffff"
           opacity="0.88"
         />
         <circle
           cx={cx + px * 0.4 - 7 * scale}
           cy={cy + py * 0.4 + 6.5 * scale}
-          r={1.6 * scale}
+          r={1.1 * scale}
           fill="#ffffff"
           opacity="0.65"
         />
@@ -372,15 +374,15 @@ export const EyeSVG: React.FC<{
   }
 
   if (activeEmotion === 'scared' || activeEmotion === 'shocked') {
-    const shakeOffsetX = Math.sin(Date.now() * 0.18) * 0.8;
-    const shakeOffsetY = Math.cos(Date.now() * 0.18) * 0.8;
+    const shakeOffsetX = Math.sin(breath * Math.PI * 14) * 0.8;
+    const shakeOffsetY = Math.cos(breath * Math.PI * 14) * 0.8;
 
     if (artStyle === 'anime') {
       // High-fidelity wide-open surprised anime eye with shrunken iris and shivering dilated pupils!
       return (
         <g transform={transformEye}>
           <defs>
-            <linearGradient id={`anime-iris-overlay-shocked-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={svgId(`anime-iris-overlay-shocked-${isLeft ? 'l' : 'r'}`)} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#0f172a" stopOpacity="0.75" />
               <stop offset="45%" stopColor="#0f172a" stopOpacity="0.05" />
               <stop offset="75%" stopColor="#ffffff" stopOpacity="0.0" />
@@ -391,7 +393,7 @@ export const EyeSVG: React.FC<{
           {/* Double eyelid crease line */}
           <path
             d={defaultShape.creasePath}
-            stroke="rgba(30, 25, 22, 0.45)"
+            stroke="rgba(80, 45, 46, 0.25)"
             strokeWidth="1.5"
             fill="none"
             strokeLinecap="round"
@@ -405,19 +407,19 @@ export const EyeSVG: React.FC<{
             strokeWidth="6"
             strokeLinecap="round"
             style={{ transform: 'translate(0px, 3px)' }}
-            clipPath={`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`}
+            clipPath={svgUrl(`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`)}
           />
 
           {/* Sclera / Eyeball White */}
-          <path d={defaultShape.eyeSlitPath} fill="url(#eye-sclera)" />
+          <path d={defaultShape.eyeSlitPath} fill={svgUrl('url(#eye-sclera)')} />
 
           {/* Top ambient occlusion shadow perfectly conforming to the eye slit */}
-          <path d={defaultShape.eyeSlitPath} fill={`url(#anime-sclera-shadow-${isLeft ? 'l' : 'r'})`} />
+          <path d={defaultShape.eyeSlitPath} fill={svgUrl('url(#eye-occlusion)')} />
 
           {/* Masked Iris rendering with shivering translation */}
-          <g clipPath={`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`}>
+          <g clipPath={svgUrl(`url(#anime-eye-clip-shocked-${isLeft ? 'l' : 'r'})`)}>
             <defs>
-              <clipPath id={`anime-eye-clip-shocked-${isLeft ? 'l' : 'r'}`}>
+              <clipPath id={svgId(`anime-eye-clip-shocked-${isLeft ? 'l' : 'r'}`)}>
                 <path d={defaultShape.eyeSlitPath} />
               </clipPath>
             </defs>
@@ -431,7 +433,7 @@ export const EyeSVG: React.FC<{
               cy={cy + py + shakeOffsetY}
               rx="12.5"
               ry="15.5"
-              fill={`url(#anime-iris-overlay-shocked-${isLeft ? 'l' : 'r'})`}
+              fill={svgUrl(`url(#anime-iris-overlay-shocked-${isLeft ? 'l' : 'r'})`)}
             />
 
             {/* Dark lens shadow projection at the top half */}
@@ -472,7 +474,7 @@ export const EyeSVG: React.FC<{
                 <path
                   d={`M ${cx} ${cy + 6}
                      C ${cx - 7.5} ${cy}, ${cx - 8.5} ${cy - 6.5}, ${cx} ${cy - 4.5}
-                     C ${cx + 8.5} ${cy - 6.5}, ${cx} ${cy + 6} Z`}
+                     C ${cx + 8.5} ${cy - 6.5}, ${cx + 7.5} ${cy}, ${cx} ${cy + 6} Z`}
                   fill={pupilColor}
                 />
               )}
@@ -515,9 +517,9 @@ export const EyeSVG: React.FC<{
       return (
         <g transform={transformEye}>
           <ellipse cx={cx} cy={cy} rx="20" ry="14" fill="#ffffff" stroke="rgba(28, 25, 22, 0.2)" strokeWidth="1.2" />
-          <g clipPath={`url(#eye-clip-shocked-${isLeft ? 'l' : 'r'})`}>
+          <g clipPath={svgUrl(`url(#eye-clip-shocked-${isLeft ? 'l' : 'r'})`)}>
             <defs>
-              <clipPath id={`eye-clip-shocked-${isLeft ? 'l' : 'r'}`}>
+              <clipPath id={svgId(`eye-clip-shocked-${isLeft ? 'l' : 'r'}`)}>
                 <ellipse cx={cx} cy={cy} rx="19.5" ry="13.5" />
               </clipPath>
             </defs>
@@ -542,9 +544,9 @@ export const EyeSVG: React.FC<{
       <g transform={transformEye}>
         {/* Comfortable half-lidded sleepy expression */}
         <ellipse cx={cx} cy={cy + 2} rx="21" ry="10" fill="#ffffff" />
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`)}>
           <defs>
-            <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
+            <clipPath id={svgId(`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`)}>
               <ellipse cx={cx} cy={cy + 2} rx="21" ry="10" />
             </clipPath>
           </defs>
@@ -575,9 +577,9 @@ export const EyeSVG: React.FC<{
         <path d={defaultShape.eyeSlitPath} fill="#ffffff" />
 
         {/* Big bright cute anime iris gazing nervously inwards/down */}
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`)}>
           <defs>
-            <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
+            <clipPath id={svgId(`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`)}>
               <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
@@ -671,7 +673,7 @@ export const EyeSVG: React.FC<{
         {/* Double eyelid crease line */}
         <path
           d={defaultShape.creasePath}
-          stroke="rgba(30, 25, 22, 0.45)"
+          stroke="rgba(80, 45, 46, 0.25)"
           strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
@@ -684,20 +686,26 @@ export const EyeSVG: React.FC<{
         <path d={defaultShape.eyeSlitPath} fill="rgba(15, 23, 42, 0.08)" />
 
         {/* Masked Iris */}
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`)}>
           <defs>
-            <linearGradient id={`love-iris-grad-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={svgId(`love-iris-grad-${isLeft ? 'l' : 'r'}`)} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#9d174d" /> {/* Deep dark magenta */}
               <stop offset="60%" stopColor="#f43f5e" /> {/* Sweet rose pink */}
               <stop offset="100%" stopColor="#fda4af" /> {/* Light bright pink */}
             </linearGradient>
-            <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
+            <clipPath id={svgId(`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`)}>
               <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
 
           {/* Saturated hot pink/rose iris backing with a rich depth gradient */}
-          <ellipse cx={cx + px} cy={cy + py} rx="17.5" ry="20" fill={`url(#love-iris-grad-${isLeft ? 'l' : 'r'})`} />
+          <ellipse
+            cx={cx + px}
+            cy={cy + py}
+            rx="17.5"
+            ry="20"
+            fill={svgUrl(`url(#love-iris-grad-${isLeft ? 'l' : 'r'})`)}
+          />
 
           {/* Heart shaped pupil - Symmetrical vector fix */}
           <path
@@ -735,7 +743,7 @@ export const EyeSVG: React.FC<{
         {/* Double eyelid crease line */}
         <path
           d={defaultShape.creasePath}
-          stroke="rgba(30, 25, 22, 0.45)"
+          stroke="rgba(80, 45, 46, 0.25)"
           strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
@@ -748,9 +756,9 @@ export const EyeSVG: React.FC<{
         <path d={defaultShape.eyeSlitPath} fill="rgba(15, 23, 42, 0.08)" />
 
         {/* Masked Iris */}
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`)}>
           <defs>
-            <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
+            <clipPath id={svgId(`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`)}>
               <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
@@ -803,7 +811,7 @@ export const EyeSVG: React.FC<{
         {/* Double eyelid crease line */}
         <path
           d={defaultShape.creasePath}
-          stroke="rgba(30, 25, 22, 0.45)"
+          stroke="rgba(80, 45, 46, 0.25)"
           strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
@@ -816,9 +824,9 @@ export const EyeSVG: React.FC<{
         <path d={defaultShape.eyeSlitPath} fill="rgba(15, 23, 42, 0.2)" />
 
         {/* Masked Iris */}
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion})`)}>
           <defs>
-            <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`}>
+            <clipPath id={svgId(`anime-eye-clip-${isLeft ? 'l' : 'r'}-${activeEmotion}`)}>
               <path d={defaultShape.eyeSlitPath} />
             </clipPath>
           </defs>
@@ -985,28 +993,24 @@ export const EyeSVG: React.FC<{
       }
     };
     const shapeData = getEyeShapeData();
+    const upperLidPath = shapeData.eyeSlitPath.split(' C ').slice(0, 2).join(' C ');
 
     return (
       <g transform={transformEye}>
         <defs>
           {/* Dynamic multi-stage gradient that automatically adds premium light-refraction depth to any eye color */}
-          <linearGradient id={`anime-iris-overlay-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={svgId(`anime-iris-overlay-${isLeft ? 'l' : 'r'}`)} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#0f172a" stopOpacity="0.75" />
             <stop offset="45%" stopColor="#0f172a" stopOpacity="0.05" />
             <stop offset="75%" stopColor="#ffffff" stopOpacity="0.0" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0.55" />
-          </linearGradient>
-
-          <linearGradient id={`anime-sclera-shadow-${isLeft ? 'l' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(15, 23, 42, 0.4)" />
-            <stop offset="35%" stopColor="rgba(15, 23, 42, 0.0)" />
           </linearGradient>
         </defs>
 
         {/* Double eyelid crease line */}
         <path
           d={shapeData.creasePath}
-          stroke="rgba(30, 25, 22, 0.45)"
+          stroke="rgba(80, 45, 46, 0.25)"
           strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
@@ -1020,17 +1024,17 @@ export const EyeSVG: React.FC<{
           strokeWidth="6"
           strokeLinecap="round"
           style={{ transform: 'translate(0px, 3px)' }}
-          clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}
+          clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`)}
         />
 
         {/* Sclera / Eyeball White: Perfectly matching the eye slit! */}
-        <path d={shapeData.eyeSlitPath} fill="url(#eye-sclera)" />
+        <path d={shapeData.eyeSlitPath} fill={svgUrl('url(#eye-sclera)')} />
 
         {/* Top ambient occlusion shadow perfectly conforming to the eye slit */}
-        <path d={shapeData.eyeSlitPath} fill={`url(#anime-sclera-shadow-${isLeft ? 'l' : 'r'})`} />
+        <path d={shapeData.eyeSlitPath} fill={svgUrl('url(#eye-occlusion)')} />
 
         {/* Dynamic Eyelid Ambient Shadow */}
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`)}>
           <path
             d={`M ${cx - 30} ${cy - 30} 
                 L ${cx + 30} ${cy - 30} 
@@ -1043,9 +1047,9 @@ export const EyeSVG: React.FC<{
         </g>
 
         {/* Masked Iris rendering perfectly bounded by the eye slit path */}
-        <g clipPath={`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`}>
+        <g clipPath={svgUrl(`url(#anime-eye-clip-${isLeft ? 'l' : 'r'})`)}>
           <defs>
-            <clipPath id={`anime-eye-clip-${isLeft ? 'l' : 'r'}`}>
+            <clipPath id={svgId(`anime-eye-clip-${isLeft ? 'l' : 'r'}`)}>
               <path d={shapeData.eyeSlitPath} />
             </clipPath>
           </defs>
@@ -1059,7 +1063,7 @@ export const EyeSVG: React.FC<{
             cy={cy + py}
             rx={rxIris}
             ry={ryIris}
-            fill={`url(#anime-iris-overlay-${isLeft ? 'l' : 'r'})`}
+            fill={svgUrl(`url(#anime-iris-overlay-${isLeft ? 'l' : 'r'})`)}
           />
 
           {/* Iris texture detail (organic fibers / gemstone facets / galaxy nebula) */}
@@ -1102,7 +1106,7 @@ export const EyeSVG: React.FC<{
               <path
                 d={`M ${cx + px} ${cy + py + 6}
                    C ${cx + px - 7.5} ${cy + py}, ${cx + px - 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py - 4.5}
-                   C ${cx + px + 8.5} ${cy + py - 6.5}, ${cx + px} ${cy + py + 6} Z`}
+                   C ${cx + px + 8.5} ${cy + py - 6.5}, ${cx + px + 7.5} ${cy + py}, ${cx + px} ${cy + py + 6} Z`}
                 fill={pupilColor}
               />
             ) : pupilStyle === 'diamond' ? (
@@ -1221,8 +1225,13 @@ export const EyeSVG: React.FC<{
           <path d={shapeData.eyeSlitPath} stroke="#1c1917" strokeWidth="1.5" fill="none" strokeLinecap="round" />
         ) : eyelashStyle === 'minimal' ? (
           <path d={shapeData.eyeSlitPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        ) : eyelashStyle === 'natural' ? (
+          <g fill="none" stroke="#342936" strokeLinecap="round" strokeLinejoin="round">
+            <path d={upperLidPath} strokeWidth="2.8" />
+            <path d={`M ${cx - 24} ${cy - 1} Q ${cx - 29} ${cy - 3}, ${cx - 30} ${cy - 7}`} strokeWidth="2.2" />
+          </g>
         ) : (
-          <path d={shapeData.lashPath} fill="#1c1917" stroke="none" />
+          <path d={shapeData.lashPath} fill="#342936" stroke="none" />
         )}
 
         {eyelashStyle === 'glamour' && (
@@ -1237,7 +1246,7 @@ export const EyeSVG: React.FC<{
         )}
 
         {/* Lower eyelid line sweep - perfectly frames the bottom of the sclera */}
-        <path d={shapeData.lowerLidPath} stroke="#1c1917" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d={shapeData.lowerLidPath} stroke="#7c5360" strokeWidth="1.2" fill="none" strokeLinecap="round" />
       </g>
     );
   }
@@ -1253,9 +1262,9 @@ export const EyeSVG: React.FC<{
       <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="#ffffff" stroke="rgba(28, 25, 22, 0.2)" strokeWidth="1.2" />
 
       {/* Masked Iris & Pupil */}
-      <g clipPath={`url(#eye-clip-${isLeft ? 'l' : 'r'})`}>
+      <g clipPath={svgUrl(`url(#eye-clip-${isLeft ? 'l' : 'r'})`)}>
         <defs>
-          <clipPath id={`eye-clip-${isLeft ? 'l' : 'r'}`}>
+          <clipPath id={svgId(`eye-clip-${isLeft ? 'l' : 'r'}`)}>
             <ellipse cx={cx} cy={cy} rx={rx - 0.5} ry={ry - 0.5} />
           </clipPath>
         </defs>

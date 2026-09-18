@@ -1,3 +1,4 @@
+import { useSvgScope } from './SvgScope';
 import React from 'react';
 import { AvatarConfig } from '../../types';
 
@@ -7,6 +8,7 @@ interface AvatarBackgroundProps {
 }
 
 export const AvatarBackground: React.FC<AvatarBackgroundProps> = ({ backgroundStyle, transparent }) => {
+  const { svgId, svgUrl } = useSvgScope();
   // In overlay mode keep the canvas transparent unless the user explicitly
   // wants a chroma-key fill so OBS Browser Source compositing works.
   if (transparent && backgroundStyle !== 'green-screen') return <g data-avatar-background="true" />;
@@ -62,11 +64,11 @@ export const AvatarBackground: React.FC<AvatarBackgroundProps> = ({ backgroundSt
       return (
         <g data-avatar-background="true">
           <rect width="400" height="400" fill="#07070a" />
-          <radialGradient id="studio-grad" cx="50%" cy="50%" r="50%">
+          <radialGradient id={svgId('studio-grad')} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#121217" />
             <stop offset="100%" stopColor="#07070a" />
           </radialGradient>
-          <rect width="400" height="400" fill="url(#studio-grad)" />
+          <rect width="400" height="400" fill={svgUrl('url(#studio-grad)')} />
           <circle cx="200" cy="200" r="120" fill="#6366f1" opacity="0.04" />
         </g>
       );

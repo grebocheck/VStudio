@@ -101,7 +101,10 @@ export interface TelegramStickerPack {
     durationSeconds: typeof TELEGRAM_STICKER_DURATION_SECONDS;
     background: 'transparent';
     maxTgsBytes: number;
+    /** Local structural validation only; Telegram acceptance is not verified. */
     validated: true;
+    validationScope: 'local-structure-and-size';
+    telegramPublished: false;
     stickers: TelegramStickerFile[];
     note: string;
   };

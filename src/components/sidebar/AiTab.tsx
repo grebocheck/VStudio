@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, Loader2, Info } from 'lucide-react';
 import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme/ThemeContext';
@@ -12,7 +12,19 @@ export interface AiTabProps {
 }
 
 export const AiTab: React.FC<AiTabProps> = ({ aiPrompt, setAiPrompt, aiGenerating, aiError, handleAiGenerate }) => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
+  const en = language === 'en';
+  const [available, setAvailable] = useState<boolean | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/healthz', { signal: controller.signal })
+      .then((response) => response.json())
+      .then((health: { ai?: boolean }) => {
+        if (typeof health.ai === 'boolean') setAvailable(health.ai);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const { theme } = useTheme();
 
   return (
@@ -31,11 +43,43 @@ export const AiTab: React.FC<AiTabProps> = ({ aiPrompt, setAiPrompt, aiGeneratin
         </p>
       </div>
 
+      {available === false && (
+        <p className="rounded-lg border border-slate-400/30 p-3 text-xs leading-relaxed" role="status">
+          {en
+            ? 'AI styling is not connected on this server. You can still build a complete character using the presets and editor.'
+            : 'ШІ-стиліст не підключений на цьому сервері. Ви можете створити персонажа за допомогою пресетів і редактора.'}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {(en
+          ? [
+              'Cosy cat streamer in a lavender hoodie',
+              'Forest elf with mint hair and gold eyes',
+              'Gothic vampire in black and burgundy',
+            ]
+          : [
+              'Затишна стримерка-кішка в лавандовому худі',
+              'Лісовий ельф із м’ятним волоссям і золотими очима',
+              'Готична вампірка у чорному та бордовому',
+            ]
+        ).map((example) => (
+          <button
+            className="studio-button text-left"
+            key={example}
+            onClick={() => setAiPrompt(example)}
+            disabled={aiGenerating}
+          >
+            {example}
+          </button>
+        ))}
+      </div>
       <div className="space-y-2">
         <textarea
           id="ai-avatar-prompt"
           aria-label={t.rightSidebar.aiPlaceholder}
           value={aiPrompt}
+          maxLength={600}
+          disabled={aiGenerating}
           onChange={(e) => setAiPrompt(e.target.value)}
           placeholder={t.rightSidebar.aiPlaceholder}
           className={`w-full text-xs p-3 rounded-sm border placeholder:text-slate-400/55 dark:placeholder:text-white/20 focus:outline-none focus:border-yellow-500/55 h-32 resize-none leading-relaxed font-sans ${
@@ -44,6 +88,7 @@ export const AiTab: React.FC<AiTabProps> = ({ aiPrompt, setAiPrompt, aiGeneratin
               : 'bg-slate-50 text-slate-800 border-slate-205'
           }`}
         />
+        <p className="text-right text-xs text-slate-500 dark:text-slate-400">{aiPrompt.length}/600</p>
       </div>
 
       {aiError && (
@@ -60,7 +105,7 @@ export const AiTab: React.FC<AiTabProps> = ({ aiPrompt, setAiPrompt, aiGeneratin
         <button
           id="generate-ai-btn"
           onClick={handleAiGenerate}
-          disabled={aiGenerating || !aiPrompt.trim()}
+          disabled={available === false || aiGenerating || !aiPrompt.trim()}
           aria-busy={aiGenerating}
           className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 hover:scale-[1.01] text-white disabled:opacity-40 font-bold text-xs rounded-sm flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:pointer-events-none uppercase tracking-wider"
         >

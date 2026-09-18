@@ -7,28 +7,26 @@
 //
 // This module pulls in React + react-dom/server, so it is only imported on the
 // vector-export path (browser). The pure assembly lives in ./svgToLottie.
-import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { VTuberAvatar } from '../../components/VTuberAvatar';
-import { INITIAL_RIG } from '../../presets';
+import { avatarToSvgElement } from './avatarSvg';
 import { extractRigNodeLayers, lottieFromRigLayers } from './svgToLottie';
 import type { LottieValue, TelegramStickerSpec } from './core';
 import type { AvatarConfig } from '../../types';
 
-/** Render the avatar (with the emotion's expression) and return its SVG root. */
-export function avatarToSvgElement(config: AvatarConfig, spec: TelegramStickerSpec): Element {
-  if (typeof DOMParser === 'undefined') {
-    throw new Error('SVG sticker conversion requires a browser (DOM) environment.');
-  }
-  const rig = { ...INITIAL_RIG, activeEmotion: spec.emotion };
-  const markup = renderToStaticMarkup(React.createElement(VTuberAvatar, { config, rig, transparent: true }));
-  const svg = new DOMParser().parseFromString(markup, 'text/html').querySelector('svg');
-  if (!svg) throw new Error('Avatar did not render an SVG root.');
-  return svg;
-}
+export { avatarToSvgElement } from './avatarSvg';
 
 /** Full vector build: avatar SVG → Lottie, for one emotion. */
 export function buildTelegramStickerLottieFromAvatar(config: AvatarConfig, spec: TelegramStickerSpec): LottieValue {
+  if (config.modelId === 'aurelia-3d') {
+    throw new Error('Aurelia is a 3D model. Export PNG stickers; TGS supports vector artwork only.');
+  }
+  if (config.modelId === 'miya-nocturne') {
+    throw new Error(
+      'Miya Nocturne uses illustrated artwork. Export PNG stickers to keep every detail; TGS supports vectors only.',
+    );
+  }
   const svg = avatarToSvgElement(config, spec);
+  if (svg.querySelector('image')) {
+    throw new Error('TGS cannot include illustrated image layers. Export this model as PNG stickers.');
+  }
   return lottieFromRigLayers(extractRigNodeLayers(svg), config, spec);
 }

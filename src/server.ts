@@ -4,7 +4,8 @@ import path from 'path';
 import http from 'http';
 import dotenv from 'dotenv';
 import { GoogleGenAI, Type } from '@google/genai';
-import { WebSocketServer, WebSocket } from 'ws';
+import { WebSocketServer } from 'ws';
+import { OverlayRooms } from './lib/overlayRooms';
 import { randomUUID } from 'node:crypto';
 
 dotenv.config({ quiet: true });
@@ -396,52 +397,17 @@ function setupOverlayRelay(server: http.Server) {
       }
     },
   });
-  const overlays = new Set<WebSocket>();
-  const editors = new Set<WebSocket>();
-  let lastConfig: unknown = null;
-  let lastRig: unknown = null;
-
-  const broadcastStatus = () => {
-    const msg = JSON.stringify({ t: 'status', overlays: overlays.size });
-    editors.forEach((ws) => ws.readyState === WebSocket.OPEN && ws.send(msg));
-  };
-
+  const rooms = new OverlayRooms();
   wss.on('connection', (ws) => {
-    ws.on('message', (raw) => {
-      let msg: any;
-      try {
-        msg = JSON.parse(raw.toString());
-      } catch {
-        return;
-      }
-      switch (msg.t) {
-        case 'hello':
-          if (msg.role === 'overlay') {
-            overlays.add(ws);
-            if (lastConfig) ws.send(JSON.stringify({ t: 'config', config: lastConfig }));
-            if (lastRig) ws.send(JSON.stringify({ t: 'rig', rig: lastRig }));
-            broadcastStatus();
-          } else {
-            editors.add(ws);
-            ws.send(JSON.stringify({ t: 'status', overlays: overlays.size }));
-          }
-          break;
-        case 'config':
-          lastConfig = msg.config;
-          overlays.forEach((o) => o.readyState === WebSocket.OPEN && o.send(raw.toString()));
-          break;
-        case 'rig':
-          lastRig = msg.rig;
-          overlays.forEach((o) => o.readyState === WebSocket.OPEN && o.send(raw.toString()));
-          break;
-      }
-    });
-
+    // Unpaired sockets should not remain open indefinitely.
+    const helloTimeout = setTimeout(() => ws.close(1008, 'Studio pairing required'), 5000);
+    ws.once('message', () => clearTimeout(helloTimeout));
+    ws.on('message', (raw) => rooms.receive(ws, raw.toString()));
     ws.on('close', () => {
-      overlays.delete(ws);
-      editors.delete(ws);
-      broadcastStatus();
+      clearTimeout(helloTimeout);
+      rooms.disconnect(ws);
     });
+    ws.on('error', () => ws.close());
   });
 
   log('info', 'overlay.relay.ready', { path: '/ws' });

@@ -64,58 +64,21 @@ export const AccessoryComponent: React.FC<{
 
       {/* Cat/Neko ears option */}
       {style === 'neko-ears' && (
-        <g id="accessory-neko" transform="translate(0, 8)">
-          {/* LEFT CURVED CAT EAR (Fleshy and layered) */}
-          <path
-            d="M 125 98 
-               C 100 85, 55 45, 62 26 
-               C 68 12, 110 40, 138 68 Z"
-            fill={color}
-            stroke="#1c1917"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-          {/* Left inner pink canal */}
-          <path
-            d="M 80 48 
-               C 85 38, 112 55, 126 72
-               C 112 78, 92 68, 80 48 Z"
-            fill="#ffccd5"
-          />
-          {/* Left ear inner fluffy fur tufts */}
-          <path
-            d="M 78 52 Q 82 45, 88 50 M 84 58 Q 90 52, 94 57 M 90 64 Q 96 58, 100 63"
-            stroke="#ffffff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
-
-          {/* RIGHT CURVED CAT EAR (Fleshy and layered) */}
-          <path
-            d="M 275 98 
-               C 300 85, 345 45, 338 26 
-               C 332 12, 290 40, 262 68 Z"
-            fill={color}
-            stroke="#1c1917"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-          {/* Right inner pink canal */}
-          <path
-            d="M 320 48 
-               C 315 38, 288 55, 274 72
-               C 288 78, 308 68, 320 48 Z"
-            fill="#ffccd5"
-          />
-          {/* Right ear inner fluffy fur tufts */}
-          <path
-            d="M 322 52 Q 318 45, 312 50 M 316 58 Q 310 52, 306 57 M 310 64 Q 304 58, 300 63"
-            stroke="#ffffff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
+        <g id="accessory-neko">
+          {[false, true].map((mirror) => (
+            <g key={String(mirror)} transform={mirror ? 'translate(400 0) scale(-1 1)' : undefined}>
+              <path
+                d="M105 99 Q90 72 99 36 C118 43 139 60 149 79 Z"
+                fill={color}
+                stroke="#403347"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <path d="M106 83 Q98 60 103 46 Q125 57 138 78 Z" fill="#d99daa" />
+              <path d="M109 82 L109 73 L117 78 L119 69 L126 78 L133 76 L133 84 Z" fill="#f7e7df" opacity="0.9" />
+              <path d="M99 39 Q95 65 105 90" fill="none" stroke="#ffffff" strokeOpacity="0.24" strokeWidth="2" />
+            </g>
+          ))}
         </g>
       )}
 

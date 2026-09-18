@@ -1,10 +1,10 @@
+import { useSvgScope } from './SvgScope';
 import React from 'react';
 import { AvatarConfig } from '../../types';
 
 type HairGradient = AvatarConfig['hairGradient'];
 
 export const getHairFillColor = (hairGradient: HairGradient, hairColor: string, isFront = false) => {
-  if (!hairGradient || hairGradient === 'none') return hairColor;
   return isFront ? 'url(#front-hair-gradient-id)' : 'url(#hair-gradient-id)';
 };
 
@@ -15,10 +15,42 @@ interface AvatarDefsProps {
 }
 
 export const AvatarDefs: React.FC<AvatarDefsProps> = ({ hairColor, hairGradient, hairHighlightColor }) => {
+  const { svgId } = useSvgScope();
+  const mix = (color: string, target: string, amount: number) => {
+    const parse = (hex: string) =>
+      hex.length === 4
+        ? hex
+            .slice(1)
+            .split('')
+            .map((c) => c + c)
+            .join('')
+        : hex.slice(1);
+    const a = parse(color);
+    const b = parse(target);
+    if (!/^[0-9a-f]{6}$/i.test(a)) return color;
+    return (
+      '#' +
+      [0, 2, 4]
+        .map((i) =>
+          Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - amount) + parseInt(b.slice(i, i + 2), 16) * amount)
+            .toString(16)
+            .padStart(2, '0'),
+        )
+        .join('')
+    );
+  };
+  const tipColor =
+    hairGradient === 'linear'
+      ? hairHighlightColor
+      : hairGradient === 'sunset'
+        ? '#cf5b67'
+        : hairGradient === 'indigo-fade'
+          ? '#6366b8'
+          : mix(hairColor, '#21172e', 0.22);
   return (
     <defs>
       {/* Visor / Lens Gradient for Cool Shades */}
-      <linearGradient id="cool-lens-grad" x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id={svgId('cool-lens-grad')} x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stopColor="#0f172a" stopOpacity="0.92" />
         <stop offset="60%" stopColor="#1e1b4b" stopOpacity="0.85" />
         <stop offset="100%" stopColor="#581c87" stopOpacity="0.75" />
@@ -86,86 +118,68 @@ export const AvatarDefs: React.FC<AvatarDefsProps> = ({ hairColor, hairGradient,
       </style>
 
       {/* 1. Global Drop Shadows for Depth */}
-      <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <filter id={svgId('drop-shadow')} x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000000" floodOpacity="0.25" />
       </filter>
 
-      <filter id="drop-shadow-heavy" x="-20%" y="-20%" width="140%" height="140%">
+      <filter id={svgId('drop-shadow-heavy')} x="-20%" y="-20%" width="140%" height="140%">
         <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000000" floodOpacity="0.35" />
       </filter>
 
       {/* Rim light blur filter */}
-      <filter id="rim-blur" x="-25%" y="-25%" width="150%" height="150%">
+      <filter id={svgId('rim-blur')} x="-25%" y="-25%" width="150%" height="150%">
         <feGaussianBlur stdDeviation="2.5" />
       </filter>
 
       {/* 2. Face Shading (Inner Volume for Skin) */}
-      <radialGradient id="face-shading" cx="50%" cy="40%" r="60%">
+      <radialGradient id={svgId('face-shading')} cx="50%" cy="40%" r="60%">
         <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
-        <stop offset="100%" stopColor="#000000" stopOpacity="0.12" />
+        <stop offset="100%" stopColor="#a45c65" stopOpacity="0.16" />
       </radialGradient>
 
       {/* 3. Eye Sclera Shading (Top shadow from eyelashes) */}
-      <linearGradient id="eye-sclera" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id={svgId('eye-sclera')} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="#a0aec0" />
         <stop offset="30%" stopColor="#ffffff" />
         <stop offset="100%" stopColor="#ffffff" />
       </linearGradient>
 
+      <linearGradient id={svgId('eye-occlusion')} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#372a46" stopOpacity="0.28" />
+        <stop offset="45%" stopColor="#372a46" stopOpacity="0" />
+      </linearGradient>
+
       {/* 4. Soft Blush Radial Gradient */}
-      <radialGradient id="soft-blush" cx="50%" cy="50%" r="50%">
+      <radialGradient id={svgId('soft-blush')} cx="50%" cy="50%" r="50%">
         <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
         <stop offset="50%" stopColor="currentColor" stopOpacity="0.7" />
         <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
       </radialGradient>
 
-      {/* 5. Hair Gradient (Original) */}
-      {hairGradient && hairGradient !== 'none' && (
-        <>
-          <linearGradient id="hair-gradient-id" x1="0" y1="0" x2="0" y2="1">
-            {hairGradient === 'linear' && (
-              <>
-                <stop offset="0%" stopColor={hairColor} />
-                <stop offset="100%" stopColor={hairHighlightColor} />
-              </>
-            )}
-            {hairGradient === 'sunset' && (
-              <>
-                <stop offset="0%" stopColor={hairColor} />
-                <stop offset="100%" stopColor="#ef4444" />
-              </>
-            )}
-            {hairGradient === 'indigo-fade' && (
-              <>
-                <stop offset="0%" stopColor={hairColor} />
-                <stop offset="100%" stopColor="#6366f1" />
-              </>
-            )}
-          </linearGradient>
-
-          {/* 6. Front Hair Gradient (userSpaceOnUse to align across split paths without seams) */}
-          <linearGradient id="front-hair-gradient-id" gradientUnits="userSpaceOnUse" x1="200" y1="45" x2="200" y2="250">
-            {hairGradient === 'linear' && (
-              <>
-                <stop offset="0%" stopColor={hairColor} />
-                <stop offset="100%" stopColor={hairHighlightColor} />
-              </>
-            )}
-            {hairGradient === 'sunset' && (
-              <>
-                <stop offset="0%" stopColor={hairColor} />
-                <stop offset="100%" stopColor="#ef4444" />
-              </>
-            )}
-            {hairGradient === 'indigo-fade' && (
-              <>
-                <stop offset="0%" stopColor={hairColor} />
-                <stop offset="100%" stopColor="#6366f1" />
-              </>
-            )}
-          </linearGradient>
-        </>
-      )}
+      {/* Consistent lighting stays aligned across every hair lock. */}
+      <linearGradient id={svgId('hair-gradient-id')} gradientUnits="userSpaceOnUse" x1="150" y1="70" x2="260" y2="360">
+        <stop offset="0%" stopColor={mix(hairColor, '#21172e', 0.12)} />
+        <stop offset="45%" stopColor={hairColor} />
+        <stop offset="100%" stopColor={tipColor} />
+      </linearGradient>
+      <linearGradient
+        id={svgId('front-hair-gradient-id')}
+        gradientUnits="userSpaceOnUse"
+        x1="170"
+        y1="50"
+        x2="220"
+        y2="245"
+      >
+        <stop offset="0%" stopColor={mix(hairColor, hairHighlightColor, 0.2)} />
+        <stop offset="40%" stopColor={hairColor} />
+        <stop offset="100%" stopColor={tipColor} />
+      </linearGradient>
+      <linearGradient id={svgId('fabric-shading')} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stopColor="#171124" stopOpacity="0.3" />
+        <stop offset="35%" stopColor="#ffffff" stopOpacity="0.055" />
+        <stop offset="65%" stopColor="#ffffff" stopOpacity="0" />
+        <stop offset="100%" stopColor="#171124" stopOpacity="0.3" />
+      </linearGradient>
     </defs>
   );
 };

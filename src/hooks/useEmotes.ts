@@ -70,8 +70,16 @@ export function useEmotes(): EmotesApi {
   // Number-key hotkeys (ignored while typing in an input/textarea).
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      )
+        return;
       const def = EMOTES.find((em) => em.key === e.key);
       if (def) {
         e.preventDefault();

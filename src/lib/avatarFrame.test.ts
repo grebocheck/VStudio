@@ -13,7 +13,7 @@ describe('shouldPublishRigFrame', () => {
 describe('calculateAvatarFrameStyles', () => {
   it('calculates the shared face, hair, and accessory transforms', () => {
     const frame = calculateAvatarFrameStyles(
-      { ...DEFAULT_CONFIG, accessoryStyle: 'glasses', artStyle: 'anime', headSize: 1.1 },
+      { ...DEFAULT_CONFIG, accessoryStyle: 'glasses', artStyle: 'anime', headSize: 1.1, neckHeight: 0.9 },
       {
         ...INITIAL_RIG,
         angleX: 10,
@@ -45,6 +45,7 @@ describe('applyAvatarFrameTransforms', () => {
       setAttribute: (name: string, value: string) => attributes.set(name, value),
     };
     const svg = {
+      dataset: {},
       querySelector: (selector: string) =>
         selector === '[data-rig-node="debug-head"]' ? debugHead : (styleNodes.get(selector) ?? null),
     } as unknown as SVGSVGElement;

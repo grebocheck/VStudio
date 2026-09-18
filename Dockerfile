@@ -24,6 +24,7 @@ RUN npm ci --omit=dev --ignore-scripts
 
 # Copy build output from the builder stage
 COPY --from=builder /app/dist ./dist
+COPY scripts/start.mjs ./scripts/start.mjs
 
 # Expose port 3000
 EXPOSE 3000

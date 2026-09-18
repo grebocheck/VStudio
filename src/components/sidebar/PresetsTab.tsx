@@ -1,7 +1,9 @@
 import React from 'react';
+import { Check, Trash2, Bookmark } from 'lucide-react';
 import { PresetAvatar } from '../../types';
 import { useI18n } from '../../i18n';
-import { useTheme } from '../../theme/ThemeContext';
+import { INITIAL_RIG } from '../../presets';
+import { VTuberAvatar } from '../VTuberAvatar';
 
 export interface PresetsTabProps {
   customPresets: PresetAvatar[];
@@ -11,6 +13,20 @@ export interface PresetsTabProps {
   onDeleteCustomPreset: (id: string) => void;
 }
 
+const Portrait = React.memo(({ preset }: { preset: PresetAvatar }) => (
+  <div
+    className="preset-portrait"
+    style={{ '--portrait-color': preset.config.hairColor } as React.CSSProperties}
+    aria-hidden="true"
+  >
+    {preset.config.modelId === 'aurelia-3d' ? (
+      <img src="/models/aurelia-3d/preview.png" alt="" className="h-full w-full object-contain" />
+    ) : (
+      <VTuberAvatar config={preset.config} rig={INITIAL_RIG} transparent />
+    )}
+  </div>
+));
+
 export const PresetsTab: React.FC<PresetsTabProps> = ({
   customPresets,
   PRESETS,
@@ -19,106 +35,147 @@ export const PresetsTab: React.FC<PresetsTabProps> = ({
   onDeleteCustomPreset,
 }) => {
   const { t, language } = useI18n();
-  const { theme } = useTheme();
-  const isEn = language === 'en';
-
-  const getPresetName = (presetId: string, defaultName: string) => {
-    const key = `${presetId}_name`;
-    if (key in t.presetStats) {
-      return (t.presetStats as any)[key];
-    }
-    return defaultName;
-  };
-
+  const en = language === 'en';
+  const names = t.presetStats as Record<string, string>;
+  const featured = PRESETS.find((preset) => preset.config.modelId === 'aurelia-3d');
+  const illustrated = PRESETS.find((preset) => preset.config.modelId === 'miya-nocturne');
+  const editablePresets = PRESETS.filter((preset) => !preset.config.modelId || preset.config.modelId === 'parametric');
   return (
-    <div className="space-y-4">
-      <div className="pb-2">
-        <h4
-          className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
-        >
-          {t.rightSidebar.presetsTitle}
-        </h4>
-        <p className="text-[10px] text-slate-500 dark:text-white/55 mt-1">{t.rightSidebar.presetsSub}</p>
+    <div className="character-library">
+      <div className="library-intro">
+        <span className="eyebrow">{en ? 'CHARACTER COLLECTION' : 'КОЛЕКЦІЯ ПЕРСОНАЖІВ'}</span>
+        <h4>{en ? 'Meet Aurelia.' : 'Знайомтесь: Аврелія.'}</h4>
+        <p>
+          {en
+            ? 'A fully three-dimensional character. Turn her around and explore every angle.'
+            : 'Повноцінна тривимірна героїня. Обертайте модель і роздивляйтеся з усіх боків.'}
+        </p>
       </div>
-
-      <div className="grid grid-cols-1 gap-2.5">
-        {PRESETS.map((p) => {
-          const isActive = activePresetKey === p.id;
+      {featured && (
+        <button
+          type="button"
+          className={`group relative mt-5 block w-full overflow-hidden rounded-2xl border text-left transition hover:border-violet-400 ${
+            activePresetKey === featured.id
+              ? 'border-violet-400 ring-1 ring-violet-400/40'
+              : 'border-slate-300 dark:border-white/15'
+          }`}
+          onClick={() => onApplyPreset(featured)}
+          aria-pressed={activePresetKey === featured.id}
+          aria-label={names[`${featured.id}_name`] || featured.name}
+        >
+          <div
+            className="flex aspect-square w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#3c4269,#121925_75%)]"
+            aria-hidden="true"
+          >
+            <img src="/models/aurelia-3d/preview.png" alt="" className="h-full w-full object-contain" />
+          </div>
+          <span className="absolute top-3 left-3 rounded-full border border-white/20 bg-slate-950/65 px-2.5 py-1 text-[9px] font-semibold tracking-[0.14em] text-violet-100 backdrop-blur">
+            AURELIA / 3D
+          </span>
+          {activePresetKey === featured.id && (
+            <span className="preset-check">
+              <Check size={13} />
+            </span>
+          )}
+          <span className="block bg-slate-50 px-4 py-3 dark:bg-slate-900">
+            <span className="block text-sm font-semibold text-slate-900 dark:text-white">
+              {names[`${featured.id}_name`] || featured.name}
+            </span>
+            <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400">
+              {en ? '3D model · 360° view · Live expressions' : '3D-модель · Огляд 360° · Жива міміка'}
+            </span>
+          </span>
+        </button>
+      )}
+      {illustrated && (
+        <button
+          type="button"
+          className="mt-3 flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left hover:border-violet-400 dark:border-white/15"
+          aria-pressed={activePresetKey === illustrated.id}
+          aria-label={names[`${illustrated.id}_name`] || illustrated.name}
+          onClick={() => onApplyPreset(illustrated)}
+        >
+          <img
+            src="/models/miya-nocturne/portrait.png"
+            alt=""
+            className="h-14 w-14 rounded-lg object-cover object-top"
+          />
+          <span>
+            <span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">
+              {names[`${illustrated.id}_name`] || illustrated.name}
+            </span>
+            <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">
+              {en ? 'Illustrated 2D model' : 'Ілюстрована 2D-модель'}
+            </span>
+          </span>
+          {activePresetKey === illustrated.id && <Check size={16} className="ml-auto text-violet-500" />}
+        </button>
+      )}
+      <p className="mt-6 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+        {en ? 'Customizable characters' : 'Персонажі конструктора'}
+      </p>
+      <div className="preset-grid">
+        {editablePresets.map((preset) => {
+          const name = names[`${preset.id}_name`] || preset.name;
+          const selected = activePresetKey === preset.id;
           return (
             <button
-              key={p.id}
-              onClick={() => onApplyPreset(p)}
-              className={`p-3 text-left rounded-sm border transition-all cursor-pointer block w-full ${
-                isActive
-                  ? theme === 'dark'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                    : 'bg-indigo-50 border-indigo-300 text-indigo-800 font-semibold'
-                  : theme === 'dark'
-                    ? 'bg-[#0a0a0c] border-white/10 text-white/65 hover:bg-white/5 hover:text-white hover:border-white/20'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}
+              className={`preset-card ${selected ? 'selected' : ''}`}
+              key={preset.id}
+              onClick={() => onApplyPreset(preset)}
+              aria-pressed={selected}
+              aria-label={name}
             >
-              <span
-                className={`font-bold text-xs block ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}
-              >
-                {getPresetName(p.id, p.name)}
-              </span>
-              <span className="text-[9px] font-mono text-slate-600 dark:text-white/70 block truncate mt-1">
-                {p.config.clothingStyle} · {p.config.hairStyleBack}
+              <Portrait preset={preset} />
+              {selected && (
+                <span className="preset-check">
+                  <Check size={13} />
+                </span>
+              )}
+              <span className="preset-name">{name.split(' (')[0]}</span>
+              <span className="preset-description">
+                {name.includes('(')
+                  ? name.split('(')[1].replace(')', '')
+                  : en
+                    ? 'Custom character'
+                    : 'Власний персонаж'}
               </span>
             </button>
           );
         })}
-
-        {customPresets.map((p) => {
-          const isActive = activePresetKey === p.id;
-          return (
-            <div
-              key={p.id}
-              className={`p-3 text-left rounded-sm border transition-all flex items-center gap-2 w-full ${
-                isActive
-                  ? theme === 'dark'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                    : 'bg-indigo-50 border-indigo-300 text-indigo-800 font-semibold'
-                  : theme === 'dark'
-                    ? 'bg-[#0a0a0c] border-white/10 text-white/65 hover:bg-white/5 hover:text-white hover:border-white/20'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <button onClick={() => onApplyPreset(p)} className="flex-1 text-left cursor-pointer min-w-0">
-                <span
-                  className={`font-bold text-xs block truncate ${isActive ? 'text-indigo-600 dark:text-white' : 'text-slate-800 dark:text-white/90'}`}
-                >
-                  🌟 {p.name}
-                </span>
-                <span className="text-[9px] font-mono text-slate-600 dark:text-white/70 block truncate mt-1">
-                  {t.presets.customSaved}
-                </span>
+      </div>
+      <div className="collection-heading">
+        <Bookmark size={15} />
+        <h4>{en ? 'Your collection' : 'Ваша колекція'}</h4>
+        <span>{customPresets.length}</span>
+      </div>
+      {customPresets.length ? (
+        <div className="saved-presets">
+          {customPresets.map((preset) => (
+            <div key={preset.id} className="saved-preset">
+              <button onClick={() => onApplyPreset(preset)} aria-pressed={activePresetKey === preset.id}>
+                <Portrait preset={preset} />
+                <span>{preset.name}</span>
               </button>
               <button
-                onClick={() => onDeleteCustomPreset(p.id)}
-                className="shrink-0 text-rose-500 hover:text-rose-400 text-sm px-1 cursor-pointer"
-                title={isEn ? 'Delete' : 'Видалити'}
-                aria-label={isEn ? 'Delete preset' : 'Видалити пресет'}
+                className="studio-icon-button"
+                onClick={() => onDeleteCustomPreset(preset.id)}
+                aria-label={`${en ? 'Delete preset' : 'Видалити пресет'} ${preset.name}`}
               >
-                ✕
+                <Trash2 size={15} />
               </button>
             </div>
-          );
-        })}
-
-        {customPresets.length === 0 && (
-          <p
-            className={`text-[10px] italic text-center py-4 rounded border ${
-              theme === 'dark'
-                ? 'text-white/65 bg-[#08080a] border-white/5'
-                : 'text-slate-600 bg-slate-50 border-slate-200'
-            }`}
-          >
-            {t.presets.noCustomPresets}
-          </p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="collection-empty">
+          <Bookmark size={24} />
+          <p>{en ? 'A home for your characters' : 'Місце для ваших персонажів'}</p>
+          <span>
+            {en ? 'Use “Save character” to keep a look here.' : 'Натисніть «Зберегти», щоб додати образ сюди.'}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

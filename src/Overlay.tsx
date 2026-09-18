@@ -9,7 +9,7 @@ import { INITIAL_RIG } from './presets';
  * (or chroma-green with `?bg=green`) and carries no UI chrome.
  */
 export default function Overlay() {
-  const { config, rig, connected } = useOverlayReceiver();
+  const { config, rig, connected, sourceConnected, pairingError } = useOverlayReceiver();
   const [size, setSize] = useState(() => Math.min(window.innerWidth, window.innerHeight));
 
   const params = new URLSearchParams(window.location.search);
@@ -39,6 +39,8 @@ export default function Overlay() {
 
   return (
     <div
+      data-overlay-connected={connected}
+      data-source-connected={sourceConnected}
       className="fixed inset-0 flex items-center justify-center overflow-hidden"
       style={{ background: forceGreen ? '#00ff00' : 'transparent' }}
     >
@@ -48,7 +50,11 @@ export default function Overlay() {
         </div>
       ) : (
         <div className="text-center font-mono text-sm text-white/70 px-6 py-3 rounded-lg bg-black/40 backdrop-blur">
-          {connected ? 'Waiting for V-Studio…' : 'Connecting to V-Studio…'}
+          {pairingError
+            ? 'Open V-Studio → OBS and use the paired overlay URL.'
+            : connected
+              ? 'Open your paired V-Studio tab to start the overlay.'
+              : 'Connecting to your V-Studio…'}
         </div>
       )}
     </div>

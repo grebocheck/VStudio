@@ -1,7 +1,7 @@
 export const en = {
   header: {
     title: 'V-Studio',
-    tag: 'LIVE RIG PRO v2.4',
+    tag: 'CHARACTER STUDIO',
     community: 'VTuber Community',
     exportProject: 'EXPORT',
     importProject: 'IMPORT',
@@ -50,7 +50,7 @@ export const en = {
       clothes: '👕 Wardrobe & Suit',
       metadata: '📝 Biography & Lore',
       rigging: '⚙️ Rigging & Calibration',
-      ai: '✨ AI Glyph-Generator',
+      ai: '✨ AI Stylist',
       stickers: '🪄 Telegram Stickers',
       obs: '📺 OBS Integration',
     },
@@ -106,6 +106,12 @@ export const en = {
   },
   // Keyed by the built-in preset id (see src/presets.ts).
   presetStats: {
+    'aurelia-3d_name': 'Aurelia',
+    'aurelia-3d_lore':
+      'Aurelia collects the light of distant stars and shares their stories. A three-dimensional character with custom material styling and accessories, built on a licensed pixiv VRM model.',
+    'miya-nocturne_name': 'Miya Nocturne',
+    'miya-nocturne_lore':
+      'Keeper of a midnight observatory, collecting stories beneath the stars. Silver-lavender hair, turquoise eyes and embroidered constellations make her celestial outfit unmistakable.',
     'cyber-neko_name': 'Miya (Cyber Neko)',
     'cyber-neko_lore':
       'A cybernetic cat-girl who streams from a virtual neon Tokyo. A little forgetful at times, but her cheerfulness and drive pull in thousands of viewers!',
@@ -371,15 +377,15 @@ export const en = {
     charLore: 'Official Biography Story',
     charLorePlaceholder:
       'Write about your character origins, hobbies, type of streams, and preferred gaming content...',
-    riggingTitle: 'Live2D Calibration Controls',
+    riggingTitle: 'Avatar Calibration',
     riggingSub: "Fine-tune interactive translation ratios for the avatar's body actions:",
-    aiTitle: 'Create via Gemini 1.5/2.5 API',
+    aiTitle: 'Describe your character',
     aiSub:
-      'AI will generate a customized color palette and craft a detailed roleplay biography for you. State your hero idea:',
+      'The stylist combines the available hairstyles, outfits and colours from your description. Your description is sent to Gemini.',
     aiPlaceholder:
       "Example: 'A wizard dragon girl in a comfy turquoise oversized hoodie, neon yellow and purple hair, who streams cozy indie games and loves coffee'",
-    aiBtnActive: 'Generate AI Design',
-    aiBtnGenerating: 'Drafting in Gemini API...',
+    aiBtnActive: 'Create a style',
+    aiBtnGenerating: 'Creating your style…',
     obsTitle: 'Stream Output (OBS Studio/TikTok)',
     obsSub: 'Configure your live stream avatar overlays cleanly inside streaming software:',
     obsOverlay: {
@@ -407,7 +413,7 @@ export const en = {
       title: 'Static Avatar Export',
       sub: 'Download the current live pose as a transparent PNG or standalone SVG for thumbnails, overlays, and profile art.',
       png: 'PNG transparent',
-      svg: 'SVG vector',
+      svg: 'SVG file',
       exporting: 'Exporting...',
       note: 'Exports use an 800×800 transparent canvas and omit the studio backdrop.',
       notReady: 'Avatar SVG is not mounted yet.',

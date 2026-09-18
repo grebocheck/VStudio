@@ -20,6 +20,7 @@ import { RiggingTab } from './sidebar/RiggingTab';
 import { AiTab } from './sidebar/AiTab';
 import { StickersTab } from './sidebar/StickersTab';
 import { ObsTab } from './sidebar/ObsTab';
+import { PremiumModelTab } from './sidebar/PremiumModelTab';
 
 export interface RightSidebarProps {
   activeSidebarTab: SidebarTab;
@@ -65,18 +66,16 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
   const { t, language } = useI18n();
   const { theme } = useTheme();
   const isEn = language === 'en';
+  const isFixedModel = config.modelId === 'miya-nocturne' || config.modelId === 'aurelia-3d';
+  const showModelSettings = isFixedModel && ['hair', 'face', 'clothes', 'ai'].includes(activeSidebarTab);
+  const modelTitle =
+    config.modelId === 'aurelia-3d' ? (isEn ? 'Aurelia · 3D' : 'Аврелія · 3D') : isEn ? 'Miya Nocturne' : 'Мія Ноктюрн';
 
   return (
-    <aside
-      className={`w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l flex flex-col justify-between overflow-y-auto ${
-        theme === 'dark' ? 'border-white/10 bg-[#0f0f12]/95 text-white' : 'border-slate-200 bg-white text-slate-800'
-      }`}
-      id="right-sidebar"
-      aria-label={isEn ? 'Avatar editor' : 'Редактор аватара'}
-    >
+    <aside className="inspector-panel" id="right-sidebar" aria-label={isEn ? 'Avatar editor' : 'Редактор аватара'}>
       {/* Header of Active Editor Section */}
       <div
-        className={`p-4 border-b flex items-center space-x-2.5 shrink-0 ${
+        className={`inspector-heading p-4 border-b flex items-center space-x-2.5 shrink-0 ${
           theme === 'dark' ? 'border-white/10 bg-[#121217]' : 'border-slate-200 bg-slate-50'
         }`}
       >
@@ -85,14 +84,16 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
           <h3
             className={`text-[11px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
           >
-            {t.rightSidebar.params} {t.leftSidebar.tabs[activeSidebarTab]}
+            {showModelSettings ? modelTitle : t.leftSidebar.tabs[activeSidebarTab].replace(/^\S+\s/, '')}
           </h3>
-          <p className="text-[9px] text-slate-500 dark:text-white/50">{t.rightSidebar.activeSec}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            {isEn ? 'Make something that feels like you.' : 'Створіть щось по-справжньому своє.'}
+          </p>
         </div>
       </div>
 
       {/* Form Editing options container */}
-      <div className="p-5 flex-grow space-y-5 text-left leading-relaxed">
+      <div className="inspector-content p-5 flex-grow space-y-5 text-left leading-relaxed">
         {activeSidebarTab === 'presets' && (
           <PresetsTab
             customPresets={props.customPresets}
@@ -102,9 +103,10 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
             onDeleteCustomPreset={props.onDeleteCustomPreset}
           />
         )}
-        {activeSidebarTab === 'hair' && <HairTab config={config} setConfig={props.setConfig} />}
-        {activeSidebarTab === 'face' && <FaceTab config={config} setConfig={props.setConfig} />}
-        {activeSidebarTab === 'clothes' && <ClothesTab config={config} setConfig={props.setConfig} />}
+        {showModelSettings && <PremiumModelTab config={config} setConfig={props.setConfig} />}
+        {!isFixedModel && activeSidebarTab === 'hair' && <HairTab config={config} setConfig={props.setConfig} />}
+        {!isFixedModel && activeSidebarTab === 'face' && <FaceTab config={config} setConfig={props.setConfig} />}
+        {!isFixedModel && activeSidebarTab === 'clothes' && <ClothesTab config={config} setConfig={props.setConfig} />}
         {activeSidebarTab === 'metadata' && <MetadataTab config={config} setConfig={props.setConfig} />}
         {activeSidebarTab === 'rigging' && (
           <RiggingTab
@@ -131,7 +133,7 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
             onDeleteCameraCalibrationProfile={props.onDeleteCameraCalibrationProfile}
           />
         )}
-        {activeSidebarTab === 'ai' && (
+        {!isFixedModel && activeSidebarTab === 'ai' && (
           <AiTab
             aiPrompt={props.aiPrompt}
             setAiPrompt={props.setAiPrompt}
@@ -149,20 +151,6 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
             overlayCount={props.overlayCount}
           />
         )}
-      </div>
-
-      {/* Sidebar Footer detailing the calibration ratio values in real-time */}
-      <div
-        className={`p-4 border-t font-mono text-[10px] flex items-center justify-between shrink-0 ${
-          theme === 'dark'
-            ? 'border-white/10 bg-[#0c0c10] text-[#d1d1d1]/40'
-            : 'border-slate-200 bg-slate-50 text-slate-500'
-        }`}
-      >
-        <span>
-          {t.rightSidebar.footerLabel}: {config.name || (isEn ? 'Personal' : 'Особистий')}
-        </span>
-        <span>{t.rightSidebar.footerTotal}</span>
       </div>
     </aside>
   );

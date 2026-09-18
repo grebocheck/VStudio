@@ -1,3 +1,4 @@
+import { useSvgScope } from './SvgScope';
 import React from 'react';
 
 export const HeadBase: React.FC<{
@@ -29,25 +30,26 @@ export const HeadBase: React.FC<{
   faceScar = 'none',
   earDecoration = 'none',
 }) => {
+  const { svgUrl } = useSvgScope();
   // Define variations of the anime face shape
   const getAnimeFacePath = () => {
     switch (faceShape) {
       case 'sharp':
         // V-shaped jaw, standard shonen/shojo (more compact chin)
-        return 'M 136 130 C 122 160, 128 190, 144 210 C 160 225, 185 238, 200 242 C 215 238, 240 225, 256 210 C 272 190, 278 160, 264 130 C 255 110, 145 110, 136 130 Z';
+        return 'M 136 130 C 122 160, 128 190, 144 210 C 160 225, 185 238, 200 242 C 215 238, 240 225, 256 210 C 272 190, 278 160, 264 130 C 255 55, 145 55, 136 130 Z';
       case 'round':
         // Softer moe cheeks (cute compact chin)
-        return 'M 130 130 C 110 165, 118 195, 142 212 C 160 224, 180 234, 200 234 C 220 234, 240 224, 258 212 C 282 195, 290 165, 270 130 C 255 110, 145 110, 130 130 Z';
+        return 'M 130 130 C 110 165, 118 195, 142 212 C 160 224, 180 234, 200 234 C 220 234, 240 224, 258 212 C 282 195, 290 165, 270 130 C 255 55, 145 55, 130 130 Z';
       case 'chubby':
         // Wider, fuller cheeks (cute chubby chin)
-        return 'M 125 130 C 100 168, 112 205, 140 218 C 165 230, 180 236, 200 236 C 220 236, 235 230, 260 218 C 288 205, 300 168, 275 130 C 260 110, 140 110, 125 130 Z';
+        return 'M 125 130 C 100 168, 112 205, 140 218 C 165 230, 180 236, 200 236 C 220 236, 235 230, 260 218 C 288 205, 300 168, 275 130 C 260 55, 140 55, 125 130 Z';
       case 'mature':
         // Longer face, prominent cheekbones (elegant but not alien-long chin)
-        return 'M 138 130 C 122 162, 130 195, 146 215 C 160 232, 185 245, 200 248 C 215 245, 240 232, 254 215 C 270 195, 278 162, 262 130 C 255 110, 145 110, 138 130 Z';
+        return 'M 138 130 C 122 162, 130 195, 146 215 C 160 232, 185 245, 200 248 C 215 245, 240 232, 254 215 C 270 195, 278 162, 262 130 C 255 55, 145 55, 138 130 Z';
       case 'default':
       default:
         // Original standard anime face (refined proportions with shorter chin)
-        return 'M 134 130 C 118 158, 124 190, 142 208 C 156 220, 180 232, 200 236 C 220 232, 244 220, 258 208 C 276 190, 282 158, 266 130 C 255 110, 145 110, 134 130 Z';
+        return 'M 134 130 C 118 158, 124 190, 142 208 C 156 220, 180 232, 200 236 C 220 232, 244 220, 258 208 C 276 190, 282 158, 266 130 C 255 55, 145 55, 134 130 Z';
     }
   };
 
@@ -105,23 +107,23 @@ export const HeadBase: React.FC<{
           />
           <path
             d="M 125 140 C 105 165, 105 210, 135 234 C 155 246, 245 246, 265 234 C 295 210, 295 165, 275 140 C 260 115, 140 115, 125 140 Z"
-            fill="url(#face-shading)"
+            fill={svgUrl('url(#face-shading)')}
           />
         </g>
       ) : artStyle === 'anime' ? (
         <g>
-          <path d={getAnimeFacePath()} fill={skinColor} stroke="rgba(0,0,0,0.22)" strokeWidth="1.5" />
-          <path d={getAnimeFacePath()} fill="url(#face-shading)" />
+          <path d={getAnimeFacePath()} fill={skinColor} stroke="rgba(115,65,66,0.45)" strokeWidth="1.4" />
+          <path d={getAnimeFacePath()} fill={svgUrl('url(#face-shading)')} />
         </g>
       ) : (
         <g>
           <path
-            d="M135 130 C110 160, 110 200, 130 215 C145 225, 175 240, 200 240 C225 240, 255 225, 270 215 C290 200, 290 160, 265 130 C255 110, 145 110, 135 130 Z"
+            d="M135 130 C110 160, 110 200, 130 215 C145 225, 175 240, 200 240 C225 240, 255 225, 270 215 C290 200, 290 160, 265 130 C255 55, 145 55, 135 130 Z"
             fill={skinColor}
           />
           <path
-            d="M135 130 C110 160, 110 200, 130 215 C145 225, 175 240, 200 240 C225 240, 255 225, 270 215 C290 200, 290 160, 265 130 C255 110, 145 110, 135 130 Z"
-            fill="url(#face-shading)"
+            d="M135 130 C110 160, 110 200, 130 215 C145 225, 175 240, 200 240 C225 240, 255 225, 270 215 C290 200, 290 160, 265 130 C255 55, 145 55, 135 130 Z"
+            fill={svgUrl('url(#face-shading)')}
           />
         </g>
       )}
@@ -135,22 +137,36 @@ export const HeadBase: React.FC<{
               <circle cx="255" cy="205" r="12" fill={blushColor} opacity={blushOpacity * 1.5} />
             </>
           ) : artStyle === 'anime' ? (
-            <>
-              <g opacity={blushOpacity * 1.3} stroke={blushColor} strokeWidth="2.5" strokeLinecap="round">
-                <line x1="140" y1="190" x2="148" y2="200" />
-                <line x1="146" y1="190" x2="154" y2="200" />
-                <line x1="152" y1="190" x2="160" y2="200" />
-
-                <line x1="240" y1="190" x2="248" y2="200" />
-                <line x1="246" y1="190" x2="254" y2="200" />
-                <line x1="252" y1="190" x2="260" y2="200" />
-              </g>
-            </>
+            <g opacity={blushOpacity}>
+              <ellipse cx="147" cy="199" rx="20" ry="10" fill={svgUrl('url(#soft-blush)')} color={blushColor} />
+              <ellipse cx="253" cy="199" rx="20" ry="10" fill={svgUrl('url(#soft-blush)')} color={blushColor} />
+              <path
+                d="M141 198 L143 201 M148 198 L150 201 M250 198 L252 201 M257 198 L259 201"
+                stroke={blushColor}
+                strokeWidth="1"
+                strokeLinecap="round"
+                opacity="0.7"
+              />
+            </g>
           ) : (
             <>
               {/* Soft volumetric blush */}
-              <circle cx="148" cy="195" r="22" fill="url(#soft-blush)" color={blushColor} opacity={blushOpacity} />
-              <circle cx="252" cy="195" r="22" fill="url(#soft-blush)" color={blushColor} opacity={blushOpacity} />
+              <circle
+                cx="148"
+                cy="195"
+                r="22"
+                fill={svgUrl('url(#soft-blush)')}
+                color={blushColor}
+                opacity={blushOpacity}
+              />
+              <circle
+                cx="252"
+                cy="195"
+                r="22"
+                fill={svgUrl('url(#soft-blush)')}
+                color={blushColor}
+                opacity={blushOpacity}
+              />
             </>
           )}
         </>
@@ -385,6 +401,7 @@ export const Live2DMouth: React.FC<{
   hasFangs?: boolean;
   artStyle?: 'classic' | 'anime' | 'retro';
   tongueOut?: number;
+  animationPhase?: number;
   faceShape?: 'default' | 'sharp' | 'round' | 'chubby' | 'mature';
   mouthShape?: 'default' | 'small' | 'wide' | 'pouty' | 'thin';
   lipStyle?: 'natural' | 'glossy' | 'dark' | 'gradient';
@@ -396,12 +413,14 @@ export const Live2DMouth: React.FC<{
   hasFangs = false,
   artStyle = 'classic',
   tongueOut = 0,
+  animationPhase = 0,
   faceShape = 'default',
   mouthShape = 'default',
   lipStyle = 'natural',
   lipColor = '#d6536d',
   toothStyle,
 }) => {
+  const { svgId, svgUrl } = useSvgScope();
   let mouthYOffset = 0;
   if (faceShape === 'mature') mouthYOffset = 6;
   else if (faceShape === 'sharp') mouthYOffset = 3;
@@ -438,7 +457,7 @@ export const Live2DMouth: React.FC<{
   const finalWidth = width * widthScale;
 
   const hasVisibleLips = lipStyle !== 'natural' || mouthShape === 'pouty';
-  const lipFill = lipStyle === 'gradient' ? 'url(#lip-gradient-fill)' : lipColor;
+  const lipFill = lipStyle === 'gradient' ? svgUrl('url(#lip-gradient-fill)') : lipColor;
   const lipOpacity = lipStyle === 'dark' ? 0.95 : 0.8;
   /** Soft upper+lower lip volume hugging the closed-mouth curve. */
   const renderClosedLips = (sx: number, sy: number, ex: number, ey: number, controlY: number) => {
@@ -448,7 +467,7 @@ export const Live2DMouth: React.FC<{
       <g id="lips-closed">
         {lipStyle === 'gradient' && (
           <defs>
-            <linearGradient id="lip-gradient-fill" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={svgId('lip-gradient-fill')} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={lipColor} stopOpacity="0.55" />
               <stop offset="55%" stopColor={lipColor} stopOpacity="1" />
               <stop offset="100%" stopColor={lipColor} stopOpacity="0.75" />
@@ -607,8 +626,8 @@ export const Live2DMouth: React.FC<{
     const cavityDepthY = mouthY + finalH + 3;
 
     // Feature 11: Tongue wiggle translation offsets
-    const tongueWiggleX = Math.sin(Date.now() * 0.015) * 1.5;
-    const tongueWiggleY = Math.cos(Date.now() * 0.02) * 0.5;
+    const tongueWiggleX = Math.sin(animationPhase * Math.PI * 12) * 1.5;
+    const tongueWiggleY = Math.cos(animationPhase * Math.PI * 16) * 0.5;
 
     return (
       <g>
@@ -617,7 +636,7 @@ export const Live2DMouth: React.FC<{
           <>
             {lipStyle === 'gradient' && (
               <defs>
-                <linearGradient id="lip-gradient-fill" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={svgId('lip-gradient-fill')} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={lipColor} stopOpacity="0.55" />
                   <stop offset="55%" stopColor={lipColor} stopOpacity="1" />
                   <stop offset="100%" stopColor={lipColor} stopOpacity="0.75" />
@@ -647,9 +666,9 @@ export const Live2DMouth: React.FC<{
         />
 
         {/* Clip path to bound internal teeth & tongue */}
-        <g clipPath="url(#mouth-cavity-clip)">
+        <g clipPath={svgUrl('url(#mouth-cavity-clip)')}>
           <defs>
-            <clipPath id="mouth-cavity-clip">
+            <clipPath id={svgId('mouth-cavity-clip')}>
               <path
                 d={`M ${mouthX - finalWidth} ${lipTopStartY} 
                     Q ${mouthX} ${lipTopControlY}, ${mouthX + finalWidth} ${lipTopEndY} 

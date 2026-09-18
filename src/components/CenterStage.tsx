@@ -1,11 +1,11 @@
-import React from 'react';
-import { AvatarConfig, RigParams, TrackingMode, Emotion } from '../types';
+import React, { useRef, useState } from 'react';
+import { AvatarConfig, RigParams, TrackingMode, Emotion, SidebarTab } from '../types';
 import { VTuberAvatar } from './VTuberAvatar';
-import { Shuffle } from 'lucide-react';
+import { Shuffle, Download, Sticker, ArrowUpRight, Play, Pause, Minus, Plus } from 'lucide-react';
 import { useI18n } from '../i18n';
-import { useTheme } from '../theme/ThemeContext';
 import { localizePreset } from '../presets';
-import { CharacterDossier, EmoteTriggerBar, StageBackdrop } from './CenterStageStatic';
+import { EmoteTriggerBar } from './CenterStageStatic';
+import { avatarSvgToPngBlob, avatarExportFileName, downloadBlob } from '../lib/avatarExport';
 
 interface CenterStageProps {
   config: AvatarConfig;
@@ -13,11 +13,15 @@ interface CenterStageProps {
   rig: RigParams;
   onScreenBuster: boolean;
   trackingMode: TrackingMode;
-  /** Active built-in preset id, or null when the avatar is custom/AI/edited. */
+  setTrackingMode: (mode: TrackingMode) => void;
+  micActive: boolean;
+  setMicActive: (active: boolean) => void;
   activePresetKey: string | null;
   activeEmote: Emotion | null;
   onEmote: (emotion: Emotion) => void;
-  avatarSvgRef?: React.Ref<SVGSVGElement>;
+  avatarSvgRef: React.RefObject<SVGSVGElement | null>;
+  onRandomize: () => void;
+  onSelectTab: (tab: SidebarTab) => void;
   fps?: number | null;
 }
 
@@ -27,128 +31,213 @@ export const CenterStage: React.FC<CenterStageProps> = ({
   rig,
   onScreenBuster,
   trackingMode,
+  setTrackingMode,
+  micActive,
+  setMicActive,
   activePresetKey,
   activeEmote,
   onEmote,
   avatarSvgRef,
-  fps = null,
+  onRandomize,
+  onSelectTab,
 }) => {
-  const { t } = useI18n();
-  const { theme } = useTheme();
-
-  // Built-in presets are translated by their stable id; custom/AI/edited
-  // avatars carry their own name + lore inside the config.
+  const { t, language } = useI18n();
+  const en = language === 'en';
+  const resumeMode = useRef<{ trackingMode: TrackingMode; micActive: boolean } | null>(null);
+  const [backdrop, setBackdrop] = useState('lavender');
+  const [zoom, setZoom] = useState(1);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const localized = localizePreset(activePresetKey, t);
   const name = localized?.name || config.name || t.presets.customSaved;
-  const lore = localized?.lore || config.lore || t.centerStage.defaultLore;
-
+  const paused = trackingMode === 'manual' && !micActive;
+  const savePng = async () => {
+    if (!avatarSvgRef.current) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const blob = await avatarSvgToPngBlob(avatarSvgRef.current, { width: 1600, height: 1600, transparent: true });
+      downloadBlob(blob, avatarExportFileName(name, 'png'));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : en
+            ? 'Export failed. Try again.'
+            : 'Не вдалося експортувати. Спробуйте ще раз.',
+      );
+    } finally {
+      setExporting(false);
+    }
+  };
   return (
-    <main
-      className={`flex-grow flex flex-col p-4 lg:p-6 space-y-6 overflow-y-auto ${
-        theme === 'dark' ? 'bg-[#07070a]/40 text-[#d1d1d1]' : 'bg-slate-100/50 text-slate-800'
-      }`}
-      id="center-stage-container"
-      aria-label={t.centerStage.title}
-    >
-      {/* Main Visual Frame holding our VTuber */}
-      <div
-        className={`p-4.5 rounded-lg border flex flex-col shadow-2xl relative overflow-hidden ${
-          theme === 'dark' ? 'bg-[#0f0f12] border-white/10' : 'bg-white border-slate-200'
-        }`}
-        id="stage-monitoring-frame"
-      >
-        {/* Viewport bar of the monitor */}
-        <div
-          className={`w-full flex items-center justify-between mb-4 border-b pb-3 ${
-            theme === 'dark' ? 'border-white/5' : 'border-slate-200'
-          }`}
+    <main className="character-workspace" id="center-stage-container" aria-label={t.centerStage.title}>
+      <div className="workspace-heading">
+        <div>
+          <p className="eyebrow">{en ? 'YOUR CHARACTER, YOUR WORLD' : 'ВАШ ПЕРСОНАЖ, ВАШ СВІТ'}</p>
+          <h2>{name}</h2>
+          <p>{en ? 'A little personality. A thousand possibilities.' : 'Трохи характеру. Безліч можливостей.'}</p>
+        </div>
+        <button
+          id="shuffle-hair-style"
+          className="studio-button"
+          onClick={onRandomize}
+          aria-label={en ? 'Surprise me' : 'Здивуй мене'}
         >
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            <div className="w-2 h-2 rounded-full bg-red-600 absolute" />
-            <span
-              className={`text-[10px] font-bold uppercase tracking-wider pl-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}
-            >
-              {t.centerStage.title}
-            </span>
-            <span className="text-[9px] px-1.5 py-0.5 bg-indigo-500/10 border border-indigo-500/25 text-indigo-500 dark:text-indigo-400 rounded-sm font-mono uppercase tracking-wide">
-              {fps === null ? '--' : fps.toFixed(1)}fps {t.centerStage.liveRatio}
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-2">
+          <Shuffle size={16} />
+          <span>{en ? 'Surprise me' : 'Здивуй мене'}</span>
+        </button>
+      </div>
+      {(config.modelId === 'miya-nocturne' || config.modelId === 'aurelia-3d') && (
+        <div className="premium-framing" role="group" aria-label={en ? 'Model framing' : 'Кадрування моделі'}>
+          <span>
+            {config.modelId === 'aurelia-3d'
+              ? en
+                ? 'AURELIA · 3D'
+                : 'АВРЕЛІЯ · 3D'
+              : en
+                ? 'MIYA · NOCTURNE'
+                : 'МІЯ · НОКТЮРН'}
+          </span>
+          {(['portrait', 'halfbody', 'full'] as const).map((value, index) => (
             <button
-              id="shuffle-hair-style"
-              onClick={() => {
-                const rands = ['classic', 'side', 'center-part', 'short', 'hime', 'spiky'] as const;
-                const rBack = ['straight', 'tails', 'curly', 'short', 'braids', 'hime-long'] as const;
-                setConfig((prev) => ({
-                  ...prev,
-                  hairStyleBang: rands[Math.floor(Math.random() * rands.length)],
-                  hairStyleBack: rBack[Math.floor(Math.random() * rBack.length)],
-                  hairColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
-                  eyeColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
-                }));
-              }}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-sm flex items-center space-x-1.5 transition-all cursor-pointer uppercase tracking-wider ${
-                theme === 'dark'
-                  ? 'text-white bg-[#07070a] border border-white/10 hover:bg-white/5 hover:border-white/20'
-                  : 'text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-              }`}
-              title="Швидкий мікс"
-              aria-label={t.centerStage.quickMix}
+              key={value}
+              aria-pressed={(config.modelFraming ?? 'portrait') === value}
+              onClick={() => setConfig((previous) => ({ ...previous, modelFraming: value }))}
             >
-              <Shuffle className="w-3.5 h-3.5 text-indigo-500 rotate-12" />
-              <span>{t.centerStage.quickMix}</span>
+              {
+                (en
+                  ? ['Portrait', 'Half-length', config.modelId === 'aurelia-3d' ? 'Full body' : 'Complete artwork']
+                  : ['Портрет', 'До пояса', config.modelId === 'aurelia-3d' ? 'На повний зріст' : 'Повний образ'])[
+                  index
+                ]
+              }
+            </button>
+          ))}
+        </div>
+      )}
+      <div className={`character-canvas backdrop-${backdrop}`} id="stage-monitoring-frame">
+        <div className="canvas-toolbar">
+          <span className="canvas-label">
+            <span className={`status-dot ${paused ? 'paused' : ''}`} />
+            {paused
+              ? en
+                ? 'Pose preview'
+                : 'Перегляд пози'
+              : trackingMode === 'camera'
+                ? en
+                  ? 'Camera tracking'
+                  : 'Трекінг камери'
+                : trackingMode === 'mouse'
+                  ? en
+                    ? 'Cursor tracking'
+                    : 'Стеження за курсором'
+                  : micActive
+                    ? en
+                      ? 'Voice animation'
+                      : 'Голосова анімація'
+                    : en
+                      ? 'Idle animation'
+                      : 'Анімація спокою'}
+          </span>
+          <button
+            className="canvas-icon-button"
+            onClick={() => {
+              if (paused) {
+                setTrackingMode(resumeMode.current?.trackingMode ?? 'auto');
+                setMicActive(resumeMode.current?.micActive ?? false);
+              } else {
+                resumeMode.current = { trackingMode, micActive };
+                setTrackingMode('manual');
+                setMicActive(false);
+              }
+            }}
+            aria-label={
+              paused ? (en ? 'Play animation' : 'Відтворити анімацію') : en ? 'Pause animation' : 'Призупинити анімацію'
+            }
+          >
+            {paused ? <Play size={15} /> : <Pause size={15} />}
+          </button>
+        </div>
+        <div className="avatar-viewport" id="interactive-rig-stage">
+          <div className="avatar-scaling" style={{ transform: `scale(${zoom})` }}>
+            <VTuberAvatar config={config} rig={rig} onScreenBuster={onScreenBuster} svgRef={avatarSvgRef} transparent />
+          </div>
+        </div>
+        <div className="canvas-bottom-bar">
+          <div
+            className="backdrop-swatches"
+            role="group"
+            aria-label={en ? 'Preview background' : 'Тло попереднього перегляду'}
+          >
+            {[
+              ['lavender', en ? 'Lavender' : 'Лавандове'],
+              ['peach', en ? 'Peach' : 'Персикове'],
+              ['midnight', en ? 'Midnight' : 'Нічне'],
+              ['transparent', en ? 'Transparency grid' : 'Сітка прозорості'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={`backdrop-swatch swatch-${value}`}
+                onClick={() => setBackdrop(value)}
+                aria-pressed={backdrop === value}
+                aria-label={label}
+                title={label}
+              />
+            ))}
+          </div>
+          <span className="preview-hint">{en ? 'Background is preview only' : 'Тло лише для перегляду'}</span>
+          <div className="zoom-controls">
+            <button
+              className="canvas-icon-button"
+              onClick={() => setZoom((value) => Math.max(0.7, Math.round((value - 0.1) * 10) / 10))}
+              disabled={zoom <= 0.7}
+              aria-label={en ? 'Zoom out' : 'Зменшити'}
+            >
+              <Minus size={14} />
+            </button>
+            <span>{Math.round(zoom * 100)}%</span>
+            <button
+              className="canvas-icon-button"
+              onClick={() => setZoom((value) => Math.min(1.4, Math.round((value + 0.1) * 10) / 10))}
+              disabled={zoom >= 1.4}
+              aria-label={en ? 'Zoom in' : 'Збільшити'}
+            >
+              <Plus size={14} />
             </button>
           </div>
         </div>
-
-        {/* Simulated Live Stage viewport */}
-        <div
-          className={`relative w-full h-[525px] flex items-center justify-center rounded border select-none overflow-hidden shadow-inner ${
-            theme === 'dark' ? 'bg-[#101015] border-white/5' : 'bg-slate-50 border-slate-200/80'
-          }`}
-          id="interactive-rig-stage"
-        >
-          <StageBackdrop backgroundStyle={config.backgroundStyle} theme={theme} />
-
-          {/* Massive scale rendering for outstanding visual impact */}
-          <div className="relative z-10 w-full h-full flex items-center justify-center transform scale-110">
-            <VTuberAvatar config={config} rig={rig} onScreenBuster={onScreenBuster} svgRef={avatarSvgRef} fps={fps} />
-          </div>
-
-          {/* Status and coordination log overlaid on the stage border */}
-          <div
-            className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-sm border border-white/10 z-20 font-mono text-[9px] text-white/50 flex items-center gap-3"
-            id="hud-telemetry"
-          >
-            <span className="text-white/80 block">{t.centerStage.calibration}</span>
-            <span className="text-indigo-400">Yaw {Math.round(rig.angleX)}°</span>
-            <span className="text-pink-400">Pitch {Math.round(rig.angleY)}°</span>
-            <span className="text-rose-400">Roll {Math.round(rig.angleZ)}°</span>
-          </div>
-        </div>
-
-        {/* Quick stats and action parameters at the footer of viewport */}
-        <div
-          className={`mt-3 text-[10px] font-mono flex justify-between items-center p-3 rounded border ${
-            theme === 'dark'
-              ? 'text-white/40 bg-[#07070a] border-white/5'
-              : 'text-slate-500 bg-slate-50 border-slate-200/60'
-          }`}
-          id="engine-telemetry"
-        >
-          <span>{t.centerStage.telemetrySquish}</span>
-          <span>{t.centerStage.telemetryOrganic}</span>
-          <span className="text-emerald-500 dark:text-emerald-400">
-            {trackingMode === 'auto' ? t.centerStage.autopilotActive : t.centerStage.cursorTrackingActive}
-          </span>
-        </div>
       </div>
-
       <EmoteTriggerBar activeEmote={activeEmote} onEmote={onEmote} />
-      <CharacterDossier name={name} lore={lore} />
+      <div className="creation-actions">
+        <button className="creation-card" onClick={() => onSelectTab('stickers')}>
+          <span className="creation-icon">
+            <Sticker size={22} />
+          </span>
+          <span>
+            <strong>{en ? 'Make a sticker pack' : 'Створити стікерпак'}</strong>
+            <small>{en ? 'Your reactions, ready for Telegram' : 'Ваші емоції для Telegram'}</small>
+          </span>
+          <ArrowUpRight size={19} />
+        </button>
+        <button className="creation-card" onClick={() => void savePng()} disabled={exporting}>
+          <span className="creation-icon mint">
+            <Download size={21} />
+          </span>
+          <span>
+            <strong>
+              {exporting ? (en ? 'Preparing…' : 'Підготовка…') : en ? 'Download portrait' : 'Завантажити портрет'}
+            </strong>
+            <small>{en ? 'Transparent PNG · 1600 × 1600' : 'Прозорий PNG · 1600 × 1600'}</small>
+          </span>
+          <ArrowUpRight size={19} />
+        </button>
+      </div>
+      {error && (
+        <p role="alert" className="studio-notice error">
+          {error}
+        </p>
+      )}
     </main>
   );
 };

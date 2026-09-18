@@ -49,53 +49,28 @@ interface EmoteTriggerBarProps {
 }
 
 export const EmoteTriggerBar = React.memo(({ activeEmote, onEmote }: EmoteTriggerBarProps) => {
-  const { t } = useI18n();
-  const { theme } = useTheme();
-
+  const { t, language } = useI18n();
   return (
-    <div
-      className={`p-3 rounded-lg border shadow-xl ${
-        theme === 'dark' ? 'bg-[#0f0f12] border-white/10' : 'bg-white border-slate-200'
-      }`}
-      id="emote-trigger-bar"
-      role="region"
-      aria-label={t.centerStage.emotesTitle}
-    >
-      <div className="flex items-center space-x-2 text-slate-600 dark:text-white/65 text-[10px] uppercase font-bold tracking-widest mb-2.5">
-        <span className="text-indigo-500 dark:text-indigo-400">⚡</span>
-        <span>{t.centerStage.emotesTitle}</span>
+    <section className="expression-panel" id="emote-trigger-bar" aria-label={t.centerStage.emotesTitle}>
+      <div className="expression-heading">
+        <h3>{language === 'en' ? 'A mood for every moment' : 'Настрій на кожну мить'}</h3>
+        <span>{language === 'en' ? 'Try keys 1–9' : 'Клавіші 1–9'}</span>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {EMOTES.map((emote) => {
-          const isActive = activeEmote === emote.emotion;
-          return (
-            <button
-              key={emote.emotion}
-              onClick={() => onEmote(emote.emotion)}
-              title={`${(t.centerStage.emotes as Record<string, string>)[emote.emotion]} (${emote.key})`}
-              aria-label={(t.centerStage.emotes as Record<string, string>)[emote.emotion]}
-              aria-pressed={isActive}
-              className={`relative flex flex-col items-center justify-center w-14 h-14 rounded-md border transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-indigo-600/20 border-indigo-500 scale-105 shadow-inner'
-                  : theme === 'dark'
-                    ? 'bg-[#07070a] border-white/10 hover:bg-white/5 hover:border-white/20'
-                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-              }`}
-            >
-              <span className="text-xl leading-none">{emote.icon}</span>
-              <span
-                className={`text-[8px] font-mono mt-1 ${
-                  isActive ? 'text-indigo-600 dark:text-indigo-300 font-bold' : 'text-slate-600 dark:text-white/65'
-                }`}
-              >
-                {emote.key}
-              </span>
-            </button>
-          );
-        })}
+      <div className="expression-buttons">
+        {EMOTES.map((emote) => (
+          <button
+            key={emote.emotion}
+            onClick={() => onEmote(emote.emotion)}
+            title={`${(t.centerStage.emotes as Record<string, string>)[emote.emotion]} (${emote.key})`}
+            aria-label={(t.centerStage.emotes as Record<string, string>)[emote.emotion]}
+            aria-pressed={activeEmote === emote.emotion}
+          >
+            <span>{emote.icon}</span>
+            <small>{(t.centerStage.emotes as Record<string, string>)[emote.emotion]}</small>
+          </button>
+        ))}
       </div>
-    </div>
+    </section>
   );
 });
 

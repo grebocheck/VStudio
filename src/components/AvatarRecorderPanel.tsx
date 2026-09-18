@@ -138,7 +138,7 @@ export const AvatarRecorderPanel: React.FC<AvatarRecorderPanelProps> = ({ source
         <button
           type="button"
           onClick={() => void recorder.exportGifClip()}
-          disabled={recorder.isRecording || recorder.isGifEncoding}
+          disabled={recorder.isRecording || recorder.isSaving || recorder.isGifEncoding}
           className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:pointer-events-none text-white rounded-sm font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
         >
           <Film className="w-3.5 h-3.5" />

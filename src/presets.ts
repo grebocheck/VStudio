@@ -23,44 +23,49 @@ export const INITIAL_RIG: RigParams = {
  * The `name`/`lore` baked into `config` are the authored fallback used when no
  * translation exists (e.g. for custom or AI-generated avatars).
  */
-export const PRESETS: PresetAvatar[] = [
+export const PARAMETRIC_PRESETS: PresetAvatar[] = [
   {
     id: 'cyber-neko',
     name: 'Мія (Cyber Neko)',
     config: {
-      skinColor: '#f5f3ff',
-      eyeColor: '#06b6d4',
-      pupilStyle: 'slit',
-      pupilColor: '#f43f5e',
+      skinColor: '#f4d4c8',
+      eyeColor: '#57b9b0',
+      pupilStyle: 'round',
+      pupilColor: '#173a42',
       eyebrowStyle: 'normal',
-      eyebrowColor: '#4f46e5',
-      hairStyleBang: 'wolf-cut',
-      hairStyleBack: 'drill-tails',
-      hairColor: '#4f46e5',
-      hairHighlightColor: '#a855f7',
-      clothingStyle: 'cyber-ninja',
-      clothingColor1: '#111827',
-      clothingColor2: '#22d3ee',
+      eyebrowColor: '#524268',
+      hairStyleBang: 'curtain-bangs',
+      hairStyleBack: 'wavy',
+      hairColor: '#65558c',
+      hairHighlightColor: '#b5a2de',
+      clothingStyle: 'hoodie',
+      clothingColor1: '#343449',
+      clothingColor2: '#9ed8cd',
       accessoryStyle: 'neko-ears',
-      accessoryColor: '#f43f5e',
-      backgroundStyle: 'gaming',
+      accessoryColor: '#65558c',
+      backgroundStyle: 'dark-studio',
       name: 'Мія',
       lore: 'Кібернетична дівчинка-кішка, яка веде стріми з віртуального неонового Токіо. Хоч вона інколи буває забудькувата, її життєрадісність та драйв притягують тисячі глядачів!',
       blushOpacity: 0.25,
       blushColor: '#ff4d6d',
       hasFangs: false,
       earStyle: 'normal',
-      hairGradient: 'sunset',
-      accessoryGlow: true,
-      headSize: 1.05,
-      neckWidth: 0.82,
-      neckHeight: 0.9,
+      hairGradient: 'none',
+      accessoryGlow: false,
+      headSize: 1.06,
+      neckWidth: 0.95,
+      neckHeight: 0.95,
       shoulderWidth: 0.94,
-      clothingPrint: 'cyber',
-      activeEmotion: 'smug',
+      clothingPrint: 'none',
+      activeEmotion: 'none',
       artStyle: 'anime',
-      faceShape: 'sharp',
-      eyeShape: 'cat-eye',
+      faceShape: 'default',
+      eyeShape: 'almond',
+      irisStyle: 'organic',
+      eyeHighlightStyle: 'standard',
+      freckles: true,
+      frecklesDensity: 0.3,
+      frecklesColor: '#ab7367',
     },
   },
   {
@@ -89,14 +94,14 @@ export const PRESETS: PresetAvatar[] = [
       blushColor: '#e11d48',
       hasFangs: true,
       earStyle: 'pointy',
-      hairGradient: 'sunset',
+      hairGradient: 'none',
       accessoryGlow: true,
       headSize: 1.08,
       neckWidth: 0.76,
       neckHeight: 0.88,
       shoulderWidth: 0.9,
       clothingPrint: 'cross',
-      activeEmotion: 'angry',
+      activeEmotion: 'none',
       artStyle: 'anime',
       faceShape: 'sharp',
       eyeShape: 'sharp',
@@ -167,7 +172,7 @@ export const PRESETS: PresetAvatar[] = [
       blushColor: '#f43f5e',
       hasFangs: false,
       earStyle: 'normal',
-      hairGradient: 'sunset',
+      hairGradient: 'none',
       accessoryGlow: false,
       headSize: 1.04,
       neckWidth: 0.72,
@@ -252,7 +257,7 @@ export const PRESETS: PresetAvatar[] = [
       neckHeight: 0.85,
       shoulderWidth: 0.85,
       clothingPrint: 'cross',
-      activeEmotion: 'shocked',
+      activeEmotion: 'none',
       artStyle: 'retro',
     },
   },
@@ -289,7 +294,7 @@ export const PRESETS: PresetAvatar[] = [
       neckHeight: 0.92,
       shoulderWidth: 0.92,
       clothingPrint: 'star',
-      activeEmotion: 'smug',
+      activeEmotion: 'none',
       artStyle: 'anime',
       faceShape: 'mature',
       eyeShape: 'cat-eye',
@@ -321,7 +326,7 @@ export const PRESETS: PresetAvatar[] = [
       blushColor: '#f472b6',
       hasFangs: false,
       earStyle: 'normal',
-      hairGradient: 'sunset',
+      hairGradient: 'none',
       accessoryGlow: true,
       headSize: 1.04,
       neckWidth: 0.76,
@@ -399,7 +404,7 @@ export const PRESETS: PresetAvatar[] = [
       blushColor: '#ef4444',
       hasFangs: false,
       earStyle: 'elf',
-      hairGradient: 'sunset',
+      hairGradient: 'none',
       accessoryGlow: true,
       headSize: 1.02,
       neckWidth: 0.85,
@@ -567,7 +572,60 @@ export const PRESETS: PresetAvatar[] = [
 ];
 
 /** Default starting avatar. */
-export const DEFAULT_CONFIG: AvatarConfig = PRESETS[0].config;
+/** Compatibility baseline for imports and old saved characters. */
+export const DEFAULT_CONFIG: AvatarConfig = {
+  ...PARAMETRIC_PRESETS[0].config,
+  modelId: 'parametric',
+  motionIntensity: 1,
+};
+
+export const MIYA_NOCTURNE_PRESET: PresetAvatar = {
+  id: 'miya-nocturne',
+  name: 'Мія Ноктюрн',
+  config: {
+    ...DEFAULT_CONFIG,
+    modelId: 'miya-nocturne',
+    modelFraming: 'portrait',
+    modelGlow: false,
+    motionIntensity: 1,
+    name: 'Мія Ноктюрн',
+    lore: 'Хранителька нічної обсерваторії, яка збирає історії під зоряним небом. Сріблясто-лавандове волосся, бірюзові очі та вишиті сузір’я на темно-синьому костюмі — її впізнаваний образ.',
+    hairColor: '#c2b9dc',
+    hairHighlightColor: '#f1ecff',
+    eyeColor: '#5bd5cf',
+    clothingColor1: '#17243d',
+    clothingColor2: '#f3e9d8',
+    accessoryColor: '#c8ab70',
+    freckles: false,
+  },
+};
+
+export const AURELIA_PRESET: PresetAvatar = {
+  id: 'aurelia-3d',
+  name: 'Аврелія',
+  config: {
+    ...DEFAULT_CONFIG,
+    modelId: 'aurelia-3d',
+    modelFraming: 'portrait',
+    modelGlow: false,
+    motionIntensity: 1,
+    name: 'Аврелія',
+    lore: 'Аврелія збирає світло далеких зірок і розповідає їхні історії. Тривимірний образ із власним оформленням матеріалів та аксесуарами на основі ліцензованої VRM-моделі pixiv.',
+    hairColor: '#c9bfdc',
+    hairHighlightColor: '#f4ecff',
+    eyeColor: '#66cfc4',
+    clothingColor1: '#20263d',
+    clothingColor2: '#eee5d3',
+    accessoryColor: '#d6b878',
+    freckles: false,
+  },
+};
+
+export const PRESETS: PresetAvatar[] = [AURELIA_PRESET, MIYA_NOCTURNE_PRESET, ...PARAMETRIC_PRESETS];
+
+/** A new studio opens on the 3D model; existing projects retain their model. */
+export const INITIAL_PRESET = AURELIA_PRESET;
+export const INITIAL_CONFIG = INITIAL_PRESET.config;
 
 type PresetStats = { presetStats: Record<string, string> };
 
