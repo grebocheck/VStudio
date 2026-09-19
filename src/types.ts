@@ -42,9 +42,11 @@ export interface NamedCameraCalibrationProfile {
   profile: CameraCalibrationProfile;
 }
 
+export type AvatarModelId = 'parametric' | 'miya-nocturne' | 'aurelia-3d' | 'seraphine-3d';
+
 export interface AvatarConfig {
   /** Missing in older projects, which continue to use the parametric renderer. */
-  modelId?: 'parametric' | 'miya-nocturne' | 'aurelia-3d';
+  modelId?: AvatarModelId;
   modelFraming?: 'portrait' | 'halfbody' | 'full';
   modelGlow?: boolean;
   /** Model movement amplitude; 1 is the natural default. */

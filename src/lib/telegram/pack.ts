@@ -1,4 +1,5 @@
 import { AvatarConfig } from '../../types';
+import { is3DModel } from '../avatarModel';
 import { safeExportFileName } from '../avatarExport';
 import { buildTelegramStickerLottie } from './build';
 import {
@@ -27,8 +28,8 @@ export async function createTelegramStickerPack(
   date = new Date(),
   buildLottie: StickerLottieBuilder = buildTelegramStickerLottie,
 ): Promise<TelegramStickerPack> {
-  if (config.modelId === 'aurelia-3d') {
-    throw new Error('Aurelia is a 3D model. Export PNG stickers; TGS supports vector artwork only.');
+  if (is3DModel(config.modelId)) {
+    throw new Error('This is a 3D model. Export PNG stickers; TGS supports vector artwork only.');
   }
   if (config.modelId === 'miya-nocturne') {
     throw new Error('Miya Nocturne uses illustrated artwork. Export PNG stickers; TGS supports vectors only.');

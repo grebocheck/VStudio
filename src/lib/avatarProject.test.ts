@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CONFIG } from '../presets';
+import { DEFAULT_CONFIG, SERAPHINE_PRESET } from '../presets';
 import { MAX_CUSTOM_PRESETS, parseImportedProject, projectFileName, sanitizeCustomPresets } from './avatarProject';
 
 describe('project validation and recovery', () => {
+  it('retains the knight model and its presentation when importing a project and recovering its collection', () => {
+    const config = { ...SERAPHINE_PRESET.config, modelFraming: 'full' as const, motionIntensity: 1.35 };
+    const saved = { id: 'custom-knight', name: 'My knight', config };
+    const imported = parseImportedProject(JSON.parse(JSON.stringify({ version: 1, config, customPresets: [saved] })));
+    expect(imported.config).toEqual(config);
+    expect(imported.customPresets?.[0].config).toEqual(config);
+    expect(sanitizeCustomPresets([saved])[0].config).toEqual(config);
+  });
+
   it('rejects unsupported versions and malformed structures before importing', () => {
     for (const raw of [
       { version: 2, config: DEFAULT_CONFIG },

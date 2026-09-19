@@ -2,6 +2,7 @@ import { applyMiyaFrame } from '../components/premium/miyaMotion';
 import { getAvatar3DSurface } from '../components/three/avatar3DRegistry';
 import { AvatarConfig, RigParams } from '../types';
 import { FRAME, HAIR_PHYSICS } from '../engine/constants';
+import { is3DModel } from './avatarModel';
 
 export const RIG_RENDER_INTERVAL_MS = 1000 / 30;
 
@@ -103,7 +104,7 @@ const setTransform = (svg: SVGSVGElement, node: string, transform: string) => {
  * blinking and mouth deformation continue to render declaratively.
  */
 export function applyAvatarFrameTransforms(svg: SVGSVGElement, config: AvatarFrameConfig, rig: RigParams): void {
-  if (svg.dataset.model === 'aurelia-3d') {
+  if (is3DModel(svg.dataset.model)) {
     getAvatar3DSurface(svg)?.applyFrame(config as AvatarConfig, rig);
     return;
   }

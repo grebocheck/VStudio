@@ -1,5 +1,6 @@
 import { MiyaNocturne } from './premium/MiyaNocturne';
 import { ThreeAvatar } from './three/ThreeAvatar';
+import { is3DModel } from '../lib/avatarModel';
 import React, { useId, useMemo } from 'react';
 import { createSvgScope, SvgScopeContext } from './avatar/SvgScope';
 import { AvatarConfig, RigParams } from '../types';
@@ -332,7 +333,7 @@ const ParametricAvatar: React.FC<VTuberAvatarProps> = ({
 };
 
 export const VTuberAvatar: React.FC<VTuberAvatarProps> = (props) =>
-  props.config.modelId === 'aurelia-3d' ? (
+  is3DModel(props.config.modelId) ? (
     <ThreeAvatar {...props} />
   ) : props.config.modelId === 'miya-nocturne' ? (
     <MiyaNocturne {...props} />

@@ -15,6 +15,8 @@ import { calculateAvatar3DPose, poseToVrmExpressions } from './avatar3DPose';
 import { addAureliaWardrobe } from './aureliaWardrobe';
 import { bodiceSurface } from './aureliaGarmentShape';
 import { addAureliaHair } from './aureliaHair';
+import { styleSeraphineAppearance } from './seraphineAppearance';
+import { addSeraphineWardrobe } from './seraphineWardrobe';
 
 const MODEL_URL = '/models/aurelia-3d/base.vrm';
 
@@ -434,17 +436,23 @@ export interface AureliaModel {
   dispose(): void;
 }
 
-export async function loadAureliaModel(): Promise<AureliaModel> {
+export async function loadAvatar3DModel(modelId: AvatarConfig['modelId'] = 'aurelia-3d'): Promise<AureliaModel> {
   const loader = new GLTFLoader();
   loader.register((parser) => new VRMLoaderPlugin(parser));
   const gltf = await loader.loadAsync(MODEL_URL);
   const vrm = gltf.userData.vrm as VRM;
   if (!vrm?.humanoid) throw new Error('The 3D avatar has no humanoid skeleton.');
   VRMUtils.removeUnnecessaryVertices(vrm.scene);
-  vrm.scene.name = 'Aurelia_Starlight_3D';
+  const knight = modelId === 'seraphine-3d';
+  vrm.scene.name = knight ? 'Seraphine_Dawnwarden_3D' : 'Aurelia_Starlight_3D';
   vrm.scene.updateMatrixWorld(true);
-  const { wardrobe, accessories } = styleAurelia(vrm);
-  fitHairCollisions(vrm);
+  const { wardrobe, accessories } = knight
+    ? (() => {
+        styleSeraphineAppearance(vrm);
+        return { wardrobe: addSeraphineWardrobe(vrm), accessories: null };
+      })()
+    : styleAurelia(vrm);
+  if (!knight) fitHairCollisions(vrm);
   vrm.scene.traverse((object) => {
     object.frustumCulled = false;
   });
@@ -484,7 +492,7 @@ export async function loadAureliaModel(): Promise<AureliaModel> {
         vrm.expressionManager?.setValue(name, value);
       vrm.update(Math.min(0.05, Math.max(0, delta)));
       wardrobe.update(Math.min(0.05, Math.max(0, delta)), pose.chestScaleY - 1);
-      accessories.update(delta);
+      accessories?.update(delta);
     },
     dispose() {
       VRMUtils.deepDispose(vrm.scene);

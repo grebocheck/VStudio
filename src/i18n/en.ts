@@ -106,6 +106,9 @@ export const en = {
   },
   // Keyed by the built-in preset id (see src/presets.ts).
   presetStats: {
+    'seraphine-3d_name': 'Seraphine',
+    'seraphine-3d_lore':
+      'Seraphine is a knight of the Dawnwatch. Beneath silver plate edged in gold, she wears royal midnight blue; the ruby at her heart recalls her promise to protect those without a sword. Her emerald gaze is steadfast in battle and warm among friends.',
     'aurelia-3d_name': 'Aurelia',
     'aurelia-3d_lore':
       'Aurelia collects the light of distant stars and shares their stories. A three-dimensional character with custom material styling and accessories, built on a licensed pixiv VRM model.',

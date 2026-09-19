@@ -2,17 +2,21 @@ import type React from 'react';
 import { Moon, Rotate3D, Sparkles } from 'lucide-react';
 import type { AvatarConfig } from '../../types';
 import { useI18n } from '../../i18n';
+import { is3DModel } from '../../lib/avatarModel';
+import { localizePreset } from '../../presets';
 
 interface PremiumModelTabProps {
   config: AvatarConfig;
   setConfig: React.Dispatch<React.SetStateAction<AvatarConfig>>;
 }
 
-/** Presentation controls for the authored illustration, shared by its appearance tabs. */
+/** Presentation controls for complete character models, shared by their appearance tabs. */
 export function PremiumModelTab({ config, setConfig }: PremiumModelTabProps) {
-  const { language } = useI18n();
+  const { language, t } = useI18n();
   const en = language === 'en';
-  const is3D = config.modelId === 'aurelia-3d';
+  const is3D = is3DModel(config.modelId);
+  const isKnight = config.modelId === 'seraphine-3d';
+  const modelName = localizePreset(config.modelId ?? null, t)?.name ?? config.name;
   const framing = config.modelFraming ?? 'portrait';
   const motionIntensity = config.motionIntensity ?? 1;
   const motionPresets = [
@@ -32,8 +36,8 @@ export function PremiumModelTab({ config, setConfig }: PremiumModelTabProps) {
       aria-label={
         is3D
           ? en
-            ? 'Aurelia model settings'
-            : 'Налаштування Аврелії'
+            ? `${modelName} model settings`
+            : `Налаштування моделі ${modelName}`
           : en
             ? 'Miya model settings'
             : 'Налаштування моделі Мії'
@@ -41,36 +45,43 @@ export function PremiumModelTab({ config, setConfig }: PremiumModelTabProps) {
     >
       <div className="rounded-2xl border border-violet-400/25 bg-violet-400/5 p-4">
         <span className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-violet-700 dark:text-violet-300">
-          {is3D ? <Rotate3D size={14} /> : <Moon size={14} />} {is3D ? 'AURELIA / 3D' : 'NOCTURNE / 01'}
+          {is3D ? <Rotate3D size={14} /> : <Moon size={14} />}{' '}
+          {isKnight ? 'SERAPHINE / DAWNWATCH' : is3D ? 'AURELIA / 3D' : 'NOCTURNE / 01'}
         </span>
         <h4 className="mt-3 text-lg font-semibold text-slate-900 dark:text-white">
           {is3D
             ? en
-              ? 'Aurelia, from every angle.'
-              : 'Аврелія з будь-якого боку.'
+              ? `${modelName}, from every angle.`
+              : `${modelName} з будь-якого боку.`
             : en
               ? 'Miya, in every detail.'
               : 'Мія — у кожній деталі.'}
         </h4>
         <p className="mt-2 text-xs leading-6 text-slate-600 dark:text-slate-300">
-          {is3D
+          {isKnight
             ? en
-              ? 'A complete three-dimensional character with a moving skeleton and facial expressions. Rotate her to see her face, hair and costume from every side.'
-              : 'Повноцінна тривимірна героїня з рухомим скелетом і мімікою. Обертайте її, щоб роздивитися обличчя, волосся та костюм з усіх боків.'
-            : en
-              ? 'Silver-lavender strands, a turquoise gaze and embroidered constellations. Her hair, face and wardrobe form one original illustration.'
-              : 'Сріблясто-лавандові пасма, бірюзовий погляд і вишиті сузір’я. Волосся, обличчя та вбрання утворюють цілісний авторський образ.'}
+              ? 'Silver plate, gold filigree and royal blue cloth. Braided golden hair frames a poised face and an emerald gaze. Explore the Dawnwatch knight from every angle.'
+              : 'Срібні лати, золота філігрань і королівська синя тканина. Золоті коси обрамляють витончене обличчя зі смарагдовими очима. Роздивіться лицарку Світанкової варти з усіх боків.'
+            : is3D
+              ? en
+                ? 'A complete three-dimensional character with a moving skeleton and facial expressions. Rotate her to see her face, hair and costume from every side.'
+                : 'Повноцінна тривимірна героїня з рухомим скелетом і мімікою. Обертайте її, щоб роздивитися обличчя, волосся та костюм з усіх боків.'
+              : en
+                ? 'Silver-lavender strands, a turquoise gaze and embroidered constellations. Her hair, face and wardrobe form one original illustration.'
+                : 'Сріблясто-лавандові пасма, бірюзовий погляд і вишиті сузір’я. Волосся, обличчя та вбрання утворюють цілісний авторський образ.'}
         </p>
         <div className="mt-4 flex items-center gap-2" aria-hidden="true">
-          {['#c2b9dc', '#5bd5cf', '#17243d', '#f3e9d8', '#c8ab70'].map((color) => (
-            <span
-              key={color}
-              className="h-5 w-5 rounded-full border border-slate-400/30"
-              style={{ background: color }}
-            />
-          ))}
+          {[config.hairColor, config.eyeColor, config.clothingColor1, config.clothingColor2, config.accessoryColor].map(
+            (color) => (
+              <span
+                key={color}
+                className="h-5 w-5 rounded-full border border-slate-400/30"
+                style={{ background: color }}
+              />
+            ),
+          )}
           <span className="ml-auto text-[9px] tracking-widest text-slate-500 dark:text-slate-400">
-            MIDNIGHT / IVORY
+            {isKnight ? 'SILVER / ROYAL BLUE' : 'MIDNIGHT / IVORY'}
           </span>
         </div>
       </div>
@@ -171,8 +182,8 @@ export function PremiumModelTab({ config, setConfig }: PremiumModelTabProps) {
       <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">
         {is3D
           ? en
-            ? 'Expressions, cursor, voice and camera tracking animate this model. Open Rigging & Calibration for pose controls, or Name & Story to personalize her. Aurelia uses a licensed pixiv VRM foundation with custom material styling and accessories.'
-            : 'Емоції, курсор, голос і трекінг камери оживляють модель. Пози доступні в розділі «Ригінг та калібрування», власні ім’я та історія — у відповідному розділі. Аврелія використовує ліцензовану основу pixiv VRM із власним оформленням матеріалів та аксесуарами.'
+            ? 'Bring her to life with expressions, cursor, voice and camera tracking. Open Rigging & Calibration for pose controls, or Name & Story to personalize her.'
+            : 'Оживіть її емоціями, курсором, голосом і трекінгом камери. Пози доступні в розділі «Ригінг та калібрування», власні ім’я та історія — у відповідному розділі.'
           : en
             ? 'Bring her to life with the expression bar, cursor, voice or camera. Open Rigging & Calibration for pose controls, or Name & Story to make her yours. For interchangeable hair and outfits, choose a customizable character from the collection.'
             : 'Оживіть Мію панеллю емоцій, курсором, голосом або камерою. Пози доступні в розділі «Ригінг та калібрування», власні ім’я та історія — у відповідному розділі. Для зміни зачісок і вбрання оберіть персонажа конструктора в колекції.'}

@@ -11,13 +11,14 @@ import { avatarToSvgElement } from './avatarSvg';
 import { extractRigNodeLayers, lottieFromRigLayers } from './svgToLottie';
 import type { LottieValue, TelegramStickerSpec } from './core';
 import type { AvatarConfig } from '../../types';
+import { is3DModel } from '../avatarModel';
 
 export { avatarToSvgElement } from './avatarSvg';
 
 /** Full vector build: avatar SVG → Lottie, for one emotion. */
 export function buildTelegramStickerLottieFromAvatar(config: AvatarConfig, spec: TelegramStickerSpec): LottieValue {
-  if (config.modelId === 'aurelia-3d') {
-    throw new Error('Aurelia is a 3D model. Export PNG stickers; TGS supports vector artwork only.');
+  if (is3DModel(config.modelId)) {
+    throw new Error('This is a 3D model. Export PNG stickers; TGS supports vector artwork only.');
   }
   if (config.modelId === 'miya-nocturne') {
     throw new Error(

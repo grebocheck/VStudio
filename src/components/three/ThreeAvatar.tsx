@@ -14,6 +14,7 @@ interface Props {
 
 export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Props) {
   const en = typeof document === 'undefined' || document.documentElement.lang !== 'uk';
+  const knight = config.modelId === 'seraphine-3d';
   const interactive = Boolean(svgRef);
   const host = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -26,6 +27,21 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
   const [wireframe, setWireframe] = useState(false);
   const [dressVisible, setDressVisible] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const outfitLabel = knight
+    ? en
+      ? dressVisible
+        ? 'Hide armor'
+        : 'Show armor'
+      : dressVisible
+        ? 'Приховати обладунки'
+        : 'Показати обладунки'
+    : en
+      ? dressVisible
+        ? 'Hide dress'
+        : 'Show dress'
+      : dressVisible
+        ? 'Приховати сукню'
+        : 'Показати сукню';
   const [attempt, setAttempt] = useState(0);
   const bindProxy = useCallback((node: SVGSVGElement | null) => {
     proxy.current = node;
@@ -37,6 +53,12 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
   }, [config, rig]);
   useEffect(() => {
     if (!canvas.current || !host.current) return;
+    setStatus('loading');
+    setError('');
+    setTurntable(false);
+    setWireframe(false);
+    setDressVisible(true);
+    delete canvas.current.dataset.ready;
     let cancelled = false,
       raf = 0,
       lastTime = 0;
@@ -63,6 +85,7 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
         }
         instance = scene;
         controller.current = scene;
+        scene.setFrame(latest.current.config, latest.current.rig);
         resize();
         if (proxy.current)
           unregister = registerAvatar3DSurface(proxy.current, {
@@ -101,7 +124,7 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
       instance?.dispose();
       controller.current = null;
     };
-  }, [attempt, interactive]);
+  }, [attempt, interactive, config.modelId]);
   useEffect(() => {
     controller.current?.setWireframe(wireframe || onScreenBuster);
   }, [wireframe, onScreenBuster, status]);
@@ -117,7 +140,7 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'aurelia-starlight.glb';
+      link.download = knight ? 'seraphine-dawnwarden.glb' : 'aurelia-starlight.glb';
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (reason) {
@@ -132,12 +155,20 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
         ref={canvas}
         data-avatar3d="true"
         role="img"
-        aria-label={en ? 'Aurelia Starlight interactive 3D avatar' : 'Інтерактивний 3D-аватар Аурелія'}
+        aria-label={
+          knight
+            ? en
+              ? 'Seraphine Dawnwarden interactive 3D avatar'
+              : 'Інтерактивний 3D-аватар Серафіна'
+            : en
+              ? 'Aurelia Starlight interactive 3D avatar'
+              : 'Інтерактивний 3D-аватар Аврелія'
+        }
         className="h-full w-full touch-none"
       />
       <svg
         ref={bindProxy}
-        data-model="aurelia-3d"
+        data-model={config.modelId}
         data-avatar3d-proxy="true"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 400 400"
@@ -203,12 +234,8 @@ export function ThreeAvatar({ config, rig, svgRef, onScreenBuster = false }: Pro
             <ScanLine size={15} />
           </button>
           <button
-            title={
-              en ? (dressVisible ? 'Hide dress' : 'Show dress') : dressVisible ? 'Приховати сукню' : 'Показати сукню'
-            }
-            aria-label={
-              en ? (dressVisible ? 'Hide dress' : 'Show dress') : dressVisible ? 'Приховати сукню' : 'Показати сукню'
-            }
+            title={outfitLabel}
+            aria-label={outfitLabel}
             aria-pressed={dressVisible}
             onClick={() => setDressVisible((value) => !value)}
           >

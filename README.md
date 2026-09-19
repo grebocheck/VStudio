@@ -2,9 +2,13 @@
 
 A browser studio for expressive anime characters, Telegram sticker packs, and live avatars on stream. New studios open **Aurelia**, a full 3D avatar with skinned geometry, a humanoid skeleton, facial expressions, and a camera you can rotate around the model. The studio and exports work without an AI account.
 
+## Meet Seraphine
+
+**Seraphine Dawnwarden** is also available at the top of the character library: a separate 3D knight with silver-and-gold armor, midnight-blue cloth, ruby details and a blonde braided updo. Choose **Seraphine**, then use **Full body** and drag to orbit to inspect her complete outfit. She shares the expression/tracking controls, transparent PNG, Telegram PNG pack and GLB workflows. [Model provenance and export notes](public/models/seraphine-3d/README.md) describe the shared licensed foundation. Aurelia remains the default for new studios.
+
 ## Meet Aurelia
 
-1. Choose **Aurelia** at the top of the character library. Drag in the viewer to orbit the model through 360°; scroll to zoom.
+1. Choose **Aurelia** in the character library. Drag in the viewer to orbit the model through 360°; scroll to zoom.
 2. Switch between **Portrait**, **Half-length**, and **Full body** framing. **Front view** resets the camera; **Turntable** rotates it automatically; **Wireframe** reveals the actual model geometry.
 3. Try expression buttons, cursor, voice or camera tracking. Appearance tabs offer **Quiet**, **Natural**, and **Expressive** motion energy; her hairstyle and outfit remain one consistent design.
 4. Save her name, story and settings, capture a transparent PNG, build a Telegram PNG pack, or use **Download GLB** in the viewer to save the 3D asset.

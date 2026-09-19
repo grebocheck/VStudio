@@ -4,6 +4,7 @@ import { avatarToSvgElement, stickerRig } from './avatarSvg';
 import { TELEGRAM_STICKER_SIZE, TELEGRAM_STICKER_SPECS, type TelegramStickerSpec } from './core';
 import { createZipBlob } from './zip';
 import { encodePalettePng } from './png';
+import { is3DModel } from '../avatarModel';
 
 // https://core.telegram.org/import-stickers#static-stickers
 export const TELEGRAM_STICKER_MAX_PNG_BYTES = 512 * 1024;
@@ -71,7 +72,7 @@ async function drawStickerArtwork(
   canvas: HTMLCanvasElement,
   context: CanvasRenderingContext2D,
 ): Promise<void> {
-  if (config.modelId === 'aurelia-3d') {
+  if (is3DModel(config.modelId)) {
     const { renderAvatar3DStill } = await import('../../components/three/avatar3DScene');
     const still = await renderAvatar3DStill(config, stickerRig(spec), canvas.width, canvas.height);
     const artwork = `<image href="${still.toDataURL('image/png')}" width="400" height="400"/>`;

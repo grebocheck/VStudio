@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import type { AvatarConfig, RigParams } from '../../types';
-import { loadAureliaModel } from './aureliaModel';
+import { loadAvatar3DModel } from './aureliaModel';
 
 export interface Avatar3DScene {
   canvas: HTMLCanvasElement;
@@ -27,7 +27,7 @@ export async function createAvatar3DScene(
   interactive = true,
   signal?: AbortSignal,
 ): Promise<Avatar3DScene> {
-  const model = await loadAureliaModel();
+  const model = await loadAvatar3DModel(config.modelId);
   // Cancelled StrictMode mounts must never allocate or lose a newer mount's context.
   if (signal?.aborted) {
     model.dispose();
@@ -221,6 +221,8 @@ export async function createAvatar3DScene(
 /** One serialized offscreen context renders static sticker poses; no WebGL context per reaction. */
 let stillQueue: Promise<unknown> = Promise.resolve();
 let stillScene: Promise<Avatar3DScene> | null = null;
+let stillModelId: AvatarConfig['modelId'];
+let stillCanvas: HTMLCanvasElement | null = null;
 export function renderAvatar3DStill(
   config: AvatarConfig,
   rig: RigParams,
@@ -228,11 +230,20 @@ export function renderAvatar3DStill(
   height: number,
 ): Promise<HTMLCanvasElement> {
   const task = stillQueue.then(async () => {
-    if (!stillScene)
-      stillScene = createAvatar3DScene(document.createElement('canvas'), config, rig, false).catch((error) => {
+    // Each character has different geometry. Reuse the context for repeated poses of
+    // one character, but never export the preceding character after a library switch.
+    if (stillScene && stillModelId !== config.modelId) {
+      (await stillScene).dispose();
+      stillScene = null;
+    }
+    stillModelId = config.modelId;
+    if (!stillScene) {
+      stillCanvas ??= document.createElement('canvas');
+      stillScene = createAvatar3DScene(stillCanvas, config, rig, false).catch((error) => {
         stillScene = null;
         throw error;
       });
+    }
     const controller = await stillScene;
     controller.setFrame(config, rig);
     controller.resetView();

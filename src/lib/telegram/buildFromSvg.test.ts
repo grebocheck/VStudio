@@ -12,12 +12,15 @@ describe('illustrated model TGS compatibility', () => {
     ).toThrow('Export PNG');
   });
 
-  it('rejects 3D models through both vector builders and the pack API', async () => {
-    const config = { ...DEFAULT_CONFIG, modelId: 'aurelia-3d' as const };
-    expect(() => buildTelegramStickerLottie(config, TELEGRAM_STICKER_SPECS[0])).toThrow('3D model');
-    expect(() => buildTelegramStickerLottieFromAvatar(config, TELEGRAM_STICKER_SPECS[0])).toThrow('3D model');
-    await expect(createTelegramStickerPack(config, 'Aurelia')).rejects.toThrow('3D model');
-  });
+  it.each(['aurelia-3d', 'seraphine-3d'] as const)(
+    'rejects %s through both vector builders and the pack API',
+    async (modelId) => {
+      const config = { ...DEFAULT_CONFIG, modelId };
+      expect(() => buildTelegramStickerLottie(config, TELEGRAM_STICKER_SPECS[0])).toThrow('3D model');
+      expect(() => buildTelegramStickerLottieFromAvatar(config, TELEGRAM_STICKER_SPECS[0])).toThrow('3D model');
+      await expect(createTelegramStickerPack(config, config.name)).rejects.toThrow('3D model');
+    },
+  );
 
   it('also rejects procedural replacement artwork through the public pack API', async () => {
     const config = { ...DEFAULT_CONFIG, modelId: 'miya-nocturne' as const };

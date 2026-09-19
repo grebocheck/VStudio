@@ -4,6 +4,7 @@ import { VTuberAvatar } from '../../components/VTuberAvatar';
 import { INITIAL_RIG } from '../../presets';
 import type { AvatarConfig, RigParams } from '../../types';
 import type { TelegramStickerSpec } from './core';
+import { is3DModel } from '../avatarModel';
 
 /** A deliberate still pose; independent of tracking, blinking and the live camera. */
 export function stickerRig(spec: TelegramStickerSpec): RigParams {
@@ -23,7 +24,7 @@ export function stickerRig(spec: TelegramStickerSpec): RigParams {
 
 /** Shared avatar artwork, including gradients, face details and the chosen outfit. */
 export function avatarToSvgElement(config: AvatarConfig, spec: TelegramStickerSpec): SVGSVGElement {
-  if (config.modelId === 'aurelia-3d') throw new Error('3D stickers require the asynchronous scene renderer.');
+  if (is3DModel(config.modelId)) throw new Error('3D stickers require the asynchronous scene renderer.');
   if (typeof DOMParser === 'undefined') {
     throw new Error('Sticker rendering requires a browser.');
   }

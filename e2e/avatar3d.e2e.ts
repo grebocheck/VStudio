@@ -46,9 +46,12 @@ async function pixels(canvas: Locator) {
   });
 }
 
-function changedPixels(first: number[], second: number[]): number {
+function changedPixels(first: number[], second: number[], foregroundOnly = false): number {
   let changed = 0;
+  let samples = 0;
   for (let index = 0; index < first.length; index += 4) {
+    if (foregroundOnly && first[index + 3] < 32 && second[index + 3] < 32) continue;
+    samples++;
     const difference =
       Math.abs(first[index] - second[index]) +
       Math.abs(first[index + 1] - second[index + 1]) +
@@ -56,7 +59,7 @@ function changedPixels(first: number[], second: number[]): number {
       Math.abs(first[index + 3] - second[index + 3]);
     if (difference > 70) changed++;
   }
-  return changed / (first.length / 4);
+  return changed / Math.max(1, samples);
 }
 
 async function orbitQuarterTurn(page: Page, canvas: Locator) {
@@ -109,7 +112,8 @@ test('renders a volumetric WebGL avatar from front, side and back and exposes wo
   expect(changedPixels(front.rgba, returned.rgba)).toBeLessThan(0.08);
 
   await page.locator('.avatar-viewport').getByRole('button', { name: 'Wireframe', exact: true }).click();
-  await expect.poll(async () => changedPixels(returned.rgba, (await pixels(canvas)).rgba)).toBeGreaterThan(0.05);
+  // Judge the model's pixels, not the transparent margins of a wide responsive viewport.
+  await expect.poll(async () => changedPixels(returned.rgba, (await pixels(canvas)).rgba, true)).toBeGreaterThan(0.15);
   await page.locator('.avatar-viewport').getByRole('button', { name: 'Wireframe', exact: true }).click();
   await page.locator('.avatar-viewport').getByRole('button', { name: 'Turntable', exact: true }).click();
   await expect

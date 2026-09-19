@@ -1,3 +1,5 @@
+import { is3DModel } from './avatarModel';
+
 export interface AvatarSvgExportOptions {
   width?: number;
   height?: number;
@@ -26,8 +28,8 @@ export function avatarExportFileName(baseName: string, extension: string, date =
 }
 
 export function serializeAvatarSvg(svg: SVGSVGElement, options: AvatarSvgExportOptions = {}): string {
-  if (svg.getAttribute('data-model') === 'aurelia-3d') {
-    throw new Error('Aurelia is a 3D model. Export a PNG image or download the GLB model from the viewer.');
+  if (is3DModel(svg.getAttribute('data-model'))) {
+    throw new Error('This is a 3D model. Export a PNG image or download the GLB model from the viewer.');
   }
   const width = options.width ?? DEFAULT_EXPORT_SIZE;
   const height = options.height ?? DEFAULT_EXPORT_SIZE;
@@ -167,7 +169,7 @@ export async function drawAvatarSvgToCanvas(
   ctx: CanvasRenderingContext2D,
   options: AvatarSvgExportOptions = {},
 ): Promise<void> {
-  if (svg.getAttribute('data-model') === 'aurelia-3d') {
+  if (is3DModel(svg.getAttribute('data-model'))) {
     const surface = getAvatar3DSurface(svg);
     if (!surface) throw new Error('The 3D model is still loading. Wait for the model to appear, then try again.');
     surface.drawToCanvas(canvas, ctx);
@@ -190,7 +192,7 @@ export async function drawAvatarLiveFrameToCanvas(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
 ): Promise<void> {
-  if (svg.getAttribute('data-model') === 'aurelia-3d') {
+  if (is3DModel(svg.getAttribute('data-model'))) {
     const surface = getAvatar3DSurface(svg);
     if (!surface) throw new Error('The 3D model is still loading. Wait for the model to appear, then try again.');
     ctx.clearRect(0, 0, canvas.width, canvas.height);

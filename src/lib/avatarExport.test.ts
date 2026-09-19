@@ -121,9 +121,9 @@ describe('illustrated SVG exports', () => {
   });
 });
 
-describe('3D renderer capture', () => {
+describe.each(['aurelia-3d', 'seraphine-3d'])('%s renderer capture', (modelId) => {
   const proxy = () =>
-    new DOMParser().parseFromString('<svg data-model="aurelia-3d"/>', 'image/svg+xml')
+    new DOMParser().parseFromString(`<svg data-model="${modelId}"/>`, 'image/svg+xml')
       .documentElement as unknown as SVGSVGElement;
   it('captures the registered live camera instead of serializing the empty proxy', async () => {
     const svg = proxy();

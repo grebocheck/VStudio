@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_CONFIG, INITIAL_RIG } from '../presets';
 import { applyAvatarFrameTransforms, calculateAvatarFrameStyles, shouldPublishRigFrame } from './avatarFrame';
+import { registerAvatar3DSurface } from '../components/three/avatar3DRegistry';
 
 describe('shouldPublishRigFrame', () => {
   it('publishes the first frame and throttles later React renders to about 30 fps', () => {
@@ -35,6 +36,26 @@ describe('calculateAvatarFrameStyles', () => {
 });
 
 describe('applyAvatarFrameTransforms', () => {
+  it.each(['aurelia-3d', 'seraphine-3d'] as const)(
+    'routes live %s tracking frames to the registered 3D scene',
+    (modelId) => {
+      const svg = { dataset: { model: modelId }, querySelector: vi.fn() } as unknown as SVGSVGElement;
+      const config = { ...DEFAULT_CONFIG, modelId };
+      const rig = { ...INITIAL_RIG, angleX: 18, mouthOpen: 0.7 };
+      const applyFrame = vi.fn();
+      const unregister = registerAvatar3DSurface(svg, {
+        canvas: {} as HTMLCanvasElement,
+        applyFrame,
+        drawToCanvas: vi.fn(),
+        exportGlb: vi.fn(),
+      });
+      applyAvatarFrameTransforms(svg, config, rig);
+      expect(applyFrame).toHaveBeenCalledWith(config, rig);
+      expect(svg.querySelector).not.toHaveBeenCalled();
+      unregister();
+    },
+  );
+
   it('updates SVG transforms and debug coordinates without a React render', () => {
     const styleNodes = new Map<string, { style: { transform: string } }>();
     ['back-hair', 'chest', 'head', 'head-outline', 'front-hair', 'face', 'accessory', 'debug-face'].forEach((node) => {

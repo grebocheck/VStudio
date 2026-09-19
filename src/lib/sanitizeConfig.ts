@@ -6,7 +6,7 @@ import { AvatarConfig } from '../types';
  * JSON) without letting invalid values break the SVG renderer.
  */
 const ENUMS = {
-  modelId: ['parametric', 'miya-nocturne', 'aurelia-3d'],
+  modelId: ['parametric', 'miya-nocturne', 'aurelia-3d', 'seraphine-3d'],
   modelFraming: ['portrait', 'halfbody', 'full'],
   activeEmotion: [
     'none',

@@ -2,7 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { parseHTML } from 'linkedom';
-import { DEFAULT_CONFIG, INITIAL_PRESET, MIYA_NOCTURNE_PRESET, PARAMETRIC_PRESETS, PRESETS } from '../presets';
+import {
+  DEFAULT_CONFIG,
+  INITIAL_PRESET,
+  MIYA_NOCTURNE_PRESET,
+  PARAMETRIC_PRESETS,
+  PRESETS,
+  SERAPHINE_PRESET,
+} from '../presets';
 import { MAX_CUSTOM_PRESETS, MAX_PROJECT_FILE_BYTES } from '../lib/avatarProject';
 import { STORAGE_KEYS } from '../lib/storage';
 import { parseImportedProject, useAvatarStore, type AvatarStore } from './useAvatarStore';
@@ -101,6 +108,20 @@ describe('useAvatarStore project workflow', () => {
     expect(store.config.motionIntensity).toBe(1.35);
   });
 
+  it('saves and restores Seraphine as a separate model without replacing Aurelia', async () => {
+    await mount();
+    expect(store.config.modelId).toBe('aurelia-3d');
+    await act(async () => store.applyPreset(SERAPHINE_PRESET));
+    await act(async () => store.editConfig((previous) => ({ ...previous, modelFraming: 'full', name: 'Dawnwatch' })));
+    await act(async () => store.saveCurrentAsPreset('My knight'));
+    const saved = store.customPresets[0];
+    await act(async () => store.applyPreset(INITIAL_PRESET));
+    expect(store.config.modelId).toBe('aurelia-3d');
+    await act(async () => store.applyPreset(saved));
+    expect(store.config).toMatchObject({ modelId: 'seraphine-3d', modelFraming: 'full', name: 'Dawnwatch' });
+    expect(JSON.parse(storage.get(STORAGE_KEYS.config)!)).toMatchObject({ modelId: 'seraphine-3d' });
+  });
+
   it('restores old saved characters without changing their renderer or active preset', async () => {
     storage.set(STORAGE_KEYS.config, JSON.stringify(PARAMETRIC_PRESETS[0].config));
     await mount();
@@ -130,11 +151,11 @@ describe('useAvatarStore project workflow', () => {
   it('groups rapid functional edits, ignores no-ops, and restores preset selection', async () => {
     await mount();
     const original = store.config;
-    expect(store.activePresetKey).toBe(PRESETS[0].id);
+    expect(store.activePresetKey).toBe(INITIAL_PRESET.id);
     await act(async () => {
       store.editConfig((previous) => ({ ...previous }));
     });
-    expect(store.activePresetKey).toBe(PRESETS[0].id);
+    expect(store.activePresetKey).toBe(INITIAL_PRESET.id);
     expect(store.canUndo).toBe(false);
     await act(async () => {
       store.editConfig((previous) => ({ ...previous, name: 'A' }));
@@ -145,7 +166,7 @@ describe('useAvatarStore project workflow', () => {
     expect(store.activePresetKey).toBeNull();
     await act(async () => store.undo());
     expect(store.config).toEqual(original);
-    expect(store.activePresetKey).toBe(PRESETS[0].id);
+    expect(store.activePresetKey).toBe(INITIAL_PRESET.id);
     expect(store.canUndo).toBe(false);
     expect(store.canRedo).toBe(true);
     await act(async () => store.redo());

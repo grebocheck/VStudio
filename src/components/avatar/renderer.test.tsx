@@ -5,8 +5,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { VTuberAvatar } from '../VTuberAvatar';
 import { INITIAL_RIG, PRESETS } from '../../presets';
 import type { Emotion } from '../../types';
+import { is3DModel } from '../../lib/avatarModel';
 
-const SVG_PRESETS = PRESETS.filter((preset) => preset.config.modelId !== 'aurelia-3d');
+const SVG_PRESETS = PRESETS.filter((preset) => !is3DModel(preset.config.modelId));
 
 function unresolvedReferences(svg: Element) {
   const ids = new Set(Array.from(svg.querySelectorAll('[id]'), (element) => element.id));

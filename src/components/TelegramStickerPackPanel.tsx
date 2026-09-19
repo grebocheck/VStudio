@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Download, ExternalLink, LoaderCircle, Package, Send } from 'lucide-react';
 import type { AvatarConfig } from '../types';
+import { is3DModel } from '../lib/avatarModel';
 import { useI18n } from '../i18n';
 import { downloadBlob, safeExportFileName } from '../lib/avatarExport';
 import { TELEGRAM_STICKER_SPECS, type TelegramStickerSlug } from '../lib/telegram/core';
@@ -51,7 +52,7 @@ export const TelegramStickerPackPanel: React.FC<TelegramStickerPackPanelProps> =
   } | null>(null);
   const configKey = JSON.stringify(config);
   const illustrated = config.modelId === 'miya-nocturne';
-  const is3D = config.modelId === 'aurelia-3d';
+  const is3D = is3DModel(config.modelId);
   const vectorSupported = !illustrated && !is3D;
   const currentPack = lastExport?.key === configKey ? lastExport.pack : null;
   const currentPreview =
@@ -366,8 +367,8 @@ export const TelegramStickerPackPanel: React.FC<TelegramStickerPackPanelProps> =
         <p className="mt-3 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
           {is3D
             ? isEn
-              ? 'Aurelia’s 3D poses export as PNG stickers. TGS supports vector artwork only.'
-              : '3D-пози Аврелії експортуються в PNG-стікери. TGS підтримує лише векторну графіку.'
+              ? 'Your character’s 3D poses export as PNG stickers. TGS supports vector artwork only.'
+              : '3D-пози персонажа експортуються в PNG-стікери. TGS підтримує лише векторну графіку.'
             : illustrated
               ? isEn
                 ? 'Miya Nocturne’s illustrated layers are available as detailed PNG stickers. TGS supports vector artwork only.'

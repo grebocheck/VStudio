@@ -621,7 +621,41 @@ export const AURELIA_PRESET: PresetAvatar = {
   },
 };
 
-export const PRESETS: PresetAvatar[] = [AURELIA_PRESET, MIYA_NOCTURNE_PRESET, ...PARAMETRIC_PRESETS];
+export const SERAPHINE_PRESET: PresetAvatar = {
+  id: 'seraphine-3d',
+  name: 'Серафіна',
+  config: {
+    ...DEFAULT_CONFIG,
+    modelId: 'seraphine-3d',
+    modelFraming: 'halfbody',
+    modelGlow: false,
+    motionIntensity: 1,
+    name: 'Серафіна',
+    lore: 'Серафіна — лицарка Світанкової варти. Під срібними латами із золотим оздобленням вона носить королівський синій, а рубін біля серця нагадує про обіцянку захищати тих, хто не має власного меча. Її смарагдовий погляд незворушний у бою й теплий у колі друзів.',
+    skinColor: '#f9ded1',
+    hairStyleBang: 'side',
+    hairStyleBack: 'bun',
+    hairColor: '#dfb65f',
+    hairHighlightColor: '#fff0b4',
+    eyebrowColor: '#92703e',
+    eyeColor: '#3aa98c',
+    pupilColor: '#123f39',
+    clothingStyle: 'royal-knight',
+    clothingColor1: '#152c58',
+    clothingColor2: '#dce5ed',
+    accessoryStyle: 'tiara',
+    accessoryColor: '#cfa64f',
+    blushOpacity: 0.16,
+    blushColor: '#e88e8f',
+    freckles: false,
+    faceShape: 'sharp',
+    eyeShape: 'almond',
+    irisStyle: 'gemstone',
+    lipColor: '#c77379',
+  },
+};
+
+export const PRESETS: PresetAvatar[] = [SERAPHINE_PRESET, AURELIA_PRESET, MIYA_NOCTURNE_PRESET, ...PARAMETRIC_PRESETS];
 
 /** A new studio opens on the 3D model; existing projects retain their model. */
 export const INITIAL_PRESET = AURELIA_PRESET;

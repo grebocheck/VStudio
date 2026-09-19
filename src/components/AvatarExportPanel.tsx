@@ -3,6 +3,7 @@ import { Download, FileCode2, ImageDown } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme/ThemeContext';
 import type { AvatarConfig } from '../types';
+import { is3DModel } from '../lib/avatarModel';
 import {
   avatarExportFileName,
   avatarSvgToPngBlob,
@@ -23,7 +24,7 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
   const copy = t.rightSidebar.avatarExport;
   const [isExporting, setIsExporting] = useState<'png' | 'svg' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const is3D = modelId === 'aurelia-3d';
+  const is3D = is3DModel(modelId);
 
   const getSourceSvg = () => {
     if (!sourceRef.current) {
@@ -116,8 +117,8 @@ export const AvatarExportPanel: React.FC<AvatarExportPanelProps> = ({ sourceRef,
       {is3D && (
         <p className="text-[10px] leading-relaxed text-slate-500 dark:text-white/55">
           {language === 'en'
-            ? 'Aurelia exports as PNG here. For the complete 3D model, use Download GLB in the viewer; SVG is not available for 3D scenes.'
-            : 'Тут Аврелія експортується в PNG. Повну 3D-модель можна завантажити кнопкою GLB у переглядачі; SVG недоступний для 3D-сцен.'}
+            ? 'Export a PNG portrait here, or download the complete GLB model in the viewer. SVG is not available for 3D scenes.'
+            : 'Тут можна експортувати PNG-портрет, а повну GLB-модель — завантажити в переглядачі. SVG недоступний для 3D-сцен.'}
         </p>
       )}
 

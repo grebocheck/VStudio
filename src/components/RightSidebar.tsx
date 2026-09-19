@@ -21,6 +21,8 @@ import { AiTab } from './sidebar/AiTab';
 import { StickersTab } from './sidebar/StickersTab';
 import { ObsTab } from './sidebar/ObsTab';
 import { PremiumModelTab } from './sidebar/PremiumModelTab';
+import { is3DModel } from '../lib/avatarModel';
+import { localizePreset } from '../presets';
 
 export interface RightSidebarProps {
   activeSidebarTab: SidebarTab;
@@ -66,10 +68,13 @@ const RightSidebarComponent: React.FC<RightSidebarProps> = (props) => {
   const { t, language } = useI18n();
   const { theme } = useTheme();
   const isEn = language === 'en';
-  const isFixedModel = config.modelId === 'miya-nocturne' || config.modelId === 'aurelia-3d';
+  const isFixedModel = config.modelId === 'miya-nocturne' || is3DModel(config.modelId);
   const showModelSettings = isFixedModel && ['hair', 'face', 'clothes', 'ai'].includes(activeSidebarTab);
-  const modelTitle =
-    config.modelId === 'aurelia-3d' ? (isEn ? 'Aurelia · 3D' : 'Аврелія · 3D') : isEn ? 'Miya Nocturne' : 'Мія Ноктюрн';
+  const modelTitle = is3DModel(config.modelId)
+    ? `${localizePreset(config.modelId, t)?.name ?? config.name} · 3D`
+    : isEn
+      ? 'Miya Nocturne'
+      : 'Мія Ноктюрн';
 
   return (
     <aside className="inspector-panel" id="right-sidebar" aria-label={isEn ? 'Avatar editor' : 'Редактор аватара'}>

@@ -6,6 +6,7 @@ import { useI18n } from '../i18n';
 import { localizePreset } from '../presets';
 import { EmoteTriggerBar } from './CenterStageStatic';
 import { avatarSvgToPngBlob, avatarExportFileName, downloadBlob } from '../lib/avatarExport';
+import { is3DModel } from '../lib/avatarModel';
 
 interface CenterStageProps {
   config: AvatarConfig;
@@ -43,6 +44,7 @@ export const CenterStage: React.FC<CenterStageProps> = ({
 }) => {
   const { t, language } = useI18n();
   const en = language === 'en';
+  const is3D = is3DModel(config.modelId);
   const resumeMode = useRef<{ trackingMode: TrackingMode; micActive: boolean } | null>(null);
   const [backdrop, setBackdrop] = useState('lavender');
   const [zoom, setZoom] = useState(1);
@@ -88,13 +90,11 @@ export const CenterStage: React.FC<CenterStageProps> = ({
           <span>{en ? 'Surprise me' : 'Здивуй мене'}</span>
         </button>
       </div>
-      {(config.modelId === 'miya-nocturne' || config.modelId === 'aurelia-3d') && (
+      {(config.modelId === 'miya-nocturne' || is3D) && (
         <div className="premium-framing" role="group" aria-label={en ? 'Model framing' : 'Кадрування моделі'}>
           <span>
-            {config.modelId === 'aurelia-3d'
-              ? en
-                ? 'AURELIA · 3D'
-                : 'АВРЕЛІЯ · 3D'
+            {is3D
+              ? `${localizePreset(config.modelId ?? null, t)?.name.toLocaleUpperCase() ?? name} · 3D`
               : en
                 ? 'MIYA · NOCTURNE'
                 : 'МІЯ · НОКТЮРН'}
@@ -107,10 +107,8 @@ export const CenterStage: React.FC<CenterStageProps> = ({
             >
               {
                 (en
-                  ? ['Portrait', 'Half-length', config.modelId === 'aurelia-3d' ? 'Full body' : 'Complete artwork']
-                  : ['Портрет', 'До пояса', config.modelId === 'aurelia-3d' ? 'На повний зріст' : 'Повний образ'])[
-                  index
-                ]
+                  ? ['Portrait', 'Half-length', is3D ? 'Full body' : 'Complete artwork']
+                  : ['Портрет', 'До пояса', is3D ? 'На повний зріст' : 'Повний образ'])[index]
               }
             </button>
           ))}
