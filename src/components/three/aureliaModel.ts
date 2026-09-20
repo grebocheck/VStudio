@@ -17,6 +17,8 @@ import { bodiceSurface } from './aureliaGarmentShape';
 import { addAureliaHair } from './aureliaHair';
 import { styleSeraphineAppearance } from './seraphineAppearance';
 import { addSeraphineWardrobe } from './seraphineWardrobe';
+import { addSeraphineRibbons } from './seraphineRibbons';
+import { createSeraphineExpressions } from './seraphineExpressions';
 
 const MODEL_URL = '/models/aurelia-3d/base.vrm';
 
@@ -449,9 +451,10 @@ export async function loadAvatar3DModel(modelId: AvatarConfig['modelId'] = 'aure
   const { wardrobe, accessories } = knight
     ? (() => {
         styleSeraphineAppearance(vrm);
-        return { wardrobe: addSeraphineWardrobe(vrm), accessories: null };
+        return { wardrobe: addSeraphineWardrobe(vrm), accessories: addSeraphineRibbons(vrm) };
       })()
     : styleAurelia(vrm);
+  const expressions = knight ? createSeraphineExpressions(vrm) : null;
   if (!knight) fitHairCollisions(vrm);
   vrm.scene.traverse((object) => {
     object.frustumCulled = false;
@@ -488,8 +491,10 @@ export async function loadAvatar3DModel(modelId: AvatarConfig['modelId'] = 'aure
         }
       set('leftEye', pose.eyeRotation.x, pose.eyeRotation.y, 0);
       set('rightEye', pose.eyeRotation.x, pose.eyeRotation.y, 0);
-      for (const [name, value] of Object.entries(poseToVrmExpressions(pose)))
-        vrm.expressionManager?.setValue(name, value);
+      if (expressions) expressions.apply(pose, rig);
+      else
+        for (const [name, value] of Object.entries(poseToVrmExpressions(pose)))
+          vrm.expressionManager?.setValue(name, value);
       vrm.update(Math.min(0.05, Math.max(0, delta)));
       wardrobe.update(Math.min(0.05, Math.max(0, delta)), pose.chestScaleY - 1);
       accessories?.update(delta);

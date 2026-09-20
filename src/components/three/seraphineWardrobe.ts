@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { VRM, VRMHumanBoneName } from '@pixiv/three-vrm';
+import { MToonMaterial, type VRM, type VRMHumanBoneName } from '@pixiv/three-vrm';
 import { addAureliaBody } from './aureliaBody';
 import { bindAureliaGeometry, getAureliaSkeleton } from './aureliaSkinning';
 import { bodySurface } from './aureliaGarmentShape';
@@ -29,6 +29,15 @@ export function addSeraphineWardrobe(vrm: VRM): { update(delta: number, breath: 
     body.torso.name = 'Seraphine_Continuous_Torso';
     body.shorts.name = 'Seraphine_Fitted_Underlayer';
   }
+  // The shared body builder supplies Aurelia's cool skin shade; match Seraphine's warmer face at the neck.
+  vrm.scene.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+      if (!(material instanceof MToonMaterial) || !/Body_00_SKIN|Aurelia_Continuous_Body_Skin/.test(material.name))
+        continue;
+      material.shadeColorFactor.set('#edc0b4');
+    }
+  });
   vrm.scene.updateMatrixWorld(true);
   const skeleton = getAureliaSkeleton(vrm);
   const { normal, map } = seraphineTextiles();
