@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { MToonMaterial, type VRM } from '@pixiv/three-vrm';
 import { addAureliaBody, type AureliaBody } from './aureliaBody';
+import { addAureliaWardrobe } from './aureliaWardrobe';
 
 interface SourceDocument {
   scene: number;
@@ -228,4 +229,111 @@ describe('Aurelia continuous body on the shipped VRM', () => {
     }
     expect(maximumGap).toBeLessThan(1e-6);
   });
+});
+
+describe('Aurelia shoulder clothing on the shipped VRM', () => {
+  it('keeps straps, lace and sleeves outside the skin through arm poses and breathing', () => {
+    const { vrm, source, scene, skeleton, bone } = sourceFixture();
+    const wardrobe = addAureliaWardrobe(vrm);
+    const torso = scene.getObjectByName('Aurelia_Continuous_Torso') as THREE.SkinnedMesh;
+    const skin = [source, torso];
+    const collisionSkin = skin.map(
+      (mesh) => new THREE.Mesh(mesh.geometry.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })),
+    );
+    const garments: THREE.SkinnedMesh[] = [];
+    scene.traverse((object) => {
+      if (
+        object instanceof THREE.SkinnedMesh &&
+        (/Aurelia_Shoulder_(Strap|Lace)/.test(object.name) || object.name.endsWith('Gathered_Princess_Sleeve'))
+      )
+        garments.push(object);
+    });
+    expect(garments).toHaveLength(8);
+    for (const mesh of garments.filter((garment) => garment.name.includes('Shoulder_'))) {
+      // A shoulder fit must not project rear straps sideways onto the distant upper arm.
+      mesh.geometry.computeBoundingBox();
+      const bounds = mesh.geometry.boundingBox!;
+      expect(Math.max(Math.abs(bounds.min.x), Math.abs(bounds.max.x))).toBeLessThan(0.15);
+    }
+    const probes = garments.flatMap((mesh) => {
+      const position = mesh.geometry.getAttribute('position');
+      const sleeve = mesh.name.endsWith('Gathered_Princess_Sleeve');
+      const arm = bone(mesh.name.includes('_left_') ? 'leftUpperArm' : 'rightUpperArm');
+      const elbow = bone(mesh.name.includes('_left_') ? 'leftLowerArm' : 'rightLowerArm');
+      const origin = arm.getWorldPosition(new THREE.Vector3());
+      const axis = elbow.getWorldPosition(new THREE.Vector3()).sub(origin).normalize();
+      return Array.from({ length: position.count }, (_, i) => {
+        const point = new THREE.Vector3().fromBufferAttribute(position, i);
+        const center = sleeve
+          ? origin.clone().addScaledVector(axis, point.clone().sub(origin).dot(axis))
+          : new THREE.Vector3(point.x, Math.min(point.y, 1.245), -0.015);
+        return { mesh, vertex: i, center };
+      }).filter((_, i) => i % 5 === 0);
+    });
+    const rest = skeleton.bones.map((joint) => joint.quaternion.clone());
+    const ray = new THREE.Raycaster();
+    let minimumClearance = Infinity,
+      checked = 0;
+    let closest: unknown;
+    for (const [arms, turn, breath] of [
+      [0, 0, 0],
+      [1.18, 0, 0],
+      [0.5, 0.2, 0.006],
+      [1.35, -0.2, -0.006],
+    ]) {
+      skeleton.bones.forEach((joint, i) => joint.quaternion.copy(rest[i]));
+      for (const [side, sign] of [
+        ['left', 1],
+        ['right', -1],
+      ] as const)
+        bone(`${side}UpperArm`).quaternion.multiply(
+          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), sign * arms),
+        );
+      bone('spine').quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), turn));
+      wardrobe.update(0, breath);
+      scene.updateMatrixWorld(true);
+      skeleton.update();
+      // Bake the actual posed skin once; avoid reskinning it for every collision ray.
+      skin.forEach((mesh, index) => {
+        const geometry = collisionSkin[index].geometry;
+        const positions = geometry.getAttribute('position');
+        const point = new THREE.Vector3();
+        for (let i = 0; i < positions.count; i++) {
+          mesh.getVertexPosition(i, point).applyMatrix4(mesh.matrixWorld);
+          positions.setXYZ(i, point.x, point.y, point.z);
+        }
+        geometry.computeBoundingBox();
+        geometry.computeBoundingSphere();
+      });
+      for (const { mesh, vertex, center } of probes) {
+        const inside = mesh.applyBoneTransform(vertex, center.clone());
+        const point = mesh.getVertexPosition(vertex, new THREE.Vector3());
+        const direction = point.clone().sub(inside).normalize();
+        ray.set(inside.clone().addScaledVector(direction, 0.3), direction.negate());
+        ray.far = 0.3;
+        const hit = ray.intersectObjects(collisionSkin, false).at(-1);
+        if (!hit) continue;
+        const clearance = point.distanceTo(inside) - hit.point.distanceTo(inside);
+        if (clearance < minimumClearance)
+          closest = {
+            name: mesh.name,
+            vertex,
+            arms,
+            turn,
+            breath,
+            point: point.toArray(),
+            inside: inside.toArray(),
+            hit: hit.point.toArray(),
+          };
+        minimumClearance = Math.min(minimumClearance, clearance);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(3000);
+    expect(minimumClearance, JSON.stringify(closest)).toBeGreaterThan(0.0005);
+    collisionSkin.forEach((mesh) => {
+      mesh.geometry.dispose();
+      mesh.material.dispose();
+    });
+  }, 30_000);
 });

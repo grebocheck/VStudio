@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { VRM } from '@pixiv/three-vrm';
 import { getAureliaSkeleton } from './aureliaSkinning';
+import type { AureliaShoulderFit } from './aureliaShoulderFit';
 
-/** Short gathered sleeves share the upper-arm bones; their lace cuffs cannot lag behind gestures. */
+/** Fitted sleeve roots share the skin's shoulder blend; cuffs follow the upper arms. */
 export function addAureliaPrincessSleeves(
   vrm: VRM,
   materials: { satin: THREE.Material; velvet: THREE.Material; lace: THREE.Material; gold: THREE.Material },
+  shoulderFit: AureliaShoulderFit,
 ) {
   const skeleton = getAureliaSkeleton(vrm);
   for (const side of ['left', 'right'] as const) {
@@ -35,6 +37,18 @@ export function addAureliaPrincessSleeves(
       }
       geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(indices, 4));
       geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(weights, 4));
+      const layer = name === 'Gathered_Princess_Sleeve' ? 0 : name === 'Sleeve_Ribbon_Cuff' ? 0.001 : 0.002;
+      shoulderFit.fit(
+        geometry,
+        (p) =>
+          layer +
+          THREE.MathUtils.lerp(
+            0.006,
+            0.0025,
+            THREE.MathUtils.smoothstep(p.clone().sub(origin).dot(axis), 0.025, 0.085),
+          ),
+        (p) => origin.clone().addScaledVector(axis, p.clone().sub(origin).dot(axis)),
+      );
       const mesh = new THREE.SkinnedMesh(geometry, material);
       mesh.name = `Aurelia_${side}_${name}`;
       mesh.userData.aureliaOuterGarment = true;
@@ -66,9 +80,15 @@ export function addAureliaPrincessSleeves(
       return geometry;
     };
     attach(
-      shell(18, (phi, v) => {
+      shell(24, (phi, v) => {
         const fullness = Math.sin(v * Math.PI);
-        return point(phi, 0.007 + v * 0.088, 0.033 + fullness * (0.019 + Math.cos(phi * 12) * 0.0018));
+        // A slanted armhole reaches the shoulder cap without burying its underside in the chest.
+        const root = 0.03 - 0.024 * (up.y * Math.sin(phi) + forward.y * Math.cos(phi));
+        return point(
+          phi,
+          THREE.MathUtils.lerp(root, 0.095, v),
+          0.033 + fullness * (0.019 + Math.cos(phi * 12) * 0.0018),
+        );
       }),
       materials.satin,
       'Gathered_Princess_Sleeve',

@@ -6,6 +6,7 @@ import { addAureliaBody } from './aureliaBody';
 import { addAureliaFootwear } from './aureliaFootwear';
 import { createAureliaDressMaterials } from './aureliaDressMaterials';
 import { addAureliaPrincessSleeves } from './aureliaPrincessSleeves';
+import { AureliaShoulderFit } from './aureliaShoulderFit';
 import { AureliaCloth, type ClothCapsule } from './aureliaCloth';
 import {
   bodiceSurface,
@@ -66,6 +67,7 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
   });
   addAureliaBody(vrm);
   addAureliaFootwear(vrm);
+  const shoulderFit = new AureliaShoulderFit(vrm);
   const skeleton = getAureliaSkeleton(vrm);
   const hips = vrm.humanoid.getRawBoneNode('hips')!;
   const hipIndex = skeleton.bones.findIndex((bone) => bone === hips);
@@ -79,13 +81,14 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
   ) => {
     // Fit before skinning and before callers capture animation rest positions.
     if (fitToBody) fitAureliaGeometry(vrm, geometry);
+    if (name.startsWith('Aurelia_Shoulder_')) shoulderFit.fit(geometry);
     const mesh = bindAureliaGeometry(vrm, geometry, material, name, skirt ? 'hips' : 'torso');
     mesh.userData.aureliaOuterGarment = true;
     return mesh;
   };
   const materials = createAureliaDressMaterials();
   const { satin, gold, lace, velvet } = materials;
-  addAureliaPrincessSleeves(vrm, materials);
+  addAureliaPrincessSleeves(vrm, materials, shoulderFit);
   const bodice = surface(96, 40, (u, v) => bodiceSurface(u * TAU, v));
   weighted(bodice, materials.bodice, 'Aurelia_Sculpted_Bodice');
   animated.push({ geometry: bodice, rest: Float32Array.from(bodice.getAttribute('position').array) });
@@ -154,12 +157,35 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
     clothCoordinates?: { u: number; v: number }[],
     fitToBody = !clothCoordinates,
   ) => {
+    const shoulderTrim = shoulderFit.available && name.startsWith('Aurelia_Strap_Binding_');
+    if (shoulderTrim) {
+      // Fit the centerline first so the gold cord keeps its round cross-section.
+      const anchors = new THREE.BufferGeometry().setFromPoints(points);
+      fitAureliaGeometry(vrm, anchors);
+      shoulderFit.fit(anchors, 0.0052);
+      points = points.map((_, i) => new THREE.Vector3().fromBufferAttribute(anchors.getAttribute('position'), i));
+      anchors.dispose();
+    }
     const curve = new THREE.CatmullRomCurve3(points);
     const segments = Math.max(32, points.length * 2);
     const geometry = new THREE.TubeGeometry(curve, segments, radius, 5, false);
     geometry.name = name;
     // Fit individual torso pieces before batching; hips/cloth trim retains its original anchors.
-    if (fitToBody) fitAureliaGeometry(vrm, geometry);
+    if (shoulderTrim) {
+      // Bind without reapplying the torso displacement to the fitted cord.
+      const count = geometry.getAttribute('position').count;
+      const indices = new Uint16Array(count * 4),
+        weights = new Float32Array(count * 4);
+      const chestIndex = skeleton.bones.findIndex((bone) => bone === vrm.humanoid.getRawBoneNode('upperChest'));
+      for (let i = 0; i < count; i++) {
+        // Keep a valid chest binding if a ray misses an open source boundary.
+        indices[i * 4] = Math.max(0, chestIndex);
+        weights[i * 4] = 1;
+      }
+      geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(indices, 4));
+      geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(weights, 4));
+      shoulderFit.fit(geometry, 0.004);
+    } else if (fitToBody) fitAureliaGeometry(vrm, geometry);
     const rest = Float32Array.from(geometry.getAttribute('position').array);
     if (clothCoordinates) {
       const bindings = Array.from({ length: geometry.getAttribute('position').count }, (_, i) => {
@@ -395,6 +421,7 @@ export function addAureliaWardrobe(vrm: VRM): AureliaWardrobe {
     });
     entries.forEach((entry) => entry.geometry.dispose());
   }
+  shoulderFit.dispose();
   const hipTransform = new THREE.Matrix4(),
     scratch = new THREE.Vector3();
   const colliders: ClothCapsule[] = [
